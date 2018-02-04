@@ -31,6 +31,9 @@ namespace ChupooTemplateEngine
         private static List<string> script_code_list = new List<string>();
         private static List<string> style_code_list = new List<string>();
         private static string[] watcher_exts = { ".html", ".js", ".css", ".scss" };
+        private static string[] asset_exts = { ".js", ".css", ".ico", ".png", ".jpeg", ".jpg", ".jpeg", ".bmp", ".svg" };
+        private static string asset_dir;
+
         private enum CommandType
         {
             FILE_SYSTEM_WATCHER,
@@ -38,7 +41,10 @@ namespace ChupooTemplateEngine
             RENDER_FILE,
             RENDER_DIRECTORY,
             RENDER_TEMPORARILY,
-            LAUNCH
+            LAUNCH,
+            CLEAR,
+            BROWSE,
+            EDIT
         }
 
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
@@ -50,6 +56,7 @@ namespace ChupooTemplateEngine
             view_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\views\\";
             w_view_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\views";
             layout_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\layouts\\";
+            asset_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\assets\\";
             view_data_json_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\views_data\\";
             public_dir = AppDomain.CurrentDomain.BaseDirectory + "public\\";
 
@@ -140,12 +147,14 @@ namespace ChupooTemplateEngine
             matched = Regex.Match(command, @"^clear$");
             if (!ran && matched.Success)
             {
+                commandType = CommandType.CLEAR;
                 Console.Clear();
                 ran = true;
             }
             matched = Regex.Match(command, @"^browse$");
             if (!ran && matched.Success)
             {
+                commandType = CommandType.BROWSE;
                 string path = public_dir + current_route + ".html";
                 if (current_route != null)
                 {
@@ -165,6 +174,7 @@ namespace ChupooTemplateEngine
             matched = Regex.Match(command, @"^edit$");
             if (!ran && matched.Success)
             {
+                commandType = CommandType.EDIT;
                 string path = view_dir + current_route + ".html";
                 if (current_route != null)
                 {
@@ -184,59 +194,82 @@ namespace ChupooTemplateEngine
             matched = Regex.Match(command, @"^render\s\-all$");
             if (!ran && matched.Success)
             {
+                commandType = CommandType.RENDER_ALL;
                 current_dir = view_dir;
                 RenderDirectoryRecursively(view_dir, "");
                 current_route = "index";
                 current_dir = null;
                 ran = true;
-                commandType = CommandType.RENDER_ALL;
             }
             matched = Regex.Match(command, @"^launch$");
             if (!ran && matched.Success)
             {
+                commandType = CommandType.LAUNCH;
                 current_dir = view_dir;
                 RenderDirectoryRecursively(view_dir, "");
-                LaunchAssets(view_dir, "");
+                LaunchAssets(asset_dir);
                 current_route = "index";
                 current_dir = null;
                 ran = true;
-                commandType = CommandType.LAUNCH;
             }
             matched = Regex.Match(command, @"^render\s-f\s(.+?)$");
             if (!ran && matched.Success)
             {
+                commandType = CommandType.RENDER_FILE;
                 string view_name = matched.Groups[1].Value;
                 ParseView(view_name, view_name);
                 current_route = view_name;
                 ran = true;
-                commandType = CommandType.RENDER_FILE;
             }
             matched = Regex.Match(command, @"^render\s-d\s(.+?)$");
             if (!ran && matched.Success)
             {
+                commandType = CommandType.RENDER_DIRECTORY;
                 string view_name = matched.Groups[1].Value;
                 RenderDirectory(view_name);
                 current_route = view_name;
                 ran = true;
-                commandType = CommandType.RENDER_DIRECTORY;
             }
             matched = Regex.Match(command, @"^render\s-t\s(.+?)$");
             if (!ran && matched.Success)
             {
+                commandType = CommandType.RENDER_TEMPORARILY;
                 string view_name = matched.Groups[1].Value;
                 ParseView(view_name, ".temp");
                 current_route = ".temp";
                 ran = true;
-                commandType = CommandType.RENDER_TEMPORARILY;
             }
             if (!ran)
                 Console.WriteLine("Error: Invalid command");
             Run();
         }
 
-        private static void LaunchAssets(string path, string asset_level)
+        private static void LaunchAssets(string path)
         {
+            string[] dirs = Directory.GetDirectories(path);
+            string path_stage;
+            foreach (string dir in dirs)
+            {
+                path_stage = dir.Replace(asset_dir, "");
 
+
+                if (!Directory.Exists(public_dir + path_stage))
+                    Directory.CreateDirectory(public_dir + path_stage);
+
+                string[] subdirs = Directory.GetDirectories(path);
+                if (subdirs.Length > 0)
+                {
+                    LaunchAssets(dir);
+                }
+            }
+            string[] files = Directory.GetFiles(path);
+            path_stage = path.Replace(asset_dir, "");
+            foreach (string file in files)
+            {
+                FileInfo finfo = new FileInfo(file);
+                if (!asset_exts.Any(finfo.Extension.Equals)) continue;
+                File.Copy(file, public_dir + path_stage + "\\" + finfo.Name, true);
+            }
         }
 
         private static void RenderDirectory(string route)
@@ -506,10 +539,10 @@ namespace ChupooTemplateEngine
             if (matches.Count > 0)
             {
                 int newLength = 0;
-                if (commandType==CommandType.LAUNCH)
+                if (commandType == CommandType.LAUNCH)
                     asset_level = asset_level.Substring(2);
                 else
-                    asset_level = asset_level.Substring(2) + "../modules/";
+                    asset_level = asset_level.Substring(2) + "../modules/assets/";
 
                 foreach (Match match in matches)
                 {
