@@ -30,6 +30,7 @@ namespace ChupooTemplateEngine
         private static List<string> style_file_list = new List<string>();
         private static List<string> script_code_list = new List<string>();
         private static List<string> style_code_list = new List<string>();
+        private static string[] watcher_exts = { ".html", ".js", ".css", ".scss" };
         private enum CommandType
         {
             FILE_SYSTEM_WATCHER,
@@ -65,7 +66,7 @@ namespace ChupooTemplateEngine
             watcher.Path = w_view_dir;
             watcher.NotifyFilter = NotifyFilters.LastWrite;
             watcher.Changed += new FileSystemEventHandler(OnChanged);
-            watcher.Filter = "*.html";
+            watcher.Filter = "*.*";
             watcher.IncludeSubdirectories = true;
             watcher.EnableRaisingEvents = true;
 
@@ -103,13 +104,16 @@ namespace ChupooTemplateEngine
 
         private static void OnChanged(object sender, FileSystemEventArgs e)
         {
+            FileInfo finfo = new FileInfo(e.Name);
+            if (!watcher_exts.Any(finfo.Extension.Equals)) return;
+
             if (has_changed_file)
             {
                 has_changed_file = false;
                 return;
             }
 
-            string view_name = e.FullPath.Replace(w_view_dir + @"\", "").Replace(".html", "");
+            string view_name = e.FullPath.Replace(w_view_dir + @"\", "").Replace(finfo.Extension, "");
             if (WaitForFile(e.FullPath, view_name + ".html"))
             {
                 try
