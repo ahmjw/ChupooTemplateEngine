@@ -432,8 +432,12 @@ namespace ChupooTemplateEngine
                     string target = matched.Groups[1].Value + "/_" + route + ".css";
                     string css_content = "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + target + "\" />";
                     string dest_path = output_dir + target.Substring(2);
-                    File.Copy(css_path, dest_path, true);
-                    view_content = SubsituteString(view_content, matched.Index, matched.Length, css_content);
+                    FileInfo finfo = new FileInfo(dest_path);
+                    if (Directory.Exists(finfo.DirectoryName))
+                    {
+                        File.Copy(css_path, dest_path, true);
+                        view_content = SubsituteString(view_content, matched.Index, matched.Length, css_content);
+                    }
                 }
                 else
                 {
@@ -485,7 +489,8 @@ namespace ChupooTemplateEngine
             if (matches.Count > 0)
             {
                 int newLength = 0;
-                asset_level = asset_level.Substring(2);
+                //asset_level = asset_level.Substring(2);
+                asset_level = asset_level.Substring(2) + "/../modules";
                 foreach (Match match in matches)
                 {
                     string new_value = asset_level + match.Groups[1].Value;
