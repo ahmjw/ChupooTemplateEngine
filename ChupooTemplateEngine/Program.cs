@@ -191,11 +191,12 @@ namespace ChupooTemplateEngine
                 }
                 ran = true;
             }
-            matched = Regex.Match(command, @"^render\s\-all$");
+            matched = Regex.Match(command, @"^render$");
             if (!ran && matched.Success)
             {
                 commandType = CommandType.RENDER_ALL;
                 current_dir = view_dir;
+                ClearAssets();
                 RenderDirectoryRecursively(view_dir, "");
                 current_route = "index";
                 current_dir = null;
@@ -206,6 +207,7 @@ namespace ChupooTemplateEngine
             {
                 commandType = CommandType.LAUNCH;
                 current_dir = view_dir;
+                ClearAssets();
                 RenderDirectoryRecursively(view_dir, "");
                 LaunchAssets(asset_dir);
                 current_route = "index";
@@ -242,6 +244,28 @@ namespace ChupooTemplateEngine
             if (!ran)
                 Console.WriteLine("Error: Invalid command");
             Run();
+        }
+
+        private static void ClearAssets()
+        {
+            string[] public_dirs = Directory.GetDirectories(public_dir);
+            foreach (string dir in public_dirs)
+            {
+                DirectoryInfo dinfo = new DirectoryInfo(dir);
+                if (!Directory.Exists(view_dir + dinfo.Name))
+                {
+                    Directory.Delete(dir, true);
+                }
+            }
+            string[] public_files = Directory.GetFiles(public_dir);
+            foreach (string file in public_files)
+            {
+                FileInfo finfo = new FileInfo(file);
+                if (!File.Exists(view_dir + finfo.Name))
+                {
+                    File.Delete(file);
+                }
+            }
         }
 
         private static void LaunchAssets(string path)
