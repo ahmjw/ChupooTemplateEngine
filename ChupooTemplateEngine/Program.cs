@@ -20,7 +20,7 @@ namespace ChupooTemplateEngine
         private static string cfg_layout_name = "page";
         private static string current_route = ".temp";
         private static string current_dir;
-        private static string output_dir;
+        private static string public_dir;
         private static string view_data_json_dir;
         private static JObject public_routes;
         private static string w_view_dir;
@@ -37,7 +37,8 @@ namespace ChupooTemplateEngine
             RENDER_ALL,
             RENDER_FILE,
             RENDER_DIRECTORY,
-            RENDER_TEMPORARILY
+            RENDER_TEMPORARILY,
+            LAUNCH
         }
 
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
@@ -50,7 +51,7 @@ namespace ChupooTemplateEngine
             w_view_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\views";
             layout_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\layouts\\";
             view_data_json_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\views_data\\";
-            output_dir = AppDomain.CurrentDomain.BaseDirectory + "output\\";
+            public_dir = AppDomain.CurrentDomain.BaseDirectory + "public\\";
 
             string public_route_file = AppDomain.CurrentDomain.BaseDirectory + "modules\\config\\public_routes.json";
             if (File.Exists(public_route_file))
@@ -145,14 +146,14 @@ namespace ChupooTemplateEngine
             matched = Regex.Match(command, @"^browse$");
             if (!ran && matched.Success)
             {
-                string path = output_dir + current_route + ".html";
+                string path = public_dir + current_route + ".html";
                 if (current_route != null)
                 {
                     if (File.Exists(path))
                         Process.Start(path);
                     else
                     {
-                        path = output_dir + "index.html";
+                        path = public_dir + "index.html";
                         if (File.Exists(path))
                             Process.Start(path);
                         else
@@ -190,6 +191,17 @@ namespace ChupooTemplateEngine
                 ran = true;
                 commandType = CommandType.RENDER_ALL;
             }
+            matched = Regex.Match(command, @"^launch$");
+            if (!ran && matched.Success)
+            {
+                current_dir = view_dir;
+                RenderDirectoryRecursively(view_dir, "");
+                LaunchAssets(view_dir, "");
+                current_route = "index";
+                current_dir = null;
+                ran = true;
+                commandType = CommandType.LAUNCH;
+            }
             matched = Regex.Match(command, @"^render\s-f\s(.+?)$");
             if (!ran && matched.Success)
             {
@@ -222,6 +234,11 @@ namespace ChupooTemplateEngine
             Run();
         }
 
+        private static void LaunchAssets(string path, string asset_level)
+        {
+
+        }
+
         private static void RenderDirectory(string route)
         {
             string path = view_dir + route;
@@ -246,8 +263,8 @@ namespace ChupooTemplateEngine
             foreach (string dir in dirs)
             {
                 string path_stage = dir.Replace(current_dir, "");
-                if (!Directory.Exists(output_dir + path_stage))
-                    Directory.CreateDirectory(output_dir + path_stage);
+                if (!Directory.Exists(public_dir + path_stage))
+                    Directory.CreateDirectory(public_dir + path_stage);
 
                 string[] subdirs = Directory.GetDirectories(path);
                 if (subdirs.Length > 0)
@@ -431,7 +448,7 @@ namespace ChupooTemplateEngine
                 {
                     string target = matched.Groups[1].Value + "/_" + route + ".css";
                     string css_content = "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + target + "\" />";
-                    string dest_path = output_dir + target.Substring(2);
+                    string dest_path = public_dir + target.Substring(2);
                     FileInfo finfo = new FileInfo(dest_path);
                     if (Directory.Exists(finfo.DirectoryName))
                     {
@@ -489,8 +506,11 @@ namespace ChupooTemplateEngine
             if (matches.Count > 0)
             {
                 int newLength = 0;
-                //asset_level = asset_level.Substring(2);
-                asset_level = asset_level.Substring(2) + "/../modules";
+                if (commandType==CommandType.LAUNCH)
+                    asset_level = asset_level.Substring(2);
+                else
+                    asset_level = asset_level.Substring(2) + "../modules/";
+
                 foreach (Match match in matches)
                 {
                     string new_value = asset_level + match.Groups[1].Value;
@@ -572,8 +592,8 @@ namespace ChupooTemplateEngine
             pattern = @"<c\.content(?:\s*\/)?>(?:<\/c\.content>)?";
             layout_content = ReplaceText(pattern, layout_content, view_content);
 
-            string output_path = AppDomain.CurrentDomain.BaseDirectory + "output\\" + dest + ".html";
-            File.WriteAllText(output_path, layout_content);
+            string public_path = AppDomain.CurrentDomain.BaseDirectory + "public\\" + dest + ".html";
+            File.WriteAllText(public_path, layout_content);
             Console.WriteLine("OK: " + dest + ".html");
         }
 
