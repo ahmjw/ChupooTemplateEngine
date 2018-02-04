@@ -230,7 +230,7 @@ namespace ChupooTemplateEngine
             foreach (string file in files)
             {
                 FileInfo finfo = new FileInfo(file);
-                if (finfo.Name[0] == '_') continue;
+                if (finfo.Name[0] == '_' || finfo.Extension != ".html") continue;
                 string path_stage = file.Replace(view_dir, "").Replace(".html", "");
                 ParseView(path_stage, path_stage);
             }
