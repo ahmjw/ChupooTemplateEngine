@@ -33,6 +33,8 @@ namespace ChupooTemplateEngine
         private static string[] watcher_exts = { ".html", ".js", ".css", ".scss" };
         private static string[] asset_exts = { ".js", ".css", ".ico", ".png", ".jpeg", ".jpg", ".jpeg", ".bmp", ".svg" };
         private static string asset_dir;
+        private static string backup_dir;
+        private static string config_dir;
 
         private enum CommandType
         {
@@ -44,7 +46,8 @@ namespace ChupooTemplateEngine
             LAUNCH,
             CLEAR,
             BROWSE,
-            EDIT
+            EDIT,
+            BACKUP
         }
 
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
@@ -57,10 +60,12 @@ namespace ChupooTemplateEngine
             w_view_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\views";
             layout_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\layouts\\";
             asset_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\assets\\";
+            config_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\config\\";
+            backup_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\backups\\";
             view_data_json_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\views_data\\";
             public_dir = AppDomain.CurrentDomain.BaseDirectory + "public\\";
 
-            string public_route_file = AppDomain.CurrentDomain.BaseDirectory + "modules\\config\\public_routes.json";
+            string public_route_file = config_dir + "public_routes.json";
             if (File.Exists(public_route_file))
             {
                 string public_route = File.ReadAllText(public_route_file);
@@ -214,6 +219,16 @@ namespace ChupooTemplateEngine
                 current_dir = null;
                 ran = true;
             }
+            matched = Regex.Match(command, @"^backup$");
+            if (!ran && matched.Success)
+            {
+                commandType = CommandType.BACKUP;
+                current_dir = view_dir;
+                Backup();
+                current_route = "index";
+                current_dir = null;
+                ran = true;
+            }
             matched = Regex.Match(command, @"^render\s-f\s(.+?)$");
             if (!ran && matched.Success)
             {
@@ -244,6 +259,41 @@ namespace ChupooTemplateEngine
             if (!ran)
                 Console.WriteLine("Error: Invalid command");
             Run();
+        }
+
+        private static void CopyDirectory(string SourcePath, string DestinationPath)
+        {
+            if (!Directory.Exists(DestinationPath))
+                Directory.CreateDirectory(DestinationPath);
+            foreach (string dirPath in Directory.GetDirectories(SourcePath, "*",
+                SearchOption.AllDirectories))
+                Directory.CreateDirectory(dirPath.Replace(SourcePath, DestinationPath));
+
+            foreach (string newPath in Directory.GetFiles(SourcePath, "*.*",
+                SearchOption.AllDirectories))
+                File.Copy(newPath, newPath.Replace(SourcePath, DestinationPath), true);
+        }
+
+        private static void Backup()
+        {
+            string[] dirs = Directory.GetDirectories(backup_dir);
+            string version = "0.0.1";
+            if (dirs.Length > 0)
+            {
+                string last_dir = dirs[dirs.Length - 1];
+                DirectoryInfo dinfo = new DirectoryInfo(last_dir);
+                int last_version = Convert.ToInt32(dinfo.Name.Replace(".", ""));
+                version = "0.0." + (last_version + 1);
+            }
+            string dir = backup_dir + version;
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+            CopyDirectory(view_dir, dir + "\\views\\");
+            CopyDirectory(layout_dir, dir + "\\layouts\\");
+            CopyDirectory(config_dir, dir + "\\config\\");
+            CopyDirectory(view_data_json_dir, dir + "\\views_data\\");
+            CopyDirectory(asset_dir, dir + "\\assets\\");
+            Console.WriteLine("Backed up to version " + version);
         }
 
         private static void ClearAssets()
@@ -558,7 +608,7 @@ namespace ChupooTemplateEngine
 
         private static string ReplaceAssetUrlText(string content, string asset_level)
         {
-            string pattern = @"<(?:link|script|img).*?(?:href|src)=""\./(.*?)"".*?>";
+            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""\./(.*?)"".*?>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
