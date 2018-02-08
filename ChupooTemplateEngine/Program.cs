@@ -433,33 +433,7 @@ namespace ChupooTemplateEngine
                 string pattern;
                 MatchCollection matches;
 
-                pattern = @"<c\.partial\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.partial>)?";
-                matches = Regex.Matches(view_content, pattern);
-                if (matches.Count > 0)
-                {
-                    int newLength = 0;
-                    foreach (Match match in matches)
-                    {
-                        string layout_name = "_" + match.Groups[1].Value;
-                        string layout_file = view_dir + layout_name + ".html";
-
-                        if (File.Exists(layout_file))
-                        {
-                            string part_content = File.ReadAllText(layout_file);
-                            part_content = RenderPartialCss(layout_name, part_content);
-                            part_content = RenderPartialAssets(layout_name, part_content);
-                            part_content = SeparateStyle(part_content);
-                            part_content = SeparateScript(part_content);
-                            view_content = SubsituteString(view_content, match.Index + newLength, match.Length, part_content);
-                            newLength += part_content.Length - match.Length;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Warning: Partial view " + layout_name + ".html is not found");
-                        }
-                    }
-                }
-
+                view_content = LoadPartialView(view_content);
                 view_content = RenderPartialCss(route, view_content);
                 view_content = RenderPartialAssets(route, view_content);
                 view_content = SeparateStyle(view_content);
@@ -481,6 +455,38 @@ namespace ChupooTemplateEngine
             {
                 Console.WriteLine("View file is not found: " + route + ".html");
             }
+        }
+
+        private static string LoadPartialView(string content)
+        {
+            string pattern = @"<c\.partial\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.partial>)?";
+            MatchCollection matches = Regex.Matches(content, pattern);
+            if (matches.Count > 0)
+            {
+                int newLength = 0;
+                foreach (Match match in matches)
+                {
+                    string layout_name = "_" + match.Groups[1].Value;
+                    string layout_file = view_dir + layout_name + ".html";
+
+                    if (File.Exists(layout_file))
+                    {
+                        string part_content = File.ReadAllText(layout_file);
+                        part_content = LoadPartialView(part_content);
+                        part_content = RenderPartialCss(layout_name, part_content);
+                        part_content = RenderPartialAssets(layout_name, part_content);
+                        part_content = SeparateStyle(part_content);
+                        part_content = SeparateScript(part_content);
+                        content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
+                        newLength += part_content.Length - match.Length;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Warning: Partial view " + layout_name + ".html is not found");
+                    }
+                }
+            }
+            return content;
         }
 
         private static string SeparateScript(string content)
