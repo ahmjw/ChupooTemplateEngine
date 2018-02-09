@@ -26,10 +26,14 @@ namespace ChupooTemplateEngine
         private static string w_view_dir;
         private static bool has_changed_file = false;
         private static CommandType commandType;
-        private static List<string> script_file_list = new List<string>();
-        private static List<string> style_file_list = new List<string>();
-        private static List<string> script_code_list = new List<string>();
-        private static List<string> style_code_list = new List<string>();
+        private static List<string> v_script_file_list = new List<string>();
+        private static List<string> v_style_file_list = new List<string>();
+        private static List<string> v_script_code_list = new List<string>();
+        private static List<string> v_style_code_list = new List<string>();
+        private static List<string> l_script_file_list = new List<string>();
+        private static List<string> l_style_file_list = new List<string>();
+        private static List<string> l_script_code_list = new List<string>();
+        private static List<string> l_style_code_list = new List<string>();
         private static string[] watcher_exts = { ".html", ".js", ".css", ".scss" };
         private static string[] asset_exts = { ".js", ".css", ".ico", ".png", ".jpeg", ".jpg", ".jpeg", ".bmp", ".svg" };
         private static string asset_dir;
@@ -436,8 +440,8 @@ namespace ChupooTemplateEngine
                 view_content = LoadPartialView(view_content);
                 view_content = RenderPartialCss(route, view_content);
                 view_content = RenderPartialAssets(route, view_content);
-                view_content = SeparateStyle(view_content);
-                view_content = SeparateScript(view_content);
+                view_content = SeparateViewStyle(view_content);
+                view_content = SeparateViewScript(view_content);
 
                 string data_path = view_data_json_dir + route + ".json";
                 if (File.Exists(data_path))
@@ -475,8 +479,8 @@ namespace ChupooTemplateEngine
                         part_content = LoadPartialView(part_content);
                         part_content = RenderPartialCss(layout_name, part_content);
                         part_content = RenderPartialAssets(layout_name, part_content);
-                        part_content = SeparateStyle(part_content);
-                        part_content = SeparateScript(part_content);
+                        part_content = SeparateViewStyle(part_content);
+                        part_content = SeparateViewScript(part_content);
                         content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
                         newLength += part_content.Length - match.Length;
                     }
@@ -489,7 +493,7 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        private static string SeparateScript(string content)
+        private static string SeparateViewScript(string content)
         {
             string pattern;
             MatchCollection matches;
@@ -500,7 +504,7 @@ namespace ChupooTemplateEngine
                 int newLength = 0;
                 foreach (Match match in matches)
                 {
-                    script_file_list.Add(match.Value);
+                    v_script_file_list.Add(match.Value);
                     content = SubsituteString(content, match.Index + newLength, match.Length, "");
                     newLength += -match.Length;
                 }
@@ -512,7 +516,7 @@ namespace ChupooTemplateEngine
                 int newLength = 0;
                 foreach (Match match in matches)
                 {
-                    script_code_list.Add(match.Value);
+                    v_script_code_list.Add(match.Value);
                     content = SubsituteString(content, match.Index + newLength, match.Length, "");
                     newLength += -match.Length;
                 }
@@ -520,7 +524,38 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        private static string SeparateStyle(string content)
+        private static string SeparateLayoutScript(string content)
+        {
+            string pattern;
+            MatchCollection matches;
+            pattern = @"<script.*?></script>";
+            matches = Regex.Matches(content, pattern);
+            if (matches.Count > 0)
+            {
+                int newLength = 0;
+                foreach (Match match in matches)
+                {
+                    l_script_file_list.Add(match.Value);
+                    content = SubsituteString(content, match.Index + newLength, match.Length, "");
+                    newLength += -match.Length;
+                }
+            }
+            pattern = @"<script.*?>[\w\W]*?</script>";
+            matches = Regex.Matches(content, pattern);
+            if (matches.Count > 0)
+            {
+                int newLength = 0;
+                foreach (Match match in matches)
+                {
+                    l_script_code_list.Add(match.Value);
+                    content = SubsituteString(content, match.Index + newLength, match.Length, "");
+                    newLength += -match.Length;
+                }
+            }
+            return content;
+        }
+
+        private static string SeparateViewStyle(string content)
         {
             string pattern;
             MatchCollection matches;
@@ -531,7 +566,7 @@ namespace ChupooTemplateEngine
                 int newLength = 0;
                 foreach (Match match in matches)
                 {
-                    style_file_list.Add(match.Value);
+                    v_style_file_list.Add(match.Value);
                     content = SubsituteString(content, match.Index + newLength, match.Length, "");
                     newLength += -match.Length;
                 }
@@ -543,7 +578,38 @@ namespace ChupooTemplateEngine
                 int newLength = 0;
                 foreach (Match match in matches)
                 {
-                    style_code_list.Add(match.Value);
+                    v_style_code_list.Add(match.Value);
+                    content = SubsituteString(content, match.Index + newLength, match.Length, "");
+                    newLength += -match.Length;
+                }
+            }
+            return content;
+        }
+
+        private static string SeparateLayoutStyle(string content)
+        {
+            string pattern;
+            MatchCollection matches;
+            pattern = @"<link.*?rel=""stylesheet"".*?>";
+            matches = Regex.Matches(content, pattern);
+            if (matches.Count > 0)
+            {
+                int newLength = 0;
+                foreach (Match match in matches)
+                {
+                    l_style_file_list.Add(match.Value);
+                    content = SubsituteString(content, match.Index + newLength, match.Length, "");
+                    newLength += -match.Length;
+                }
+            }
+            pattern = @"<style.*?>[\w\W]*?</style>";
+            matches = Regex.Matches(content, pattern);
+            if (matches.Count > 0)
+            {
+                int newLength = 0;
+                foreach (Match match in matches)
+                {
+                    l_style_code_list.Add(match.Value);
                     content = SubsituteString(content, match.Index + newLength, match.Length, "");
                     newLength += -match.Length;
                 }
@@ -583,14 +649,14 @@ namespace ChupooTemplateEngine
             if (File.Exists(path))
             {
                 string content = "<style type=\"text/css\">" + File.ReadAllText(path) + "</style>";
-                style_code_list.Add(content);
+                v_style_code_list.Add(content);
             }
 
             path = view_dir + route + ".js";
             if (File.Exists(path))
             {
                 string content = "<script language=\"javascript\">" + File.ReadAllText(path) + "</script>";
-                script_code_list.Add(content);
+                v_script_code_list.Add(content);
             }
             return view_content;
         }
@@ -696,8 +762,8 @@ namespace ChupooTemplateEngine
                 }
             }
 
-            layout_content = SeparateStyle(layout_content);
-            layout_content = SeparateScript(layout_content);
+            layout_content = SeparateLayoutStyle(layout_content);
+            layout_content = SeparateLayoutScript(layout_content);
             layout_content = PasteScripts(layout_content);
             layout_content = PasteStyles(layout_content);
             layout_content = ReplaceLinkUrlText(layout_content, asset_level);
@@ -716,7 +782,9 @@ namespace ChupooTemplateEngine
             if (matched.Success)
             {
                 string appended = "";
-                foreach (string style in style_file_list)
+                foreach (string style in l_style_file_list)
+                    appended += style;
+                foreach (string style in v_style_file_list)
                     appended += style;
                 string new_content = appended + matched.Value;
                 content = SubsituteString(content, matched.Index, matched.Length, new_content);
@@ -725,13 +793,17 @@ namespace ChupooTemplateEngine
             if (matched.Success)
             {
                 string appended = "";
-                foreach (string style in style_code_list)
+                foreach (string style in v_style_code_list)
+                    appended += style;
+                foreach (string style in l_style_code_list)
                     appended += style;
                 string new_content = appended + matched.Value;
                 content = SubsituteString(content, matched.Index, matched.Length, new_content);
             }
-            style_file_list.Clear();
-            style_code_list.Clear();
+            l_style_file_list.Clear();
+            l_style_code_list.Clear();
+            v_style_file_list.Clear();
+            v_style_code_list.Clear();
             return content;
         }
 
@@ -741,7 +813,9 @@ namespace ChupooTemplateEngine
             if (matched.Success)
             {
                 string appended = "";
-                foreach (string script in script_file_list)
+                foreach (string script in l_script_file_list)
+                    appended += script;
+                foreach (string script in v_script_file_list)
                     appended += script;
                 string new_content = appended + matched.Value;
                 content = SubsituteString(content, matched.Index, matched.Length, new_content);
@@ -750,13 +824,17 @@ namespace ChupooTemplateEngine
             if (matched.Success)
             {
                 string appended = "";
-                foreach (string script in script_code_list)
+                foreach (string script in l_script_code_list)
+                    appended += script;
+                foreach (string script in v_script_code_list)
                     appended += script;
                 string new_content = appended + matched.Value;
                 content = SubsituteString(content, matched.Index, matched.Length, new_content);
             }
-            script_file_list.Clear();
-            script_code_list.Clear();
+            l_script_file_list.Clear();
+            l_script_code_list.Clear();
+            v_script_file_list.Clear();
+            v_script_code_list.Clear();
             return content;
         }
 
