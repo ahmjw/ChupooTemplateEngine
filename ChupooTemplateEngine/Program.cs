@@ -373,6 +373,8 @@ namespace ChupooTemplateEngine
             string[] dirs = Directory.GetDirectories(path);
             foreach (string dir in dirs)
             {
+                DirectoryInfo dinfo = new DirectoryInfo(dir);
+                if (dinfo.Name[0] == '_') continue;
                 string path_stage = dir.Replace(current_dir, "");
                 if (!Directory.Exists(public_dir + path_stage))
                     Directory.CreateDirectory(public_dir + path_stage);
@@ -486,10 +488,38 @@ namespace ChupooTemplateEngine
                     }
                     else
                     {
-                        Console.WriteLine("Warning: Partial view " + layout_name + ".html is not found");
+                        if (Directory.Exists(view_dir + layout_name))
+                        {
+                            layout_file = view_dir + layout_name + "\\main.html";
+                            if (File.Exists(layout_file))
+                            {
+                                string part_content = RenderComponent(layout_name, layout_file);
+                                content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
+                                newLength += part_content.Length - match.Length;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Warning: Partial view " + layout_name + "/main.html is not found");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Warning: Partial view " + layout_name + ".html is not found");
+                        }
                     }
                 }
             }
+            return content;
+        }
+
+        private static string RenderComponent(string layout_name, string layout_file)
+        {
+            string content = File.ReadAllText(layout_file);
+            content = LoadPartialView(content);
+            content = RenderPartialCss(layout_name, content);
+            content = RenderPartialAssets(layout_name, content, true);
+            content = SeparateViewStyle(content);
+            content = SeparateViewScript(content);
             return content;
         }
 
@@ -623,6 +653,7 @@ namespace ChupooTemplateEngine
             if (matched.Success)
             {
                 string css_path = view_dir + route + ".css";
+
                 if (File.Exists(css_path))
                 {
                     string target = matched.Groups[1].Value + "/_" + route + ".css";
@@ -643,16 +674,23 @@ namespace ChupooTemplateEngine
             return view_content;
         }
 
-        private static string RenderPartialAssets(string route, string view_content)
+        private static string RenderPartialAssets(string route, string view_content, bool is_component = false)
         {
-            string path = view_dir + route + ".css";
+            string path;
+            if (is_component)
+                path = view_dir + route + "\\main.css";
+            else
+                path = view_dir + route + ".css";
             if (File.Exists(path))
             {
                 string content = "<style type=\"text/css\">" + File.ReadAllText(path) + "</style>";
                 v_style_code_list.Add(content);
             }
 
-            path = view_dir + route + ".js";
+            if (is_component)
+                path = view_dir + route + "\\main.js";
+            else
+                path = view_dir + route + ".js";
             if (File.Exists(path))
             {
                 string content = "<script language=\"javascript\">" + File.ReadAllText(path) + "</script>";
