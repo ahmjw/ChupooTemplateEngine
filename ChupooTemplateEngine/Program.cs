@@ -688,7 +688,7 @@ namespace ChupooTemplateEngine
                 if (commandType == CommandType.LAUNCH)
                     asset_level = asset_level.Substring(2);
                 else
-                    asset_level = asset_level.Substring(2) + "../modules/assets/";
+                    asset_level = asset_level.Substring(2) + "../modules/";
 
                 foreach (Match match in matches)
                 {
@@ -710,7 +710,7 @@ namespace ChupooTemplateEngine
                 asset_level = asset_level.Substring(2);
                 foreach (Match match in matches)
                 {
-                    string url_target = public_routes[match.Groups[1].Value] != null ? public_routes[match.Groups[1].Value] + "" : "index";
+                    string url_target = public_routes != null && public_routes.Count > 0 && public_routes[match.Groups[1].Value] != null ? public_routes[match.Groups[1].Value] + "" : "index";
                     string new_value = asset_level + url_target + ".html";
                     content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
                     newLength += new_value.Length - match.Groups[1].Length;
@@ -735,8 +735,17 @@ namespace ChupooTemplateEngine
             string path = layout_dir + cfg_layout_name + ".html";
             if (!File.Exists(path)) {
                 Console.WriteLine("Warning: " + dest + " >> Layout file is not found: " + cfg_layout_name + ".html");
-                path = layout_dir + "page.html";
-                Console.WriteLine("\tChange layout to page.html");
+                cfg_layout_name = "page";
+                path = layout_dir + cfg_layout_name + ".html";
+                if (File.Exists(path))
+                {
+                    Console.WriteLine("\tChange layout to " + cfg_layout_name + ".html");
+                }
+                else
+                {
+                    Console.WriteLine("Warning: " + dest + " >> Layout file is not found: " + cfg_layout_name + ".html");
+                    return;
+                }
             }
             layout_content = File.ReadAllText(path);
             string pattern = @"<c\.partial\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.partial>)?";
