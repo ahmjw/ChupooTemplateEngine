@@ -814,6 +814,12 @@ namespace ChupooTemplateEngine
 
         private static void ParseLayout(string dest, string asset_level)
         {
+            if (dest[0] == '_')
+            {
+                Console.WriteLine("Rendering route " + dest + " was skipped");
+                return;
+            }
+
             string layout_content = "";
             string path = layout_dir + cfg_layout_name + ".html";
             if (!File.Exists(path)) {
