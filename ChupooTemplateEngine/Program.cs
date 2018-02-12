@@ -41,6 +41,7 @@ namespace ChupooTemplateEngine
         private static string config_dir;
         private static string current_project_name;
         private static FileSystemWatcher watcher;
+        private static string module_dir;
 
         private enum CommandType
         {
@@ -71,7 +72,7 @@ namespace ChupooTemplateEngine
 
         private static void LoadProject(string project_name)
         {
-            if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name))
+            if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name))
             {
                 Console.WriteLine("Project " + project_name + " is invalid name");
                 return;
@@ -81,14 +82,15 @@ namespace ChupooTemplateEngine
             Properties.Settings.Default.current_project_name = project_name;
             Properties.Settings.Default.Save();
 
-            view_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\modules\\views\\";
-            w_view_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\modules\\views";
-            layout_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\modules\\layouts\\";
-            asset_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\modules\\assets\\";
-            config_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\modules\\config\\";
-            backup_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\modules\\backups\\";
-            view_data_json_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\modules\\views_data\\";
-            public_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\public\\";
+            module_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\";
+            view_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\views\";
+            w_view_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\views";
+            layout_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\layouts\";
+            asset_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\assets\";
+            config_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\config\";
+            backup_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\backups\";
+            view_data_json_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\views_data\";
+            public_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\";
 
             if (watcher != null)
             {
@@ -331,11 +333,11 @@ namespace ChupooTemplateEngine
             string dir = backup_dir + version;
             if (!Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
-            CopyDirectory(view_dir, dir + "\\views\\");
-            CopyDirectory(layout_dir, dir + "\\layouts\\");
-            CopyDirectory(config_dir, dir + "\\config\\");
-            CopyDirectory(view_data_json_dir, dir + "\\views_data\\");
-            CopyDirectory(asset_dir, dir + "\\assets\\");
+            CopyDirectory(view_dir, dir + @"\views\");
+            CopyDirectory(layout_dir, dir + @"\layouts\");
+            CopyDirectory(config_dir, dir + @"\config\");
+            CopyDirectory(view_data_json_dir, dir + @"\views_data\");
+            CopyDirectory(asset_dir, dir + @"\assets\");
             Console.WriteLine("Backed up to version " + version);
         }
 
@@ -385,7 +387,7 @@ namespace ChupooTemplateEngine
             {
                 FileInfo finfo = new FileInfo(file);
                 if (!asset_exts.Any(finfo.Extension.Equals)) continue;
-                File.Copy(file, public_dir + path_stage + "\\" + finfo.Name, true);
+                File.Copy(file, public_dir + path_stage + @"\" + finfo.Name, true);
             }
         }
 
@@ -465,6 +467,7 @@ namespace ChupooTemplateEngine
             else if (File.Exists(path))
             {
                 view_content = File.ReadAllText(path);
+                view_content = ReplaceAssetUrlText(view_content, asset_level, view_dir);
 
                 matched = Regex.Match(view_content, @"<c\.config\slayout=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");
                 if (matched.Success)
@@ -495,7 +498,6 @@ namespace ChupooTemplateEngine
                     view_content = ReplaceFormattedDataText(view_content, data);
                 }
                 view_content = ReplaceLinkUrlText(view_content, asset_level);
-                view_content = ReplaceAssetUrlText(view_content, asset_level);
                 ParseLayout(dest, asset_level);
             }
             else
@@ -527,11 +529,11 @@ namespace ChupooTemplateEngine
                         string v_dir = view_dir + layout_name;
                         if (parent_route != null)
                         {
-                            v_dir = view_dir + parent_route + "\\" + layout_name;
+                            v_dir = view_dir + parent_route + @"\" + layout_name;
                         }
                         if (Directory.Exists(v_dir))
                         {
-                            layout_file = v_dir + "\\main.html";
+                            layout_file = v_dir + @"\main.html";
                             if (File.Exists(layout_file))
                             {
                                 string part_content = RenderViewComponent(layout_name, layout_file, parent_route);
@@ -555,10 +557,11 @@ namespace ChupooTemplateEngine
 
         private static string RenderViewComponent(string layout_name, string layout_file, string parent_route)
         {
+            FileInfo finfo = new FileInfo(layout_file);
             string content = File.ReadAllText(layout_file);
+            content = ReplaceAssetUrlText(content, "./", finfo.DirectoryName.Replace(module_dir, "").Replace('\\', '/') + "/");
             content = LoadPartialView(content);
             RenderPartialAssets(layout_name, view_dir, content, true, parent_route);
-            FileInfo finfo = new FileInfo(layout_file);
             content = RenderPartialCss(finfo.DirectoryName, content);
             content = SeparateViewStyle(content);
             content = SeparateViewScript(content);
@@ -694,7 +697,7 @@ namespace ChupooTemplateEngine
             Match matched = Regex.Match(view_content, @"<c\.css\shref=""(.*)?""(?:\s*\/)?>(?:<\/c\.css>)?");
             if (matched.Success)
             {
-                string css_path = dir + "\\" + matched.Groups[1].Value;
+                string css_path = dir + @"\" + matched.Groups[1].Value;
 
                 if (File.Exists(css_path))
                 {
@@ -714,32 +717,39 @@ namespace ChupooTemplateEngine
             string v_dir = dir;
             if (parent_route != null)
             {
-                v_dir = dir + parent_route + "\\";
+                v_dir = dir + parent_route + @"\";
             }
             else if (route[0] != '_' && Directory.Exists(dir + parent_route))
             {
-                route = "_" + route + "\\";
+                route = "_" + route + @"\";
                 is_component = true;
             }
 
             string path;
             if (is_component)
-                path = v_dir + route + "\\main.css";
+            {
+                if (route[route.Length - 1] == '\\')
+                    path = v_dir + route + @"main.css";
+                else
+                    path = v_dir + route + @"\main.css";
+            }
             else
                 path = v_dir + route + ".css";
             if (File.Exists(path))
             {
-                string content = "<style type=\"text/css\">" + File.ReadAllText(path) + "</style>";
-                v_style_code_list.Add(content);
+                string asset_url = "./" + path.Replace(module_dir, "").Replace('\\', '/');
+                string content = @"<link rel=""stylesheet"" type=""text/css"" href=""" + asset_url + @""" />" + "\n";
+                v_style_file_list.Add(content);
             }
 
             if (is_component)
-                path = v_dir + route + "\\main.js";
+                path = v_dir + route + @"\main.js";
             else
                 path = v_dir + route + ".js";
             if (File.Exists(path))
             {
-                string content = "<script language=\"javascript\">" + File.ReadAllText(path) + "</script>";
+                string asset_url = "./" + path.Replace(module_dir, "").Replace('\\', '/');
+                string content = "<script language=\"javascript\" src=\"" + asset_url + "\"></script>" + "\n";
                 v_script_code_list.Add(content);
             }
         }
@@ -761,9 +771,9 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        private static string ReplaceAssetUrlText(string content, string asset_level)
+        private static string ReplaceAssetUrlText(string content, string asset_level, string component_name = null)
         {
-            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""\./(.*?)"".*?>";
+            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""\.(..*?)"".*?>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -771,11 +781,21 @@ namespace ChupooTemplateEngine
                 if (commandType == CommandType.LAUNCH)
                     asset_level = asset_level.Substring(2);
                 else
-                    asset_level = asset_level.Substring(2) + "../modules/";
+                {
+                    asset_level = asset_level.Substring(2) + "../modules";
+                }
 
                 foreach (Match match in matches)
                 {
-                    string new_value = asset_level + match.Groups[1].Value;
+                    string new_value;
+                    if (match.Groups[1].Value[0] == '/')
+                    {
+                        new_value = "/" + asset_level + match.Groups[1].Value;
+                    }
+                    else
+                    {
+                        new_value = "/" + asset_level + "/" + component_name + match.Groups[1].Value;
+                    }
                     content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
                     newLength += new_value.Length - match.Groups[1].Length;
                 }
@@ -836,15 +856,16 @@ namespace ChupooTemplateEngine
                     return;
                 }
             }
-            layout_content = File.ReadAllText(path);
 
+            current_dir = layout_dir;
+            layout_content = File.ReadAllText(path);
             layout_content = RenderPartialLayout(layout_content);
             layout_content = RenderLayoutComponent(cfg_layout_name, layout_content);
 
             layout_content = PasteScripts(layout_content);
             layout_content = PasteStyles(layout_content);
             layout_content = ReplaceLinkUrlText(layout_content, asset_level);
-            layout_content = ReplaceAssetUrlText(layout_content, asset_level);
+            layout_content = ReplaceAssetUrlText(layout_content, asset_level, cfg_layout_name);
             string pattern = @"<c\.content(?:\s*\/)?>(?:<\/c\.content>)?";
             layout_content = ReplaceText(pattern, layout_content, view_content);
 
@@ -887,7 +908,7 @@ namespace ChupooTemplateEngine
                     }
                     else
                     {
-                        layout_file = layout_dir + layout_name + "\\main.html";
+                        layout_file = layout_dir + layout_name + @"\main.html";
                         if (File.Exists(layout_file))
                         {
                             string part_content = File.ReadAllText(layout_file);
