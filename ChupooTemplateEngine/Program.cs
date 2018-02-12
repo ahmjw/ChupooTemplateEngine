@@ -442,7 +442,7 @@ namespace ChupooTemplateEngine
                 else
                     view_content = LoadPartialView(view_content);
 
-                view_content = RenderPartialCss(route, view_content);
+                view_content = RenderPartialCss(c_dir, view_content);
                 RenderPartialAssets(route, view_dir, view_content);
                 view_content = SeparateViewStyle(view_content);
                 view_content = SeparateViewScript(view_content);
@@ -519,7 +519,8 @@ namespace ChupooTemplateEngine
             string content = File.ReadAllText(layout_file);
             content = LoadPartialView(content);
             RenderPartialAssets(layout_name, view_dir, content, true, parent_route);
-            content = RenderPartialCss(layout_name, content);
+            FileInfo finfo = new FileInfo(layout_file);
+            content = RenderPartialCss(finfo.DirectoryName, content);
             content = SeparateViewStyle(content);
             content = SeparateViewScript(content);
             return content;
@@ -649,28 +650,21 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        private static string RenderPartialCss(string route, string view_content)
+        private static string RenderPartialCss(string dir, string view_content)
         {
-            Match matched = Regex.Match(view_content, @"<c\.css\shref=""(.*)?"">");
+            Match matched = Regex.Match(view_content, @"<c\.css\shref=""(.*)?""(?:\s*\/)?>(?:<\/c\.css>)?");
             if (matched.Success)
             {
-                string css_path = view_dir + route + ".css";
+                string css_path = dir + "\\" + matched.Groups[1].Value;
 
                 if (File.Exists(css_path))
                 {
-                    string target = matched.Groups[1].Value + "/_" + route + ".css";
-                    string css_content = "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + target + "\" />";
-                    string dest_path = public_dir + target.Substring(2);
-                    FileInfo finfo = new FileInfo(dest_path);
-                    if (Directory.Exists(finfo.DirectoryName))
-                    {
-                        File.Copy(css_path, dest_path, true);
-                        view_content = SubsituteString(view_content, matched.Index, matched.Length, css_content);
-                    }
+                    string css_content = "<style type=\"text/css\">" + File.ReadAllText(css_path) + "</style>";
+                    view_content = SubsituteString(view_content, matched.Index, matched.Length, css_content);
                 }
                 else
                 {
-                    Console.WriteLine("Warning: CSS file " + route + ".css is not found");
+                    Console.WriteLine("Warning: CSS file " + matched.Groups[1].Value + " is not found");
                 }
             }
             return view_content;
@@ -798,8 +792,33 @@ namespace ChupooTemplateEngine
                 }
             }
             layout_content = File.ReadAllText(path);
+
+            layout_content = RenderPartialLayout(layout_content);
+            layout_content = RenderLayoutComponent(cfg_layout_name, layout_content);
+
+            layout_content = PasteScripts(layout_content);
+            layout_content = PasteStyles(layout_content);
+            layout_content = ReplaceLinkUrlText(layout_content, asset_level);
+            layout_content = ReplaceAssetUrlText(layout_content, asset_level);
+            string pattern = @"<c\.content(?:\s*\/)?>(?:<\/c\.content>)?";
+            layout_content = ReplaceText(pattern, layout_content, view_content);
+
+            string public_path = AppDomain.CurrentDomain.BaseDirectory + "public\\" + dest + ".html";
+            if (File.Exists(public_path))
+            {
+                File.WriteAllText(public_path, layout_content);
+                Console.WriteLine("OK: " + dest + ".html");
+            }
+            else
+            {
+                Console.WriteLine("Error: Layout " + dest + ".html is not found");
+            }
+        }
+
+        private static string RenderPartialLayout(string content)
+        {
             string pattern = @"<c\.partial\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.partial>)?";
-            MatchCollection matches = Regex.Matches(layout_content, pattern);
+            MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
                 int newLength = 0;
@@ -812,7 +831,7 @@ namespace ChupooTemplateEngine
                     {
                         string part_content = File.ReadAllText(layout_file);
                         part_content = RenderLayoutComponent(layout_name, part_content);
-                        layout_content = SubsituteString(layout_content, match.Index + newLength, match.Length, part_content);
+                        content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
                         newLength += part_content.Length - match.Length;
                     }
                     else
@@ -822,7 +841,7 @@ namespace ChupooTemplateEngine
                         {
                             string part_content = File.ReadAllText(layout_file);
                             part_content = RenderLayoutComponent(layout_name, part_content);
-                            layout_content = SubsituteString(layout_content, match.Index + newLength, match.Length, part_content);
+                            content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
                             newLength += part_content.Length - match.Length;
                         }
                         else
@@ -832,23 +851,12 @@ namespace ChupooTemplateEngine
                     }
                 }
             }
-
-            layout_content = RenderLayoutComponent(cfg_layout_name, layout_content);
-
-            layout_content = PasteScripts(layout_content);
-            layout_content = PasteStyles(layout_content);
-            layout_content = ReplaceLinkUrlText(layout_content, asset_level);
-            layout_content = ReplaceAssetUrlText(layout_content, asset_level);
-            pattern = @"<c\.content(?:\s*\/)?>(?:<\/c\.content>)?";
-            layout_content = ReplaceText(pattern, layout_content, view_content);
-
-            string public_path = AppDomain.CurrentDomain.BaseDirectory + "public\\" + dest + ".html";
-            File.WriteAllText(public_path, layout_content);
-            Console.WriteLine("OK: " + dest + ".html");
+            return content;
         }
 
         private static string RenderLayoutComponent(string name, string content, string parent_route = null)
         {
+            content = RenderPartialLayout(content);
             RenderPartialAssets(name, layout_dir, content, true, parent_route);
             content = SeparateLayoutStyle(content);
             content = SeparateLayoutScript(content);
