@@ -803,15 +803,21 @@ namespace ChupooTemplateEngine
             string pattern = @"<c\.content(?:\s*\/)?>(?:<\/c\.content>)?";
             layout_content = ReplaceText(pattern, layout_content, view_content);
 
-            string public_path = AppDomain.CurrentDomain.BaseDirectory + "public\\" + dest + ".html";
-            if (File.Exists(public_path))
+            string p_dir = "";
+            Match matched = Regex.Match(dest, "^(.*?)\\?[a-zA-Z0-9-_]+$");
+            if (matched.Success)
             {
-                File.WriteAllText(public_path, layout_content);
+                p_dir = matched.Groups[1].Value;
+            }
+            if (Directory.Exists(public_dir + p_dir))
+            {
+                string p_file = public_dir + dest + ".html";
+                File.WriteAllText(p_file, layout_content);
                 Console.WriteLine("OK: " + dest + ".html");
             }
             else
             {
-                Console.WriteLine("Error: Layout " + dest + ".html is not found");
+                Console.WriteLine("Error: Layout directory " + p_dir + " is not found");
             }
         }
 
