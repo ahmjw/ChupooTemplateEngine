@@ -39,6 +39,8 @@ namespace ChupooTemplateEngine
         private static string asset_dir;
         private static string backup_dir;
         private static string config_dir;
+        private static string current_project_name;
+        private static FileSystemWatcher watcher;
 
         private enum CommandType
         {
@@ -51,7 +53,8 @@ namespace ChupooTemplateEngine
             CLEAR,
             BROWSE,
             EDIT,
-            BACKUP
+            BACKUP,
+            LOAD_PROJECT
         }
 
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
@@ -59,37 +62,61 @@ namespace ChupooTemplateEngine
         {
             Console.WriteLine("Welcome to Chupoo View Engine's console.");
             Console.WriteLine("You can render your web design data to HTML linked-page here.");
-
-            view_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\views\\";
-            w_view_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\views";
-            layout_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\layouts\\";
-            asset_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\assets\\";
-            config_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\config\\";
-            backup_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\backups\\";
-            view_data_json_dir = AppDomain.CurrentDomain.BaseDirectory + "modules\\views_data\\";
-            public_dir = AppDomain.CurrentDomain.BaseDirectory + "public\\";
-
-            string public_route_file = config_dir + "public_routes.json";
-            if (File.Exists(public_route_file))
+            if (Properties.Settings.Default.current_project_name != null && Properties.Settings.Default.current_project_name != "")
             {
-                string public_route = File.ReadAllText(public_route_file);
-                public_routes = JObject.Parse(public_route);
-                Console.WriteLine("Public routes were loaded.");
+                LoadProject(Properties.Settings.Default.current_project_name);
             }
-            else
-                Console.WriteLine("Running without public route.");
+            Run();
+        }
 
-            FileSystemWatcher watcher = new FileSystemWatcher();
+        private static void LoadProject(string project_name)
+        {
+            if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name))
+            {
+                Console.WriteLine("Project " + project_name + " is invalid name");
+                return;
+            }
+
+            current_project_name = project_name;
+            Properties.Settings.Default.current_project_name = project_name;
+            Properties.Settings.Default.Save();
+
+            view_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\modules\\views\\";
+            w_view_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\modules\\views";
+            layout_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\modules\\layouts\\";
+            asset_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\modules\\assets\\";
+            config_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\modules\\config\\";
+            backup_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\modules\\backups\\";
+            view_data_json_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\modules\\views_data\\";
+            public_dir = AppDomain.CurrentDomain.BaseDirectory + "projects\\" + project_name + "\\public\\";
+
+            if (watcher != null)
+            {
+                watcher.EnableRaisingEvents = false;
+
+                watcher.Changed -= new FileSystemEventHandler(OnChanged);
+                watcher.Dispose();
+            }
+            watcher = new FileSystemWatcher();
             watcher.Path = w_view_dir;
             watcher.NotifyFilter = NotifyFilters.LastWrite;
             watcher.Changed += new FileSystemEventHandler(OnChanged);
             watcher.Filter = "*.*";
             watcher.IncludeSubdirectories = true;
             watcher.EnableRaisingEvents = true;
+            Console.WriteLine("Project " + current_project_name + " has loaded.");
 
-            Run();
+            string public_route_file = config_dir + "public_routes.json";
+            if (File.Exists(public_route_file))
+            {
+                string public_route = File.ReadAllText(public_route_file);
+                public_routes = JObject.Parse(public_route);
+                Console.WriteLine("Loaded using public routes.");
+            }
+            else
+                Console.WriteLine("Loaded without public routes.");
         }
-        
+
         private static bool WaitForFile(string fullPath, string short_name)
         {
             int numTries = 0;
@@ -150,7 +177,6 @@ namespace ChupooTemplateEngine
         {
             Console.Write("Chupoo$ ");
             string command = Console.ReadLine();
-
             bool ran = false;
             Match matched;
             matched = Regex.Match(command, @"^clear$");
@@ -160,6 +186,19 @@ namespace ChupooTemplateEngine
                 Console.Clear();
                 ran = true;
             }
+            matched = Regex.Match(command, @"^project\sload\s(.+?)$");
+            if (!ran && matched.Success)
+            {
+                commandType = CommandType.LOAD_PROJECT;
+                LoadProject(matched.Groups[1].Value);
+                ran = true;
+            }
+            if (!ran && current_project_name == null)
+            {
+                Console.WriteLine("No project was loaded. Please run command: project load <name>");
+                Run();
+            }
+
             matched = Regex.Match(command, @"^browse$");
             if (!ran && matched.Success)
             {
