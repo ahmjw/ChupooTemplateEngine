@@ -15,7 +15,7 @@ Console Application to build linked HTML page
 - `launch`
   Launch HTML pages on production.
 - `backup`
-  Back up data into version.
+  Back up data into a new version.
 - `project create <name>`
   Create a new project.
 - `project load <name>`
