@@ -3,7 +3,7 @@ Console Application to build linked HTML page. Make your web design more managea
 
 # Commands
 - `clear`
-  Clear console screen.
+  Clear console's screen.
 - `browse`
   Open current project to web browser.
 - `render`
