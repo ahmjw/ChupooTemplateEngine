@@ -55,7 +55,8 @@ namespace ChupooTemplateEngine
             BROWSE,
             EDIT,
             BACKUP,
-            LOAD_PROJECT
+            LOAD_PROJECT,
+            CREATE_PROJECT
         }
 
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
@@ -188,6 +189,13 @@ namespace ChupooTemplateEngine
                 Console.Clear();
                 ran = true;
             }
+            matched = Regex.Match(command, @"^project\screate\s(.+?)$");
+            if (!ran && matched.Success)
+            {
+                commandType = CommandType.CREATE_PROJECT;
+                CreateProject(matched.Groups[1].Value);
+                ran = true;
+            }
             matched = Regex.Match(command, @"^project\sload\s(.+?)$");
             if (!ran && matched.Success)
             {
@@ -304,6 +312,17 @@ namespace ChupooTemplateEngine
             if (!ran)
                 Console.WriteLine("Error: Invalid command");
             Run();
+        }
+
+        private static void CreateProject(string name)
+        {
+            Console.WriteLine("Creating project " + name + " ... please wait");
+            string r_path = AppDomain.CurrentDomain.BaseDirectory + @"resources\project_dir";
+            string new_p_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + name;
+            Directory.CreateDirectory(new_p_dir);
+            CopyDirectory(r_path, new_p_dir);
+            Console.WriteLine("Project " + name + " has successfully created");
+            LoadProject(name);
         }
 
         private static void CopyDirectory(string SourcePath, string DestinationPath)
