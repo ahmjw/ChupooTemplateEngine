@@ -171,14 +171,20 @@ namespace ChupooTemplateEngine
                 finally
                 {
                     has_changed_file = true;
-                    Console.Write("Chupoo$ ");
+                    if (current_project_name != null)
+                        Console.Write("Chupoo[" + current_project_name + "]$ ");
+                    else
+                        Console.Write("Chupoo$ ");
                 }
             }
         }
 
         private static void Run()
         {
-            Console.Write("Chupoo$ ");
+            if (current_project_name != null)
+                Console.Write("Chupoo[" + current_project_name + "]$ ");
+            else
+                Console.Write("Chupoo$ ");
             string command = Console.ReadLine();
             bool ran = false;
             Match matched;
