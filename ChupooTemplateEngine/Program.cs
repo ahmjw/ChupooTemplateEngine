@@ -508,7 +508,7 @@ namespace ChupooTemplateEngine
 
         private static string LoadPartialView(string content, string parent_route = null)
         {
-            string pattern = @"<c\.partial\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.partial>)?";
+            string pattern = @"<c\.import\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.import>)?";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -889,7 +889,7 @@ namespace ChupooTemplateEngine
 
         private static string RenderPartialLayout(string content)
         {
-            string pattern = @"<c\.partial\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.partial>)?";
+            string pattern = @"<c\.import\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.import>)?";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
