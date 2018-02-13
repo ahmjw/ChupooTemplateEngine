@@ -14,6 +14,7 @@ Console Application to build linked HTML page
 
 # Features
 - Auto-render edited HTML file.
-- Backup data on version
-- Able to combine with SCSS/LESS/SASS
-- Launch to web template production
+- Backup data on version.
+- Able to combine with SCSS/LESS/SASS.
+- Able to use component for manageable web design data.
+- Launch to web template production. Using universal HTML rendering result.
