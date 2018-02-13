@@ -1,5 +1,5 @@
 # Chupoo Template Engine
-Console Application to build linked HTML page
+Console Application to build linked HTML page. Make your web design more manageable for great production.
 
 # Commands
 - `clear`
