@@ -12,6 +12,8 @@ Console Application to build linked HTML page. Make your web design more managea
   Render a route on development mode.
 - `render -d <directory-name>`
   Render all routes in a directory on development mode.
+- `render -b <backup-version>`
+  Render backup data to HTML pages.
 - `launch`
   Launch HTML pages on production.
 - `backup`
