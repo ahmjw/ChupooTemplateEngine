@@ -13,7 +13,7 @@ Console Application to build linked HTML page. Make your web design more managea
 - `render -d <directory-name>`
   Render all routes in a directory on development mode.
 - `render -b <backup-version>`
-  Render backup data to HTML pages.
+  Render a backup data to HTML pages.
 - `launch`
   Launch HTML pages on production.
 - `backup`
