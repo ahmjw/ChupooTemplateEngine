@@ -9,59 +9,20 @@ using System.Security.Permissions;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static ChupooTemplateEngine.Command;
 
 namespace ChupooTemplateEngine
 {
     class Program
     {
-        private static string layout_dir;
-        private static string view_dir;
-        private static string view_content = "";
-        private static string cfg_layout_name = "page";
-        private static string current_route = ".temp";
-        private static string current_dir;
-        private static string public_dir;
-        private static string view_data_json_dir;
-        private static JObject public_routes;
+        public static string current_route = ".temp";
         private static string w_view_dir;
         private static bool has_changed_file = false;
-        private static CommandType commandType;
-        private static List<string> v_script_file_list = new List<string>();
-        private static List<string> v_style_file_list = new List<string>();
-        private static List<string> v_script_code_list = new List<string>();
-        private static List<string> v_style_code_list = new List<string>();
-        private static List<string> l_script_file_list = new List<string>();
-        private static List<string> l_style_file_list = new List<string>();
-        private static List<string> l_script_code_list = new List<string>();
-        private static List<string> l_style_code_list = new List<string>();
         private static string[] watcher_exts = { ".html" };
-        private static string[] asset_exts = { ".js", ".css", ".ico", ".png", ".jpeg", ".jpg", ".jpeg", ".bmp", ".svg" };
         private static string[] pic_exts = { ".ico", ".png", ".jpeg", ".jpg", ".jpeg", ".bmp", ".svg" };
-        private static string asset_dir;
-        private static string backup_dir;
-        private static string config_dir;
         private static string current_project_name;
         private static FileSystemWatcher watcher;
-        private static string module_dir;
-        private static string public_asset_dir;
-
-        private enum CommandType
-        {
-            FILE_SYSTEM_WATCHER,
-            RENDER_ALL,
-            RENDER_FILE,
-            RENDER_DIRECTORY,
-            RENDER_TEMPORARILY,
-            LAUNCH,
-            CLEAR,
-            BROWSE,
-            EDIT,
-            BACKUP,
-            LOAD_PROJECT,
-            CREATE_PROJECT,
-            RENDER_BACKUP
-        }
-
+        
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         static void Main(string[] args)
         {
@@ -84,23 +45,23 @@ namespace ChupooTemplateEngine
 
             current_project_name = project_name;
 
-            module_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\";
-            view_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\views\";
+            Directories.Module = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\";
+            Directories.View = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\views\";
             w_view_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\views";
-            layout_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\layouts\";
-            asset_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\assets\";
-            config_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\config\";
-            view_data_json_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\views_data\";
-            public_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\";
-            public_asset_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\assets\";
+            Directories.Layout = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\layouts\";
+            Directories.Asset = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\assets\";
+            Directories.Config = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\config\";
+            Directories.ViewDataJson = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\views_data\";
+            Directories.Public = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\";
+            Directories.PublicAsset = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\assets\";
 
             Console.WriteLine("Project " + current_project_name + " has loaded.");
 
-            string public_route_file = config_dir + "public_routes.json";
+            string public_route_file = Directories.Config + "public_routes.json";
             if (File.Exists(public_route_file))
             {
                 string public_route = File.ReadAllText(public_route_file);
-                public_routes = JObject.Parse(public_route);
+                Route.public_routes = JObject.Parse(public_route);
                 Console.WriteLine("Loaded using public routes.");
             }
             else
@@ -120,16 +81,16 @@ namespace ChupooTemplateEngine
             Properties.Settings.Default.current_project_name = project_name;
             Properties.Settings.Default.Save();
 
-            module_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\";
-            view_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\views\";
+            Directories.Module = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\";
+            Directories.View = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\views\";
             w_view_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\views";
-            layout_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\layouts\";
-            asset_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\assets\";
-            config_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\config\";
-            backup_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\backups\";
-            view_data_json_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\views_data\";
-            public_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\";
-            public_asset_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\assets\";
+            Directories.Layout = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\layouts\";
+            Directories.Asset = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\assets\";
+            Directories.Config = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\config\";
+            Directories.Backup = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\backups\";
+            Directories.ViewDataJson = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\views_data\";
+            Directories.Public = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\";
+            Directories.PublicAsset = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\assets\";
 
             if (watcher != null)
             {
@@ -147,11 +108,11 @@ namespace ChupooTemplateEngine
             watcher.EnableRaisingEvents = true;
             Console.WriteLine("Project " + current_project_name + " has loaded.");
 
-            string public_route_file = config_dir + "public_routes.json";
+            string public_route_file = Directories.Config + "public_routes.json";
             if (File.Exists(public_route_file))
             {
                 string public_route = File.ReadAllText(public_route_file);
-                public_routes = JObject.Parse(public_route);
+                Route.public_routes = JObject.Parse(public_route);
                 Console.WriteLine("Loaded using public routes.");
             }
             else
@@ -203,8 +164,9 @@ namespace ChupooTemplateEngine
             {
                 try
                 {
-                    ParseView(view_name, view_name);
-                    commandType = CommandType.FILE_SYSTEM_WATCHER;
+                    ViewParser viewParser = new ViewParser();
+                    viewParser.Parse(view_name, view_name);
+                    CurrentCommand = CommandType.FILE_SYSTEM_WATCHER;
                 }
                 finally
                 {
@@ -229,25 +191,22 @@ namespace ChupooTemplateEngine
             matched = Regex.Match(command, @"^clear$");
             if (!ran && matched.Success)
             {
-                commandType = CommandType.CLEAR;
+                CurrentCommand = CommandType.CLEAR;
                 Console.Clear();
-                l_style_file_list.Clear();
-                l_style_code_list.Clear();
-                v_style_file_list.Clear();
-                v_style_code_list.Clear();
+                Parser.ClearAll();
                 ran = true;
             }
             matched = Regex.Match(command, @"^project\screate\s(.+?)$");
             if (!ran && matched.Success)
             {
-                commandType = CommandType.CREATE_PROJECT;
+                CurrentCommand = CommandType.CREATE_PROJECT;
                 CreateProject(matched.Groups[1].Value);
                 ran = true;
             }
             matched = Regex.Match(command, @"^project\sload\s(.+?)$");
             if (!ran && matched.Success)
             {
-                commandType = CommandType.LOAD_PROJECT;
+                CurrentCommand = CommandType.LOAD_PROJECT;
                 LoadProject(matched.Groups[1].Value);
                 ran = true;
             }
@@ -260,15 +219,15 @@ namespace ChupooTemplateEngine
             matched = Regex.Match(command, @"^browse$");
             if (!ran && matched.Success)
             {
-                commandType = CommandType.BROWSE;
-                string path = public_dir + current_route + ".html";
+                CurrentCommand = CommandType.BROWSE;
+                string path = Directories.Public + current_route + ".html";
                 if (current_route != null)
                 {
                     if (File.Exists(path))
                         Process.Start(path);
                     else
                     {
-                        path = public_dir + "index.html";
+                        path = Directories.Public + "index.html";
                         if (File.Exists(path))
                             Process.Start(path);
                         else
@@ -280,15 +239,15 @@ namespace ChupooTemplateEngine
             matched = Regex.Match(command, @"^edit$");
             if (!ran && matched.Success)
             {
-                commandType = CommandType.EDIT;
-                string path = view_dir + current_route + ".html";
+                CurrentCommand = CommandType.EDIT;
+                string path = Directories.View + current_route + ".html";
                 if (current_route != null)
                 {
                     if (File.Exists(path))
                         Process.Start("notepad " + path);
                     else
                     {
-                        path = view_dir + "index.html";
+                        path = Directories.View + "index.html";
                         if (File.Exists(path))
                             Process.Start("notepad " + path);
                         else
@@ -300,73 +259,82 @@ namespace ChupooTemplateEngine
             matched = Regex.Match(command, @"^render$");
             if (!ran && matched.Success)
             {
-                commandType = CommandType.RENDER_ALL;
-                current_dir = view_dir;
-                l_style_file_list.Clear();
-                l_style_code_list.Clear();
-                v_style_file_list.Clear();
-                v_style_code_list.Clear();
-                ClearAssets();
-                RenderDirectoryRecursively(view_dir, "");
+                CurrentCommand = CommandType.RENDER_ALL;
+                Directories.Current = Directories.View;
+                Parser.ClearAll();
+                Asset.ClearAssets();
+                ViewParser.RenderDirectoryRecursively(Directories.View, "");
                 current_route = "index";
-                current_dir = null;
+                Directories.Current = null;
                 ran = true;
             }
             matched = Regex.Match(command, @"^launch$");
             if (!ran && matched.Success)
             {
-                commandType = CommandType.LAUNCH;
-                current_dir = view_dir;
-                ClearAssets();
-                Directory.CreateDirectory(public_asset_dir);
-                Directory.CreateDirectory(public_asset_dir + "\\local");
-                RenderDirectoryRecursively(view_dir, "");
-                LaunchAssets(asset_dir);
+                CurrentCommand = CommandType.LAUNCH;
+                LaunchEngine le = new LaunchEngine();
+                le.Run();
                 current_route = "index";
-                current_dir = null;
+                ran = true;
+            }
+            matched = Regex.Match(command, @"^launch\s-f\swordpress$");
+            if (!ran && matched.Success)
+            {
+                CurrentCommand = CommandType.LAUNCH_WORDPRESS;
+                Directories.Current = Directories.View;
+                Asset.ClearAssets();
+                Directory.CreateDirectory(Directories.PublicAsset);
+                Directory.CreateDirectory(Directories.PublicAsset + "\\local");
+                ViewParser.RenderDirectoryRecursively(Directories.View, "");
+                //LaunchAssets(Directories.asset_dir);
+                current_route = "index";
+                Directories.Current = null;
                 ran = true;
             }
             matched = Regex.Match(command, @"^backup$");
             if (!ran && matched.Success)
             {
-                commandType = CommandType.BACKUP;
-                current_dir = view_dir;
+                CurrentCommand = CommandType.BACKUP;
+                Directories.Current = Directories.View;
                 Backup();
                 current_route = "index";
-                current_dir = null;
+                Directories.Current = null;
                 ran = true;
             }
             matched = Regex.Match(command, @"^render\s-f\s(.+?)$");
             if (!ran && matched.Success)
             {
-                commandType = CommandType.RENDER_FILE;
+                CurrentCommand = CommandType.RENDER_FILE;
                 string view_name = matched.Groups[1].Value;
-                ParseView(view_name, view_name);
+                ViewParser viewParser = new ViewParser();
+                viewParser.Parse(view_name, view_name);
                 current_route = view_name;
                 ran = true;
             }
             matched = Regex.Match(command, @"^render\s-d\s(.+?)$");
             if (!ran && matched.Success)
             {
-                commandType = CommandType.RENDER_DIRECTORY;
+                CurrentCommand = CommandType.RENDER_DIRECTORY;
                 string view_name = matched.Groups[1].Value;
-                RenderDirectory(view_name);
+                ViewParser viewParser = new ViewParser();
+                viewParser.RenderDirectory(view_name);
                 current_route = view_name;
                 ran = true;
             }
             matched = Regex.Match(command, @"^render\s-t\s(.+?)$");
             if (!ran && matched.Success)
             {
-                commandType = CommandType.RENDER_TEMPORARILY;
+                CurrentCommand = CommandType.RENDER_TEMPORARILY;
                 string view_name = matched.Groups[1].Value;
-                ParseView(view_name, ".temp");
+                ViewParser viewParser = new ViewParser();
+                viewParser.Parse(view_name, ".temp");
                 current_route = ".temp";
                 ran = true;
             }
             matched = Regex.Match(command, @"^render\s-b\s(.+?)$");
             if (!ran && matched.Success)
             {
-                commandType = CommandType.RENDER_BACKUP;
+                CurrentCommand = CommandType.RENDER_BACKUP;
                 string view_name = matched.Groups[1].Value;
                 RenderBackup(view_name);
                 ran = true;
@@ -382,20 +350,20 @@ namespace ChupooTemplateEngine
             string t_dir = current_project_name + @"\modules\backups\" + name;
             LoadBackup(t_dir);
 
-            current_dir = view_dir;
-            ClearAssets();
-            RenderDirectoryRecursively(view_dir, "");
+            Directories.Current = Directories.View;
+            Asset.ClearAssets();
+            ViewParser.RenderDirectoryRecursively(Directories.View, "");
             current_route = "index";
-            current_dir = null;
+            Directories.Current = null;
 
-            string path = public_dir + current_route + ".html";
+            string path = Directories.Public + current_route + ".html";
             if (current_route != null)
             {
                 if (File.Exists(path))
                     Process.Start(path);
                 else
                 {
-                    path = public_dir + "index.html";
+                    path = Directories.Public + "index.html";
                     if (File.Exists(path))
                         Process.Start(path);
                     else
@@ -434,7 +402,7 @@ namespace ChupooTemplateEngine
 
         private static void Backup()
         {
-            string[] dirs = Directory.GetDirectories(backup_dir);
+            string[] dirs = Directory.GetDirectories(Directories.Backup);
             string version = "0.0.1";
             if (dirs.Length > 0)
             {
@@ -443,778 +411,15 @@ namespace ChupooTemplateEngine
                 int last_version = Convert.ToInt32(dinfo.Name.Replace(".", ""));
                 version = "0.0." + (last_version + 1);
             }
-            string dir = backup_dir + version;
+            string dir = Directories.Backup + version;
             if (!Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
-            CopyDirectory(view_dir, dir + @"\views\");
-            CopyDirectory(layout_dir, dir + @"\layouts\");
-            CopyDirectory(config_dir, dir + @"\config\");
-            CopyDirectory(view_data_json_dir, dir + @"\views_data\");
-            CopyDirectory(asset_dir, dir + @"\assets\");
+            CopyDirectory(Directories.View, dir + @"\views\");
+            CopyDirectory(Directories.Layout, dir + @"\layouts\");
+            CopyDirectory(Directories.Config, dir + @"\config\");
+            CopyDirectory(Directories.ViewDataJson, dir + @"\views_data\");
+            CopyDirectory(Directories.Asset, dir + @"\assets\");
             Console.WriteLine("Backed up to version " + version);
-        }
-
-        private static void ClearAssets()
-        {
-            string[] public_dirs = Directory.GetDirectories(public_dir);
-            foreach (string dir in public_dirs)
-            {
-                DirectoryInfo dinfo = new DirectoryInfo(dir);
-                if (!Directory.Exists(view_dir + dinfo.Name))
-                {
-                    Directory.Delete(dir, true);
-                }
-            }
-            string[] public_files = Directory.GetFiles(public_dir);
-            foreach (string file in public_files)
-            {
-                FileInfo finfo = new FileInfo(file);
-                if (!File.Exists(view_dir + finfo.Name))
-                {
-                    File.Delete(file);
-                }
-            }
-        }
-
-        private static void LaunchAssets(string path)
-        {
-            string[] dirs = Directory.GetDirectories(path);
-            string path_stage;
-            foreach (string dir in dirs)
-            {
-                path_stage = dir.Replace(asset_dir, "");
-
-
-                if (!Directory.Exists(public_asset_dir + path_stage))
-                    Directory.CreateDirectory(public_asset_dir + path_stage);
-
-                string[] subdirs = Directory.GetDirectories(path);
-                if (subdirs.Length > 0)
-                {
-                    LaunchAssets(dir);
-                }
-            }
-            string[] files = Directory.GetFiles(path);
-            path_stage = path.Replace(asset_dir, "");
-            foreach (string file in files)
-            {
-                FileInfo finfo = new FileInfo(file);
-                if (!asset_exts.Any(finfo.Extension.Equals)) continue;
-                File.Copy(file, public_asset_dir + path_stage + @"\" + finfo.Name, true);
-            }
-        }
-
-        private static void RenderDirectory(string route)
-        {
-            string path = view_dir + route;
-            if (!Directory.Exists(path))
-            {
-                Console.WriteLine("Error: " + route + " directory is not found");
-                return;
-            }
-            string[] files = Directory.GetFiles(path);
-            foreach (string file in files)
-            {
-                FileInfo finfo = new FileInfo(file);
-                if (finfo.Name[0] == '_' || finfo.Extension != ".html") continue;
-                string path_stage = file.Replace(view_dir, "").Replace(".html", "");
-                ParseView(path_stage, path_stage);
-            }
-        }
-
-        private static void RenderDirectoryRecursively(string path, string asset_level)
-        {
-            string[] dirs = Directory.GetDirectories(path);
-            foreach (string dir in dirs)
-            {
-                DirectoryInfo dinfo = new DirectoryInfo(dir);
-                if (dinfo.Name[0] == '_') continue;
-                string path_stage = dir.Replace(current_dir, "");
-                if (!Directory.Exists(public_dir + path_stage))
-                    Directory.CreateDirectory(public_dir + path_stage);
-
-                string[] subdirs = Directory.GetDirectories(path);
-                if (subdirs.Length > 0)
-                {
-                    string old_asset_level = asset_level;
-                    RenderDirectoryRecursively(dir, asset_level + "../");
-                    asset_level = old_asset_level;
-                }
-            }
-            string[] files = Directory.GetFiles(path);
-            foreach (string file in files)
-            {
-                FileInfo finfo = new FileInfo(file);
-                if (finfo.Name[0] == '_' || finfo.Extension != ".html") continue;
-                string path_stage = file.Replace(current_dir, "").Replace(".html", "");
-                ParseView(path_stage, path_stage);
-            }
-        }
-
-        private static string GetAssetLeveling(string route)
-        {
-            string level = "./";
-            int length = route.Split('\\').Length - 1;
-            for (int i = 0; i < length; i++)
-            {
-                level += "../";
-            }
-            return level;
-        }
-
-        private static void ParseView(string route, string dest)
-        {
-            string asset_level = GetAssetLeveling(route);
-            string path = view_dir + route + ".html";
-            Match matched = Regex.Match(route, @"^(.*?)\/?_[a-zA-Z0-9_-]+$");
-            if (matched.Success)
-            {
-                if (commandType == CommandType.FILE_SYSTEM_WATCHER)
-                {
-                    string dir_route = Regex.Replace(path.Replace(view_dir, ""), @"^(.*?)[a-zA-Z0-9_-]+\.html$", "$1");
-                    RenderDirectory(dir_route);
-                }
-                else
-                    Console.WriteLine("Skip file " + route + ".html");
-            }
-            else if (File.Exists(path))
-            {
-                view_content = File.ReadAllText(path);
-                view_content = ReplaceAssetUrlText(view_content, asset_level, view_dir);
-
-                matched = Regex.Match(view_content, @"<c\.config\slayout=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");
-                if (matched.Success)
-                {
-                    cfg_layout_name = matched.Groups[1].Value;
-                    view_content = SubsituteString(view_content, matched.Index, matched.Length, "");
-                }
-                else
-                    cfg_layout_name = "page";
-
-                string c_dir = view_dir + "_" + route;
-                if (Directory.Exists(c_dir))
-                    view_content = LoadPartialView(view_content, "_" + route);
-                else
-                    view_content = LoadPartialView(view_content);
-
-                view_content = RenderPartialCss(c_dir, view_content);
-                RenderPartialAssets(route, view_dir, view_content);
-                view_content = SeparateViewStyle(view_content);
-                view_content = SeparateViewScript(view_content);
-
-                string data_path = view_data_json_dir + route + ".json";
-                if (File.Exists(data_path))
-                {
-                    Console.WriteLine("Rendering " + route + ".html JSON data ...");
-                    string json_str = File.ReadAllText(data_path);
-                    JObject data = JObject.Parse(json_str);
-                    view_content = ReplaceFormattedDataText(view_content, data);
-                }
-                view_content = ReplaceLinkUrlText(view_content, asset_level);
-                ParseLayout(dest, asset_level);
-            }
-            else
-            {
-                Console.WriteLine("View file is not found: " + route + ".html");
-            }
-        }
-
-        private static string LoadPartialView(string content, string parent_route = null)
-        {
-            string pattern = @"<c\.import\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.import>)?";
-            MatchCollection matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                foreach (Match match in matches)
-                {
-                    string layout_name = "_" + match.Groups[1].Value;
-                    string layout_file = view_dir + layout_name + ".html";
-
-                    if (File.Exists(layout_file))
-                    {
-                        string part_content = RenderViewComponent(layout_name, layout_file, parent_route);
-                        content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
-                        newLength += part_content.Length - match.Length;
-                    }
-                    else
-                    {
-                        string v_dir = view_dir + layout_name;
-                        if (parent_route != null)
-                        {
-                            v_dir = view_dir + parent_route + @"\" + layout_name;
-                        }
-                        if (Directory.Exists(v_dir))
-                        {
-                            layout_file = v_dir + @"\main.html";
-                            if (File.Exists(layout_file))
-                            {
-                                string part_content = RenderViewComponent(layout_name, layout_file, parent_route);
-                                content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
-                                newLength += part_content.Length - match.Length;
-                            }
-                            else
-                            {
-                                Console.WriteLine("Warning: Partial view " + layout_name + "/main.html is not found");
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("Warning: Partial view " + layout_name + ".html is not found");
-                        }
-                    }
-                }
-            }
-            return content;
-        }
-
-        private static string RenderViewComponent(string layout_name, string layout_file, string parent_route)
-        {
-            FileInfo finfo = new FileInfo(layout_file);
-            string content = File.ReadAllText(layout_file);
-            content = ReplaceAssetUrlText(content, "./", finfo.DirectoryName.Replace(module_dir, "").Replace('\\', '/') + "/");
-            content = LoadPartialView(content);
-            RenderPartialAssets(layout_name, view_dir, content, true, parent_route);
-            content = RenderPartialCss(finfo.DirectoryName, content);
-            content = SeparateViewStyle(content);
-            content = SeparateViewScript(content);
-            return content;
-        }
-
-        private static string SeparateViewScript(string content)
-        {
-            string pattern;
-            MatchCollection matches;
-            pattern = @"<script.*?></script>";
-            matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                foreach (Match match in matches)
-                {
-                    v_script_file_list.Add(match.Value);
-                    content = SubsituteString(content, match.Index + newLength, match.Length, "");
-                    newLength += -match.Length;
-                }
-            }
-            pattern = @"<script.*?>[\w\W]*?</script>";
-            matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                foreach (Match match in matches)
-                {
-                    v_script_code_list.Add(match.Value);
-                    content = SubsituteString(content, match.Index + newLength, match.Length, "");
-                    newLength += -match.Length;
-                }
-            }
-            return content;
-        }
-
-        private static string SeparateLayoutScript(string content)
-        {
-            string pattern;
-            MatchCollection matches;
-            pattern = @"<script.*?></script>";
-            matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                foreach (Match match in matches)
-                {
-                    l_script_file_list.Add(match.Value);
-                    content = SubsituteString(content, match.Index + newLength, match.Length, "");
-                    newLength += -match.Length;
-                }
-            }
-            pattern = @"<script.*?>[\w\W]*?</script>";
-            matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                foreach (Match match in matches)
-                {
-                    l_script_code_list.Add(match.Value);
-                    content = SubsituteString(content, match.Index + newLength, match.Length, "");
-                    newLength += -match.Length;
-                }
-            }
-            return content;
-        }
-
-        private static string SeparateViewStyle(string content)
-        {
-            string pattern;
-            MatchCollection matches;
-            pattern = @"<link.*?rel=""stylesheet"".*?>";
-            matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                foreach (Match match in matches)
-                {
-                    v_style_file_list.Add(match.Value);
-                    content = SubsituteString(content, match.Index + newLength, match.Length, "");
-                    newLength += -match.Length;
-                }
-            }
-            pattern = @"<style.*?>[\w\W]*?</style>";
-            matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                foreach (Match match in matches)
-                {
-                    v_style_code_list.Add(match.Value);
-                    content = SubsituteString(content, match.Index + newLength, match.Length, "");
-                    newLength += -match.Length;
-                }
-            }
-            return content;
-        }
-
-        private static string SeparateLayoutStyle(string content)
-        {
-            string pattern;
-            MatchCollection matches;
-            pattern = @"<link.*?rel=""stylesheet"".*?>";
-            matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                foreach (Match match in matches)
-                {
-                    l_style_file_list.Add(match.Value);
-                    content = SubsituteString(content, match.Index + newLength, match.Length, "");
-                    newLength += -match.Length;
-                }
-            }
-            pattern = @"<style.*?>[\w\W]*?</style>";
-            matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                foreach (Match match in matches)
-                {
-                    l_style_code_list.Add(match.Value);
-                    content = SubsituteString(content, match.Index + newLength, match.Length, "");
-                    newLength += -match.Length;
-                }
-            }
-            return content;
-        }
-
-        private static string RenderPartialCss(string dir, string view_content)
-        {
-            Match matched = Regex.Match(view_content, @"<c\.css\shref=""(.*)?""(?:\s*\/)?>(?:<\/c\.css>)?");
-            if (matched.Success)
-            {
-                string css_path = dir + @"\" + matched.Groups[1].Value;
-
-                if (File.Exists(css_path))
-                {
-                    string css_content = "<style type=\"text/css\">" + File.ReadAllText(css_path) + "</style>";
-                    view_content = SubsituteString(view_content, matched.Index, matched.Length, css_content);
-                }
-                else
-                {
-                    Console.WriteLine("Warning: CSS file " + matched.Groups[1].Value + " is not found");
-                }
-            }
-            return view_content;
-        }
-
-        private static void RenderPartialAssets(string route, string dir, string view_content, bool is_component = false, string parent_route = null)
-        {
-            string v_dir = dir;
-            if (parent_route != null)
-            {
-                v_dir = dir + parent_route + @"\";
-            }
-            else if (route[0] != '_' && Directory.Exists(dir + parent_route))
-            {
-                route = "_" + route + @"\";
-                is_component = true;
-            }
-
-            string path;
-            if (is_component)
-            {
-                if (route[route.Length - 1] == '\\')
-                    path = v_dir + route + @"main.css";
-                else
-                    path = v_dir + route + @"\main.css";
-            }
-            else
-                path = v_dir + route + ".css";
-            if (File.Exists(path))
-            {
-                string asset_url = "./" + path.Replace(module_dir, "").Replace('\\', '/');
-                string content = @"<link rel=""stylesheet"" type=""text/css"" href=""" + asset_url + @""" />" + "\n";
-                v_style_file_list.Add(content);
-            }
-
-            if (is_component)
-                path = v_dir + route + @"\main.js";
-            else
-                path = v_dir + route + ".js";
-            if (File.Exists(path))
-            {
-                string asset_url = "./" + path.Replace(module_dir, "").Replace('\\', '/');
-                string content = "<script language=\"javascript\" src=\"" + asset_url + "\"></script>" + "\n";
-                v_script_code_list.Add(content);
-            }
-        }
-
-        private static string ReplaceFormattedDataText(string content, JObject data)
-        {
-            string pattern = @"\{\{([^\.][a-zA-Z0-9_-]+)\}\}";
-            MatchCollection matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                foreach (Match match in matches)
-                {
-                    string new_value = data[match.Groups[1].Value] + "";
-                    content = SubsituteString(content, match.Index + newLength, match.Length, new_value);
-                    newLength += new_value.Length - match.Length;
-                }
-            }
-            return content;
-        }
-
-        private static string ReplaceAssetUrlText(string content, string asset_level, string component_name = null)
-        {
-            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""\.(..*?)"".*?>";
-            MatchCollection matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                if (commandType == CommandType.LAUNCH)
-                {
-                    asset_level = asset_level.Substring(2);
-                }
-                else if (commandType == CommandType.RENDER_BACKUP)
-                {
-                    asset_level = asset_level.Substring(2) + "..";
-                }
-                else
-                {
-                    asset_level = asset_level.Substring(2) + "../modules";
-                }
-
-                foreach (Match match in matches)
-                {
-                    string new_value = commandType != CommandType.LAUNCH ? "/" : "";
-                    if (match.Groups[1].Value[0] == '/')
-                    {
-                        if (commandType != CommandType.LAUNCH)
-                            new_value += asset_level + match.Groups[1].Value;
-                        else
-                        {
-                            if (match.Groups[1].Length >= 6 && match.Groups[1].Value.Substring(1, 6) == "assets")
-                            {
-                                new_value += asset_level + match.Groups[1].Value;
-                            }
-                            else
-                            {
-                                string view_asset = asset_level + match.Groups[1].Value;
-                                new_value += LaunchViewAssets(view_asset);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (commandType != CommandType.LAUNCH)
-                        {
-                            new_value += asset_level + "/" + component_name + match.Groups[1].Value;
-                        }
-                        else
-                        {
-                            string view_asset = asset_level + "/" + component_name + match.Groups[1].Value;
-                            new_value += LaunchViewAssets(view_asset);
-                        }
-                    }
-                    content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
-                    newLength += new_value.Length - match.Groups[1].Length;
-                }
-            }
-            return content;
-        }
-
-        private static string LaunchViewAssets(string asset)
-        {
-            asset = asset.Replace("//", "/");
-            string src_path = module_dir + asset.Replace("/", "\\");
-            if (File.Exists(src_path))
-            {
-                FileInfo finfo = new FileInfo(src_path);
-                Console.WriteLine("Copying from HTML " + asset);
-
-                string dst_file_name = CalculateMD5Hash(asset) + finfo.Extension;
-                string dst_path = public_asset_dir + "local\\" + dst_file_name;
-
-                if (!File.Exists(dst_path))
-                {
-                    if (finfo.Extension == ".css")
-                    {
-                        string content = File.ReadAllText(src_path);
-                        MatchCollection matches = Regex.Matches(content, @"url\s*\(\s*(.*?)\s*\)");
-                        int newLength = 0;
-                        foreach (Match match in matches)
-                        {
-                            string c_name = match.Groups[1].Value.Replace("/", "\\");
-                            src_path = finfo.DirectoryName + "\\" + c_name;
-                            string i_dst_file_name = c_name;
-                            if (File.Exists(src_path))
-                            {
-                                FileInfo finfo2 = new FileInfo(c_name);
-                                string d_name = finfo2.DirectoryName.Replace(module_dir, "") + "\\" + finfo2.Name;
-                                i_dst_file_name = CalculateMD5Hash(d_name) + finfo2.Extension;
-                                string i_dst_path = public_asset_dir + "local\\" + i_dst_file_name;
-                                if (!File.Exists(i_dst_path))
-                                {
-                                    Console.WriteLine("Copying from CSS " + asset);
-                                    File.Copy(src_path, i_dst_path);
-                                }
-                            }
-                            string new_value = i_dst_file_name;
-                            content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
-                            newLength += new_value.Length - match.Groups[1].Length;
-                        }
-                        File.WriteAllText(dst_path, content);
-                    }
-                    else
-                        File.Copy(src_path, dst_path);
-                }
-                return "/assets/local/" + dst_file_name;
-            }
-            return asset;
-        }
-
-        private static string CalculateMD5Hash(string input)
-        {
-            System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
-            byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
-            byte[] hash = md5.ComputeHash(inputBytes);
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < hash.Length; i++)
-            {
-                sb.Append(hash[i].ToString("X2"));
-            }
-            return sb.ToString();
-        }
-
-        private static string ReplaceLinkUrlText(string content, string asset_level)
-        {
-            string pattern = @"<a.*?href=""\./(.*?)"".*?>";
-            MatchCollection matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                asset_level = asset_level.Substring(2);
-                foreach (Match match in matches)
-                {
-                    string url_target = public_routes != null && public_routes.Count > 0 && public_routes[match.Groups[1].Value] != null ? public_routes[match.Groups[1].Value] + "" : "index";
-                    string new_value = asset_level + url_target + ".html";
-                    content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
-                    newLength += new_value.Length - match.Groups[1].Length;
-                }
-            }
-            return content;
-        }
-
-        private static string ReplaceText(string pattern, string content, string replacement)
-        {
-            Match matched = Regex.Match(content, pattern);
-            if (matched.Success)
-            {
-                content = SubsituteString(content, matched.Index, matched.Length, replacement);
-            }
-            return content;
-        }
-
-        private static string ReplaceAllText(string pattern, string content, string replacement)
-        {
-            MatchCollection matches = Regex.Matches(content, pattern);
-            int newLength = 0;
-            foreach(Match match in matches)
-            {
-                content += SubsituteString(content, match.Index, match.Length, replacement);
-                //newLength += new_value.Length - match.Groups[1].Length;
-            }
-            return content;
-        }
-
-        private static void ParseLayout(string dest, string asset_level)
-        {
-            if (dest[0] == '_')
-            {
-                Console.WriteLine("Rendering route " + dest + " was skipped");
-                return;
-            }
-
-            string layout_content = "";
-            string path = layout_dir + cfg_layout_name + ".html";
-            if (!File.Exists(path)) {
-                Console.WriteLine("Warning: " + dest + " >> Layout file is not found: " + cfg_layout_name + ".html");
-                cfg_layout_name = "page";
-                path = layout_dir + cfg_layout_name + ".html";
-                if (File.Exists(path))
-                {
-                    Console.WriteLine("\tChange layout to " + cfg_layout_name + ".html");
-                }
-                else
-                {
-                    Console.WriteLine("Warning: " + dest + " >> Layout file is not found: " + cfg_layout_name + ".html");
-                    return;
-                }
-            }
-
-            current_dir = layout_dir;
-            layout_content = File.ReadAllText(path);
-            layout_content = RenderPartialLayout(layout_content);
-            layout_content = RenderLayoutComponent(cfg_layout_name, layout_content);
-
-            layout_content = PasteScripts(layout_content);
-            layout_content = PasteStyles(layout_content);
-            layout_content = ReplaceLinkUrlText(layout_content, asset_level);
-            layout_content = ReplaceAssetUrlText(layout_content, asset_level, cfg_layout_name);
-            string pattern = @"<c\.content(?:\s*\/)?>(?:<\/c\.content>)?";
-            layout_content = ReplaceText(pattern, layout_content, view_content);
-
-            string p_dir = "";
-            Match matched = Regex.Match(dest, "^(.*?)\\?[a-zA-Z0-9-_]+$");
-            if (matched.Success)
-            {
-                p_dir = matched.Groups[1].Value;
-            }
-            if (Directory.Exists(public_dir + p_dir))
-            {
-                string p_file = public_dir + dest + ".html";
-                File.WriteAllText(p_file, layout_content);
-                Console.WriteLine("OK: " + dest + ".html");
-            }
-            else
-            {
-                Console.WriteLine("Error: Layout directory " + p_dir + " is not found");
-            }
-        }
-
-        private static string RenderPartialLayout(string content)
-        {
-            string pattern = @"<c\.import\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.import>)?";
-            MatchCollection matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                foreach (Match match in matches)
-                {
-                    string layout_name = "_" + match.Groups[1].Value;
-                    string layout_file = layout_dir + layout_name + ".html";
-
-                    if (File.Exists(layout_file))
-                    {
-                        string part_content = File.ReadAllText(layout_file);
-                        part_content = RenderLayoutComponent(layout_name, part_content);
-                        content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
-                        newLength += part_content.Length - match.Length;
-                    }
-                    else
-                    {
-                        layout_file = layout_dir + layout_name + @"\main.html";
-                        if (File.Exists(layout_file))
-                        {
-                            string part_content = File.ReadAllText(layout_file);
-                            part_content = RenderLayoutComponent(layout_name, part_content);
-                            content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
-                            newLength += part_content.Length - match.Length;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Warning: Partial layout " + layout_name + ".html is not found");
-                        }
-                    }
-                }
-            }
-            return content;
-        }
-
-        private static string RenderLayoutComponent(string name, string content, string parent_route = null)
-        {
-            content = RenderPartialLayout(content);
-            RenderPartialAssets(name, layout_dir, content, true, parent_route);
-            content = SeparateLayoutStyle(content);
-            content = SeparateLayoutScript(content);
-            return content;
-        }
-
-        private static string PasteStyles(string content)
-        {
-            Match matched = Regex.Match(content, @"</head>[\w\W]*?<body.*?>");
-            if (matched.Success)
-            {
-                string appended = "";
-                foreach (string style in l_style_file_list)
-                    appended += style;
-                foreach (string style in v_style_file_list)
-                    appended += style;
-                string new_content = appended + matched.Value;
-                content = SubsituteString(content, matched.Index, matched.Length, new_content);
-            }
-            matched = Regex.Match(content, @"</head>[\w\W]*?<body.*?>");
-            if (matched.Success)
-            {
-                string appended = "";
-                foreach (string style in v_style_code_list)
-                    appended += style;
-                foreach (string style in l_style_code_list)
-                    appended += style;
-                string new_content = appended + matched.Value;
-                content = SubsituteString(content, matched.Index, matched.Length, new_content);
-            }
-            l_style_file_list.Clear();
-            l_style_code_list.Clear();
-            v_style_file_list.Clear();
-            v_style_code_list.Clear();
-            return content;
-        }
-
-        private static string PasteScripts(string content)
-        {
-            Match matched = Regex.Match(content, @"</body>[\w\W]*?</html>");
-            if (matched.Success)
-            {
-                string appended = "";
-                foreach (string script in l_script_file_list)
-                    appended += script;
-                foreach (string script in v_script_file_list)
-                    appended += script;
-                string new_content = appended + matched.Value;
-                content = SubsituteString(content, matched.Index, matched.Length, new_content);
-            }
-            matched = Regex.Match(content, @"</body>[\w\W]*?</html>");
-            if (matched.Success)
-            {
-                string appended = "";
-                foreach (string script in l_script_code_list)
-                    appended += script;
-                foreach (string script in v_script_code_list)
-                    appended += script;
-                string new_content = appended + matched.Value;
-                content = SubsituteString(content, matched.Index, matched.Length, new_content);
-            }
-            l_script_file_list.Clear();
-            l_script_code_list.Clear();
-            v_script_file_list.Clear();
-            v_script_code_list.Clear();
-            return content;
-        }
-
-        public static string SubsituteString(string OriginalStr, int index, int length, string subsituteStr)
-        {
-            return new StringBuilder(OriginalStr).Remove(index, length).Insert(index, subsituteStr).ToString();
         }
     }
 }
