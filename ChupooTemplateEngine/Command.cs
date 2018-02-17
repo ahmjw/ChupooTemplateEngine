@@ -17,8 +17,7 @@
             BACKUP,
             LOAD_PROJECT,
             CREATE_PROJECT,
-            RENDER_BACKUP,
-            LAUNCH_WORDPRESS
+            RENDER_BACKUP
         }
     }
 }

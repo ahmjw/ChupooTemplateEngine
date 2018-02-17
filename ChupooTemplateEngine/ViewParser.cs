@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using ChupooTemplateEngine.ViewParsers;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,13 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static ChupooTemplateEngine.Command;
 
 namespace ChupooTemplateEngine
 {
-    class ViewParser : Parser
+    abstract class ViewParser : Parser
     {
-        private string GetAssetLeveling(string route)
+        public abstract void Parse(string route, string dest);
+
+        protected string GetAssetLeveling(string route)
         {
             string level = "./";
             int length = route.Split('\\').Length - 1;
@@ -66,70 +68,12 @@ namespace ChupooTemplateEngine
                 FileInfo finfo = new FileInfo(file);
                 if (finfo.Name[0] == '_' || finfo.Extension != ".html") continue;
                 string path_stage = file.Replace(Directories.Current, "").Replace(".html", "");
-                ViewParser viewParser = new ViewParser();
+                HtmlTemplate viewParser = new HtmlTemplate();
                 viewParser.Parse(path_stage, path_stage);
             }
         }
 
-        public void Parse(string route, string dest)
-        {
-            string asset_level = GetAssetLeveling(route);
-            string path = Directories.View + route + ".html";
-            Match matched = Regex.Match(route, @"^(.*?)\/?_[a-zA-Z0-9_-]+$");
-            if (matched.Success)
-            {
-                if (CurrentCommand == CommandType.FILE_SYSTEM_WATCHER)
-                {
-                    string dir_route = Regex.Replace(path.Replace(Directories.View, ""), @"^(.*?)[a-zA-Z0-9_-]+\.html$", "$1");
-                    RenderDirectory(dir_route);
-                }
-                else
-                    Console.WriteLine("Skip file " + route + ".html");
-            }
-            else if (File.Exists(path))
-            {
-                view_content = File.ReadAllText(path);
-                view_content = ReplaceAssetUrlText(view_content, asset_level, Directories.View);
-
-                matched = Regex.Match(view_content, @"<c\.config\slayout=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");
-                if (matched.Success)
-                {
-                    cfg_layout_name = matched.Groups[1].Value;
-                    view_content = SubsituteString(view_content, matched.Index, matched.Length, "");
-                }
-                else
-                    cfg_layout_name = "page";
-
-                string c_dir = Directories.View + "_" + route;
-                if (Directory.Exists(c_dir))
-                    view_content = LoadPartialView(view_content, "_" + route);
-                else
-                    view_content = LoadPartialView(view_content);
-
-                view_content = RenderPartialCss(c_dir, view_content);
-                RenderPartialAssets(route, Directories.View, view_content);
-                view_content = SeparateViewStyle(view_content);
-                view_content = SeparateViewScript(view_content);
-
-                string data_path = Directories.ViewDataJson + route + ".json";
-                if (File.Exists(data_path))
-                {
-                    Console.WriteLine("Rendering " + route + ".html JSON data ...");
-                    string json_str = File.ReadAllText(data_path);
-                    JObject data = JObject.Parse(json_str);
-                    view_content = ReplaceFormattedDataText(view_content, data);
-                }
-                view_content = ReplaceLinkUrlText(view_content, asset_level);
-                LayoutParser layoutParser = new LayoutParser();
-                layoutParser.ParseLayout(dest, asset_level);
-            }
-            else
-            {
-                Console.WriteLine("View file is not found: " + route + ".html");
-            }
-        }
-
-        private string SeparateViewStyle(string content)
+        protected string SeparateViewStyle(string content)
         {
             string pattern;
             MatchCollection matches;
@@ -160,7 +104,7 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        private string SeparateViewScript(string content)
+        protected string SeparateViewScript(string content)
         {
             string pattern;
             MatchCollection matches;
@@ -191,7 +135,7 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        private string RenderPartialCss(string dir, string view_content)
+        protected string RenderPartialCss(string dir, string view_content)
         {
             Match matched = Regex.Match(view_content, @"<c\.css\shref=""(.*)?""(?:\s*\/)?>(?:<\/c\.css>)?");
             if (matched.Success)
@@ -211,7 +155,7 @@ namespace ChupooTemplateEngine
             return view_content;
         }
 
-        private string ReplaceFormattedDataText(string content, JObject data)
+        protected string ReplaceFormattedDataText(string content, JObject data)
         {
             string pattern = @"\{\{([^\.][a-zA-Z0-9_-]+)\}\}";
             MatchCollection matches = Regex.Matches(content, pattern);
@@ -228,7 +172,7 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        private string RenderViewComponent(string layout_name, string layout_file, string parent_route)
+        protected string RenderViewComponent(string layout_name, string layout_file, string parent_route)
         {
             FileInfo finfo = new FileInfo(layout_file);
             string content = File.ReadAllText(layout_file);
@@ -241,7 +185,7 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        private string LoadPartialView(string content, string parent_route = null)
+        protected string LoadPartialView(string content, string parent_route = null)
         {
             string pattern = @"<c\.import\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.import>)?";
             MatchCollection matches = Regex.Matches(content, pattern);

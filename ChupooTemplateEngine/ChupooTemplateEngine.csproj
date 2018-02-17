@@ -53,6 +53,8 @@
     <Compile Include="LaunchEngine.cs" />
     <Compile Include="Layout.cs" />
     <Compile Include="LayoutParser.cs" />
+    <Compile Include="LayoutParsers\HtmlTemplate.cs" />
+    <Compile Include="LayoutParsers\Wordpress.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -63,6 +65,8 @@
     </Compile>
     <Compile Include="Route.cs" />
     <Compile Include="ViewParser.cs" />
+    <Compile Include="ViewParsers\HtmlTemplate.cs" />
+    <Compile Include="ViewParsers\Wordpress.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

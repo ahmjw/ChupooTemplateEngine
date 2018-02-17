@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using ChupooTemplateEngine.ViewParsers;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -164,7 +165,7 @@ namespace ChupooTemplateEngine
             {
                 try
                 {
-                    ViewParser viewParser = new ViewParser();
+                    HtmlTemplate viewParser = new HtmlTemplate();
                     viewParser.Parse(view_name, view_name);
                     CurrentCommand = CommandType.FILE_SYSTEM_WATCHER;
                 }
@@ -273,22 +274,17 @@ namespace ChupooTemplateEngine
             {
                 CurrentCommand = CommandType.LAUNCH;
                 LaunchEngine le = new LaunchEngine();
-                le.Run();
+                le.Run(LaunchEngine.LaunchTypeEnum.HTML_TEMPLATE);
                 current_route = "index";
                 ran = true;
             }
             matched = Regex.Match(command, @"^launch\s-f\swordpress$");
             if (!ran && matched.Success)
             {
-                CurrentCommand = CommandType.LAUNCH_WORDPRESS;
-                Directories.Current = Directories.View;
-                Asset.ClearAssets();
-                Directory.CreateDirectory(Directories.PublicAsset);
-                Directory.CreateDirectory(Directories.PublicAsset + "\\local");
-                ViewParser.RenderDirectoryRecursively(Directories.View, "");
-                //LaunchAssets(Directories.asset_dir);
+                CurrentCommand = CommandType.LAUNCH;
+                LaunchEngine le = new LaunchEngine();
+                le.Run(LaunchEngine.LaunchTypeEnum.WORDPRESS);
                 current_route = "index";
-                Directories.Current = null;
                 ran = true;
             }
             matched = Regex.Match(command, @"^backup$");
@@ -306,7 +302,7 @@ namespace ChupooTemplateEngine
             {
                 CurrentCommand = CommandType.RENDER_FILE;
                 string view_name = matched.Groups[1].Value;
-                ViewParser viewParser = new ViewParser();
+                HtmlTemplate viewParser = new HtmlTemplate();
                 viewParser.Parse(view_name, view_name);
                 current_route = view_name;
                 ran = true;
@@ -316,7 +312,7 @@ namespace ChupooTemplateEngine
             {
                 CurrentCommand = CommandType.RENDER_DIRECTORY;
                 string view_name = matched.Groups[1].Value;
-                ViewParser viewParser = new ViewParser();
+                HtmlTemplate viewParser = new HtmlTemplate();
                 viewParser.RenderDirectory(view_name);
                 current_route = view_name;
                 ran = true;
@@ -326,7 +322,7 @@ namespace ChupooTemplateEngine
             {
                 CurrentCommand = CommandType.RENDER_TEMPORARILY;
                 string view_name = matched.Groups[1].Value;
-                ViewParser viewParser = new ViewParser();
+                HtmlTemplate viewParser = new HtmlTemplate();
                 viewParser.Parse(view_name, ".temp");
                 current_route = ".temp";
                 ran = true;

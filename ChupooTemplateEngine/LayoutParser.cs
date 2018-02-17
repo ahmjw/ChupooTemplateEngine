@@ -8,9 +8,11 @@ using System.Threading.Tasks;
 
 namespace ChupooTemplateEngine
 {
-    class LayoutParser : Parser
+    abstract class LayoutParser : Parser
     {
-        private string SeparateLayoutStyle(string content)
+        public abstract void Parse(string dest, string asset_level);
+
+        protected string SeparateLayoutStyle(string content)
         {
             string pattern;
             MatchCollection matches;
@@ -41,63 +43,7 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        public void ParseLayout(string dest, string asset_level)
-        {
-            if (dest[0] == '_')
-            {
-                Console.WriteLine("Rendering route " + dest + " was skipped");
-                return;
-            }
-
-            string layout_content = "";
-            string path = Directories.Layout + cfg_layout_name + ".html";
-            if (!File.Exists(path))
-            {
-                Console.WriteLine("Warning: " + dest + " >> Layout file is not found: " + cfg_layout_name + ".html");
-                cfg_layout_name = "page";
-                path = Directories.Layout + cfg_layout_name + ".html";
-                if (File.Exists(path))
-                {
-                    Console.WriteLine("\tChange layout to " + cfg_layout_name + ".html");
-                }
-                else
-                {
-                    Console.WriteLine("Warning: " + dest + " >> Layout file is not found: " + cfg_layout_name + ".html");
-                    return;
-                }
-            }
-
-            Directories.Current = Directories.Layout;
-            layout_content = File.ReadAllText(path);
-            layout_content = RenderPartialLayout(layout_content);
-            layout_content = RenderLayoutComponent(cfg_layout_name, layout_content);
-
-            layout_content = PasteScripts(layout_content);
-            layout_content = PasteStyles(layout_content);
-            layout_content = ReplaceLinkUrlText(layout_content, asset_level);
-            layout_content = ReplaceAssetUrlText(layout_content, asset_level, cfg_layout_name);
-            string pattern = @"<c\.content(?:\s*\/)?>(?:<\/c\.content>)?";
-            layout_content = ReplaceText(pattern, layout_content, view_content);
-
-            string p_dir = "";
-            Match matched = Regex.Match(dest, "^(.*?)\\?[a-zA-Z0-9-_]+$");
-            if (matched.Success)
-            {
-                p_dir = matched.Groups[1].Value;
-            }
-            if (Directory.Exists(Directories.Public + p_dir))
-            {
-                string p_file = Directories.Public + dest + ".html";
-                File.WriteAllText(p_file, layout_content);
-                Console.WriteLine("OK: " + dest + ".html");
-            }
-            else
-            {
-                Console.WriteLine("Error: Layout directory " + p_dir + " is not found");
-            }
-        }
-
-        private string RenderPartialLayout(string content)
+        protected string RenderPartialLayout(string content)
         {
             string pattern = @"<c\.import\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.import>)?";
             MatchCollection matches = Regex.Matches(content, pattern);
@@ -136,7 +82,7 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        private string SeparateLayoutScript(string content)
+        protected string SeparateLayoutScript(string content)
         {
             string pattern;
             MatchCollection matches;
@@ -167,7 +113,7 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        private string RenderLayoutComponent(string name, string content, string parent_route = null)
+        protected string RenderLayoutComponent(string name, string content, string parent_route = null)
         {
             content = RenderPartialLayout(content);
             RenderPartialAssets(name, Directories.Layout, content, true, parent_route);
@@ -176,7 +122,7 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        private string PasteStyles(string content)
+        protected string PasteStyles(string content)
         {
             Match matched = Regex.Match(content, @"</head>[\w\W]*?<body.*?>");
             if (matched.Success)
@@ -204,7 +150,7 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        private string PasteScripts(string content)
+        protected string PasteScripts(string content)
         {
             Match matched = Regex.Match(content, @"</body>[\w\W]*?</html>");
             if (matched.Success)

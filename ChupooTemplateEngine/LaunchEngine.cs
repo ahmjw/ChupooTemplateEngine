@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ChupooTemplateEngine.ViewParsers;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,9 +11,16 @@ namespace ChupooTemplateEngine
     class LaunchEngine
     {
         private string[] asset_exts = { ".js", ".css", ".ico", ".png", ".jpeg", ".jpg", ".jpeg", ".bmp", ".svg" };
-
-        public void Run()
+        private LaunchTypeEnum launchType;
+        public enum LaunchTypeEnum
         {
+            HTML_TEMPLATE,
+            WORDPRESS
+        }
+
+        public void Run(LaunchTypeEnum launchType)
+        {
+            this.launchType = launchType;
             Asset.ClearAssets();
             Directory.CreateDirectory(Directories.PublicAsset);
             Directory.CreateDirectory(Directories.PublicAsset + "\\local");
@@ -75,8 +83,18 @@ namespace ChupooTemplateEngine
                 FileInfo finfo = new FileInfo(file);
                 if (finfo.Name[0] == '_' || finfo.Extension != ".html") continue;
                 string path_stage = file.Replace(Directories.Current, "").Replace(".html", "");
-                ViewParser viewParser = new ViewParser();
-                viewParser.Parse(path_stage, path_stage);
+                ViewParser viewParser = null;
+                switch (launchType)
+                {
+                    case LaunchTypeEnum.HTML_TEMPLATE:
+                        viewParser = new HtmlTemplate();
+                        viewParser.Parse(path_stage, path_stage);
+                        break;
+                    case LaunchTypeEnum.WORDPRESS:
+                        viewParser = new Wordpress();
+                        viewParser.Parse(path_stage, path_stage);
+                        break;
+                }
             }
         }
     }
