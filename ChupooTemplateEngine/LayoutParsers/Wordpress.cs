@@ -11,6 +11,8 @@ namespace ChupooTemplateEngine.LayoutParsers
 {
     class Wordpress : LayoutParser
     {
+        private Hashtable partial_files = new Hashtable();
+
         public override void Parse(string dest, string asset_level)
         {
             if (dest[0] == '_')
@@ -42,10 +44,6 @@ namespace ChupooTemplateEngine.LayoutParsers
             layout_content = RenderPartialLayout(layout_content);
             layout_content = RenderLayoutComponent(cfg_layout_name, layout_content);
 
-            layout_content = PasteScripts(layout_content);
-            layout_content = PasteStyles(layout_content);
-            layout_content = ReplaceLinkUrlText(layout_content, asset_level);
-            layout_content = ReplaceAssetUrlText(layout_content, asset_level, cfg_layout_name);
             string pattern = @"<c\.content(?:\s*\/)?>(?:<\/c\.content>)?";
             layout_content = ReplaceText(pattern, layout_content, view_content);
 
@@ -58,17 +56,106 @@ namespace ChupooTemplateEngine.LayoutParsers
             if (Directory.Exists(Directories.Public + p_dir))
             {
                 CopyResources();
+                
+                if (!partial_files.ContainsKey("header"))
+                {
+                    layout_content = PasteStyles(layout_content);
+                }
+                if (!partial_files.ContainsKey("footer"))
+                {
+                    layout_content = PasteScripts(layout_content);
+                }
+
+                layout_content = ReplaceLinkUrlText(layout_content, asset_level);
+                layout_content = ReplaceAssetUrlText(layout_content, asset_level, cfg_layout_name);
 
                 // Make <layout>.php file
-                string p_file = Directories.Public + dest + ".php";
+                string p_file;
+                p_file = Directories.Public + dest + ".php";
                 File.WriteAllText(p_file, layout_content);
                 Console.WriteLine("OK: " + dest + ".php");
+
+                CreatePartialFile("header", asset_level);
+                CreatePartialFile("footer", asset_level);
+
+                partial_files.Clear();
                 ClearAll();
             }
             else
             {
                 Console.WriteLine("Error: Layout directory " + p_dir + " is not found");
             }
+        }
+
+        private void CreatePartialFile(string partialName, string asset_level)
+        {
+            if (partial_files.ContainsKey(partialName))
+            {
+                string part_content = File.ReadAllText(partial_files[partialName] + "");
+                if (partialName == "header")
+                {
+                    part_content = PasteStyles(part_content);
+                }
+                else if (partialName == "footer")
+                {
+                    part_content = PasteScripts(part_content);
+                }
+                part_content = ReplaceLinkUrlText(part_content, asset_level);
+                part_content = ReplaceAssetUrlText(part_content, asset_level, cfg_layout_name);
+                string p_file = Directories.Public + partialName + ".php";
+                File.WriteAllText(p_file, part_content);
+                Console.WriteLine("OK: " + partialName + ".php");
+            }
+        }
+
+        protected override string RenderPartialLayout(string content)
+        {
+            string pattern = @"<c\.import\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.import>)?";
+            MatchCollection matches = Regex.Matches(content, pattern);
+            if (matches.Count > 0)
+            {
+                int newLength = 0;
+                foreach (Match match in matches)
+                {
+                    string name = match.Groups[1].Value;
+                    string layout_name = "_" + name;
+                    string layout_file = Directories.Layout + layout_name + ".html";
+
+                    if (name == "header" || name == "footer")
+                    {
+                        string code = "<?php get_" + name + "() ?>";
+                        content = SubsituteString(content, match.Index + newLength, match.Length, code);
+                        newLength += code.Length - match.Length;
+                        partial_files[name] = layout_file;
+                    }
+                    else
+                    {
+                        if (File.Exists(layout_file))
+                        {
+                            string part_content = File.ReadAllText(layout_file);
+                            part_content = RenderLayoutComponent(layout_name, part_content);
+                            content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
+                            newLength += part_content.Length - match.Length;
+                        }
+                        else
+                        {
+                            layout_file = Directories.Layout + layout_name + @"\main.html";
+                            if (File.Exists(layout_file))
+                            {
+                                string part_content = File.ReadAllText(layout_file);
+                                part_content = RenderLayoutComponent(layout_name, part_content);
+                                content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
+                                newLength += part_content.Length - match.Length;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Warning: Partial layout " + layout_name + ".html is not found");
+                            }
+                        }
+                    }
+                }
+            }
+            return content;
         }
 
         private void CopyResources()

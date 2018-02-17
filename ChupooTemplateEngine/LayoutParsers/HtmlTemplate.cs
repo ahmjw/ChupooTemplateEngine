@@ -65,5 +65,44 @@ namespace ChupooTemplateEngine.LayoutParsers
                 Console.WriteLine("Error: Layout directory " + p_dir + " is not found");
             }
         }
+
+        protected override string RenderPartialLayout(string content)
+        {
+            string pattern = @"<c\.import\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.import>)?";
+            MatchCollection matches = Regex.Matches(content, pattern);
+            if (matches.Count > 0)
+            {
+                int newLength = 0;
+                foreach (Match match in matches)
+                {
+                    string layout_name = "_" + match.Groups[1].Value;
+                    string layout_file = Directories.Layout + layout_name + ".html";
+
+                    if (File.Exists(layout_file))
+                    {
+                        string part_content = File.ReadAllText(layout_file);
+                        part_content = RenderLayoutComponent(layout_name, part_content);
+                        content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
+                        newLength += part_content.Length - match.Length;
+                    }
+                    else
+                    {
+                        layout_file = Directories.Layout + layout_name + @"\main.html";
+                        if (File.Exists(layout_file))
+                        {
+                            string part_content = File.ReadAllText(layout_file);
+                            part_content = RenderLayoutComponent(layout_name, part_content);
+                            content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
+                            newLength += part_content.Length - match.Length;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Warning: Partial layout " + layout_name + ".html is not found");
+                        }
+                    }
+                }
+            }
+            return content;
+        }
     }
 }

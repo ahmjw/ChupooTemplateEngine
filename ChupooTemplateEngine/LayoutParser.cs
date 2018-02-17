@@ -12,6 +12,8 @@ namespace ChupooTemplateEngine
     {
         public abstract void Parse(string dest, string asset_level);
 
+        protected abstract string RenderPartialLayout(string content);
+
         protected string SeparateLayoutStyle(string content)
         {
             string pattern;
@@ -38,45 +40,6 @@ namespace ChupooTemplateEngine
                     l_style_code_list.Add(match.Value);
                     content = SubsituteString(content, match.Index + newLength, match.Length, "");
                     newLength += -match.Length;
-                }
-            }
-            return content;
-        }
-
-        protected string RenderPartialLayout(string content)
-        {
-            string pattern = @"<c\.import\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.import>)?";
-            MatchCollection matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                foreach (Match match in matches)
-                {
-                    string layout_name = "_" + match.Groups[1].Value;
-                    string layout_file = Directories.Layout + layout_name + ".html";
-
-                    if (File.Exists(layout_file))
-                    {
-                        string part_content = File.ReadAllText(layout_file);
-                        part_content = RenderLayoutComponent(layout_name, part_content);
-                        content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
-                        newLength += part_content.Length - match.Length;
-                    }
-                    else
-                    {
-                        layout_file = Directories.Layout + layout_name + @"\main.html";
-                        if (File.Exists(layout_file))
-                        {
-                            string part_content = File.ReadAllText(layout_file);
-                            part_content = RenderLayoutComponent(layout_name, part_content);
-                            content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
-                            newLength += part_content.Length - match.Length;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Warning: Partial layout " + layout_name + ".html is not found");
-                        }
-                    }
                 }
             }
             return content;
@@ -131,7 +94,9 @@ namespace ChupooTemplateEngine
                 foreach (string style in l_style_file_list)
                     appended += style;
                 foreach (string style in v_style_file_list)
+                {
                     appended += style;
+                }
                 string new_content = appended + matched.Value;
                 content = SubsituteString(content, matched.Index, matched.Length, new_content);
             }
