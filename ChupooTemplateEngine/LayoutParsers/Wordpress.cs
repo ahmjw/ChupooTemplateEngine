@@ -92,6 +92,7 @@ namespace ChupooTemplateEngine.LayoutParsers
             if (partial_files.ContainsKey(partialName))
             {
                 string part_content = File.ReadAllText(partial_files[partialName] + "");
+                part_content = RenderPartialLayout(part_content);
                 if (partialName == "header")
                 {
                     part_content = PasteStyles(part_content);

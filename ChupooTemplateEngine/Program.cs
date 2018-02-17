@@ -20,7 +20,6 @@ namespace ChupooTemplateEngine
         private static string w_view_dir;
         private static bool has_changed_file = false;
         private static string[] watcher_exts = { ".html" };
-        private static string[] pic_exts = { ".ico", ".png", ".jpeg", ".jpg", ".jpeg", ".bmp", ".svg" };
         private static string current_project_name;
         private static FileSystemWatcher watcher;
         

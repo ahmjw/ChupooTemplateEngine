@@ -24,6 +24,10 @@ namespace ChupooTemplateEngine
         protected static List<string> l_script_code_list = new List<string>();
         protected static List<string> l_style_code_list = new List<string>();
 
+        private static string[] pic_exts = { ".ico", ".png", ".jpeg", ".jpg", ".jpeg", ".bmp", ".svg" };
+        private static string[] vid_exts = { ".mp4", ".avi", ".mov", ".flv", ".wmv", ".3gp", ".mpg" };
+        private static string[] aud_exts = { ".mp3", ".amr", ".ogg", ".wav", ".wma" };
+
         protected string ReplaceText(string pattern, string content, string replacement)
         {
             Match matched = Regex.Match(content, pattern);
@@ -153,13 +157,16 @@ namespace ChupooTemplateEngine
                             new_value += asset_level + match.Groups[1].Value.Substring(1);
                         else
                         {
-                            if (match.Groups[1].Length >= 6 && match.Groups[1].Value.Substring(1, 6) == "assets")
+                            if (match.Groups[1].Length >= 6 && match.Groups[1].Value.Substring(2, 6) == "assets")
                             {
-                                new_value += asset_level + match.Groups[1].Value;
+                                if (this is LayoutParsers.Wordpress || this is ViewParsers.Wordpress)
+                                    new_value += "<?= get_template_directory_uri() ?>/" + asset_level + match.Groups[1].Value.Substring(2);
+                                else
+                                    new_value += asset_level + match.Groups[1].Value.Substring(2);
                             }
                             else
                             {
-                                string view_asset = asset_level + match.Groups[1].Value;
+                                string view_asset = asset_level + match.Groups[1].Value.Substring(2);
                                 new_value += LaunchViewAssets(view_asset);
                             }
                         }
@@ -200,13 +207,14 @@ namespace ChupooTemplateEngine
         {
             asset = asset.Replace("//", "/");
             string src_path = Directories.Module + asset.Replace("/", "\\");
+
             if (File.Exists(src_path))
             {
                 FileInfo finfo = new FileInfo(src_path);
-                Console.WriteLine("Copying from HTML " + asset);
+                Console.WriteLine("  HTML> " + asset);
 
-                string dst_file_name = CalculateMD5Hash(asset) + finfo.Extension;
-                string dst_path = Directories.PublicAsset + "local\\" + dst_file_name;
+                string dst_file_name = RenameAsset(asset);
+                string dst_path = Directories.PublicAsset + "local\\" + dst_file_name.Replace("/", "\\");
 
                 if (!File.Exists(dst_path))
                 {
@@ -222,17 +230,18 @@ namespace ChupooTemplateEngine
                             string i_dst_file_name = c_name;
                             if (File.Exists(src_path))
                             {
-                                FileInfo finfo2 = new FileInfo(c_name);
+                                FileInfo finfo2 = new FileInfo(src_path);
                                 string d_name = finfo2.DirectoryName.Replace(Directories.Module, "") + "\\" + finfo2.Name;
-                                i_dst_file_name = CalculateMD5Hash(d_name) + finfo2.Extension;
+                                d_name = d_name.Replace("\\", "/");
+                                i_dst_file_name = RenameAsset(d_name);
                                 string i_dst_path = Directories.PublicAsset + "local\\" + i_dst_file_name;
                                 if (!File.Exists(i_dst_path))
                                 {
-                                    Console.WriteLine("Copying from CSS " + asset);
+                                    Console.WriteLine("  CSS> " + d_name);
                                     File.Copy(src_path, i_dst_path);
                                 }
                             }
-                            string new_value = i_dst_file_name;
+                            string new_value = "../" + i_dst_file_name;
                             content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
                             newLength += new_value.Length - match.Groups[1].Length;
                         }
@@ -256,7 +265,65 @@ namespace ChupooTemplateEngine
                 
                 if (this is LayoutParsers.Wordpress || this is ViewParsers.Wordpress)
                     return "<?= get_template_directory_uri() ?>/" + dst_file_name;
-                return "./" + dst_file_name;
+                return dst_file_name;
+            }
+            return asset;
+        }
+
+        private string RenameAsset(string asset)
+        {
+            //string dst_file_name = CalculateMD5Hash(asset) + finfo.Extension;
+            Match match = Regex.Match(asset, @"(_.*)?/([a-zA-Z0-9-_]+)(\.[a-zA-Z0-9-_]+)$");
+            if (match.Success)
+            {
+                string d_root = Directories.PublicAsset + "local\\";
+                string d_name = "";
+                string extension = match.Groups[3].Value;
+                string f_name = match.Groups[2].Value;
+                f_name = match.Groups[1].Value.Replace("/_", "-").Replace("/", "-") + "-" + f_name;
+                f_name = f_name.Replace("-main", "");
+
+                if (extension == ".css")
+                {
+                    d_name = "styles";
+                    if (!Directory.Exists(d_root + d_name))
+                    {
+                        Directory.CreateDirectory(d_root + d_name);
+                    }
+                }
+                else if (extension == ".js")
+                {
+                    d_name = "scripts";
+                    if (!Directory.Exists(d_root + d_name))
+                    {
+                        Directory.CreateDirectory(d_root + d_name);
+                    }
+                }
+                else if (pic_exts.Any(extension.ToLower().Equals))
+                {
+                    d_name = "images";
+                    if (!Directory.Exists(d_root + d_name))
+                    {
+                        Directory.CreateDirectory(d_root + d_name);
+                    }
+                }
+                else if (aud_exts.Any(extension.ToLower().Equals))
+                {
+                    d_name = "audios";
+                    if (!Directory.Exists(d_root + d_name))
+                    {
+                        Directory.CreateDirectory(d_root + d_name);
+                    }
+                }
+                else if (vid_exts.Any(extension.ToLower().Equals))
+                {
+                    d_name = "videos";
+                    if (!Directory.Exists(d_root + d_name))
+                    {
+                        Directory.CreateDirectory(d_root + d_name);
+                    }
+                }
+                return d_name + "/" + f_name + extension;
             }
             return asset;
         }
