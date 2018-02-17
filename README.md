@@ -16,6 +16,8 @@ Console Application to build linked HTML page. Make your web design more managea
   Render a backup data to HTML pages.
 - `launch`
   Launch HTML pages on production.
+- `launch -f wordpress`
+  Launch HTML pages with Wordpress format.
 - `backup`
   Back up data into a new version.
 - `project create <name>`
