@@ -29,6 +29,8 @@ namespace ChupooTemplateEngine
         {
             Console.WriteLine("Welcome to Chupoo View Engine's console.");
             Console.WriteLine("You can render your web design data to HTML linked-page here.");
+            Directories.Resources = AppDomain.CurrentDomain.BaseDirectory + @"resources";
+
             if (Properties.Settings.Default.current_project_name != null && Properties.Settings.Default.current_project_name != "")
             {
                 LoadProject(Properties.Settings.Default.current_project_name);
@@ -375,10 +377,9 @@ namespace ChupooTemplateEngine
         private static void CreateProject(string name)
         {
             Console.WriteLine("Creating project " + name + " ... please wait");
-            string r_path = AppDomain.CurrentDomain.BaseDirectory + @"resources\project_dir";
             string new_p_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + name;
             Directory.CreateDirectory(new_p_dir);
-            CopyDirectory(r_path, new_p_dir);
+            CopyDirectory(Directories.Resources + "\\project_dir", new_p_dir);
             Console.WriteLine("Project " + name + " has successfully created");
             LoadProject(name);
         }

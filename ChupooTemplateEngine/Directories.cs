@@ -8,15 +8,16 @@ namespace ChupooTemplateEngine
 {
     class Directories
     {
-        public static string Layout;
-        public static string View;
-        public static string Public;
-        public static string ViewDataJson;
-        public static string Asset;
-        public static string Backup;
-        public static string Config;
-        public static string Module;
-        public static string PublicAsset;
-        public static string Current;
+        internal static string Layout;
+        internal static string View;
+        internal static string Public;
+        internal static string ViewDataJson;
+        internal static string Asset;
+        internal static string Backup;
+        internal static string Config;
+        internal static string Module;
+        internal static string PublicAsset;
+        internal static string Current;
+        internal static string Resources;
     }
 }

@@ -13,6 +13,8 @@ namespace ChupooTemplateEngine
     {
         protected static string view_content = "";
         protected string cfg_layout_name = "page";
+        protected static List<string> script_file_list = new List<string>();
+        protected static List<string> style_file_list = new List<string>();
         protected static List<string> v_script_file_list = new List<string>();
         protected static List<string> v_style_file_list = new List<string>();
         protected static List<string> v_script_code_list = new List<string>();
@@ -32,13 +34,14 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        protected string SubsituteString(string OriginalStr, int index, int length, string subsituteStr)
+        public static string SubsituteString(string OriginalStr, int index, int length, string subsituteStr)
         {
             return new StringBuilder(OriginalStr).Remove(index, length).Insert(index, subsituteStr).ToString();
         }
 
         public static void ClearStyles()
         {
+            style_file_list.Clear();
             l_style_file_list.Clear();
             l_style_code_list.Clear();
             v_style_file_list.Clear();
@@ -47,6 +50,7 @@ namespace ChupooTemplateEngine
 
         public static void ClearScripts()
         {
+            script_file_list.Clear();
             v_script_file_list.Clear();
             v_script_code_list.Clear();
             l_script_file_list.Clear();
@@ -122,7 +126,7 @@ namespace ChupooTemplateEngine
 
         protected string ReplaceAssetUrlText(string content, string asset_level, string component_name = null)
         {
-            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""\.(..*?)"".*?>";
+            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(\...*?)"".*?>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -142,11 +146,11 @@ namespace ChupooTemplateEngine
 
                 foreach (Match match in matches)
                 {
-                    string new_value = CurrentCommand != CommandType.LAUNCH ? "/" : "";
-                    if (match.Groups[1].Value[0] == '/')
+                    string new_value = CurrentCommand != CommandType.LAUNCH ? "./" : "";
+                    if (match.Groups[1].Value.Substring(0, 2) == "./")
                     {
                         if (CurrentCommand != CommandType.LAUNCH)
-                            new_value += asset_level + match.Groups[1].Value;
+                            new_value += asset_level + match.Groups[1].Value.Substring(1);
                         else
                         {
                             if (match.Groups[1].Length >= 6 && match.Groups[1].Value.Substring(1, 6) == "assets")
@@ -164,11 +168,11 @@ namespace ChupooTemplateEngine
                     {
                         if (CurrentCommand != CommandType.LAUNCH)
                         {
-                            new_value += asset_level + "/" + component_name + match.Groups[1].Value;
+                            new_value += asset_level + "/" + component_name + match.Groups[1].Value.Substring(1);
                         }
                         else
                         {
-                            string view_asset = asset_level + "/" + component_name + match.Groups[1].Value;
+                            string view_asset = asset_level + component_name + match.Groups[1].Value.Substring(1);
                             new_value += LaunchViewAssets(view_asset);
                         }
                     }
@@ -235,9 +239,24 @@ namespace ChupooTemplateEngine
                         File.WriteAllText(dst_path, content);
                     }
                     else
+                    {
                         File.Copy(src_path, dst_path);
+                    }
                 }
-                return "/assets/local/" + dst_file_name;
+
+                dst_file_name = "assets/local/" + dst_file_name;
+                if (finfo.Extension == ".css")
+                {
+                    style_file_list.Add(dst_file_name);
+                }
+                if (finfo.Extension == ".js")
+                {
+                    script_file_list.Add(dst_file_name);
+                }
+                
+                if (this is LayoutParsers.Wordpress || this is ViewParsers.Wordpress)
+                    return "<?= get_template_directory_uri() ?>/" + dst_file_name;
+                return "./" + dst_file_name;
             }
             return asset;
         }

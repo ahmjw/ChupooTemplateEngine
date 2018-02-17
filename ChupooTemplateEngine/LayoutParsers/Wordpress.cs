@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -56,14 +57,59 @@ namespace ChupooTemplateEngine.LayoutParsers
             }
             if (Directory.Exists(Directories.Public + p_dir))
             {
+                CopyResources();
+
+                // Make <layout>.php file
                 string p_file = Directories.Public + dest + ".php";
                 File.WriteAllText(p_file, layout_content);
                 Console.WriteLine("OK: " + dest + ".php");
+                ClearAll();
             }
             else
             {
                 Console.WriteLine("Error: Layout directory " + p_dir + " is not found");
             }
+        }
+
+        private void CopyResources()
+        {
+            string dst = Directories.Public + "style.css";
+            string src = Directories.Module + "\\launch\\wordpress\\style.css";
+            File.Copy(src, dst);
+        }
+
+        private void CreateFunctionsFile()
+        {
+            // Make functions.php file
+            string p_file = Directories.Public + "functions.php";
+            Hashtable data = new Hashtable();
+            data["ThemeName"] = "swad";
+
+            List<Hashtable> JsFiles = new List<Hashtable>();
+            int i = 0;
+            foreach(string file in script_file_list)
+            {
+                Hashtable _file = new Hashtable();
+                _file["Id"] = "script" + i;
+                _file["Path"] = file;
+                JsFiles.Add(_file);
+                i++;
+            }
+
+            List<Hashtable> CssFiles = new List<Hashtable>();
+            foreach (string file in style_file_list)
+            {
+                Hashtable _file = new Hashtable();
+                _file["Id"] = "style" + i;
+                _file["Path"] = file;
+                CssFiles.Add(_file);
+                i++;
+            }
+            data["Css"] = CssFiles;
+
+            string r_path = Directories.Resources + "\\launch_templates\\wordpress\\functions.php";
+            string content = ResourceParser.Parse(r_path, data);
+            File.WriteAllText(p_file, content);
         }
     }
 }

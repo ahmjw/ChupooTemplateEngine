@@ -63,6 +63,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="ResourceParser.cs" />
     <Compile Include="Route.cs" />
     <Compile Include="ViewParser.cs" />
     <Compile Include="ViewParsers\HtmlTemplate.cs" />

@@ -146,7 +146,6 @@ namespace ChupooTemplateEngine
                 string new_content = appended + matched.Value;
                 content = SubsituteString(content, matched.Index, matched.Length, new_content);
             }
-            ClearStyles();
             return content;
         }
 
@@ -174,7 +173,6 @@ namespace ChupooTemplateEngine
                 string new_content = appended + matched.Value;
                 content = SubsituteString(content, matched.Index, matched.Length, new_content);
             }
-            ClearScripts();
             return content;
         }
     }
