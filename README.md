@@ -24,9 +24,9 @@ Console Application to build linked HTML page. Make your web design more managea
   Launch HTML pages with Wordpress format.
 - `backup`
   Back up data into a new version.
-- `project create <name>`
+- `project create <project-name>`
   Create a new project.
-- `project load <name>`
+- `project load <project-name>`
   Load a project.
 
 # Features
