@@ -238,24 +238,11 @@ namespace ChupooTemplateEngine
                 }
                 ran = true;
             }
-            matched = Regex.Match(command, @"^edit$");
+            matched = Regex.Match(command, @"^explore");
             if (!ran && matched.Success)
             {
-                CurrentCommand = CommandType.EDIT;
-                string path = Directories.View + current_route + ".html";
-                if (current_route != null)
-                {
-                    if (File.Exists(path))
-                        Process.Start("notepad " + path);
-                    else
-                    {
-                        path = Directories.View + "index.html";
-                        if (File.Exists(path))
-                            Process.Start("notepad " + path);
-                        else
-                            Console.WriteLine("Error: No route for editing");
-                    }
-                }
+                CurrentCommand = CommandType.EXPLORE;
+                Process.Start(Directories.Module);
                 ran = true;
             }
             matched = Regex.Match(command, @"^render$");

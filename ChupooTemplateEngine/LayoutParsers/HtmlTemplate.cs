@@ -59,6 +59,7 @@ namespace ChupooTemplateEngine.LayoutParsers
                 string p_file = Directories.Public + dest + ".html";
                 File.WriteAllText(p_file, layout_content);
                 Console.WriteLine("OK: " + dest + ".html");
+                ClearAll();
             }
             else
             {

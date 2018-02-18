@@ -17,7 +17,8 @@
             BACKUP,
             LOAD_PROJECT,
             CREATE_PROJECT,
-            RENDER_BACKUP
+            RENDER_BACKUP,
+            EXPLORE
         }
     }
 }
