@@ -76,7 +76,7 @@ namespace ChupooTemplateEngine
             }
             else if (route[0] != '_' && Directory.Exists(dir + parent_route))
             {
-                route = "_" + route + @"\";
+                route = route + @"\";
                 is_component = true;
             }
 

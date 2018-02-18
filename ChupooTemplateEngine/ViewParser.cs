@@ -194,7 +194,16 @@ namespace ChupooTemplateEngine
                 int newLength = 0;
                 foreach (Match match in matches)
                 {
-                    string layout_name = "_" + match.Groups[1].Value;
+                    string layout_name;
+                    if (parent_route != null)
+                    {
+                        layout_name = match.Groups[1].Value;
+                    }
+                    else
+                    {
+                        layout_name = "_" + match.Groups[1].Value;
+                    }
+
                     string layout_file = Directories.View + layout_name + ".html";
 
                     if (File.Exists(layout_file))

@@ -248,7 +248,7 @@ namespace ChupooTemplateEngine
                         if (File.Exists(path))
                         {
                             Process process = new Process();
-                            process.StartInfo.FileName = "iexplore.exe";
+                            process.StartInfo.FileName = "chrome.exe";
                             process.StartInfo.Arguments = path;
                             process.Start();
                             browser = process;
