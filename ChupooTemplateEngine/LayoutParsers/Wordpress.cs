@@ -15,6 +15,11 @@ namespace ChupooTemplateEngine.LayoutParsers
 
         public override void Parse(string dest, string asset_level)
         {
+            Match matched = Regex.Match(dest, @"^_([^\\]+)\\.*?$");
+            if (matched.Success)
+            {
+                dest = matched.Groups[1].Value;
+            }
             if (dest[0] == '_')
             {
                 Console.WriteLine("Rendering route " + dest + " was skipped");
@@ -48,7 +53,7 @@ namespace ChupooTemplateEngine.LayoutParsers
             layout_content = ReplaceText(pattern, layout_content, view_content);
 
             string p_dir = "";
-            Match matched = Regex.Match(dest, "^(.*?)\\?[a-zA-Z0-9-_]+$");
+            matched = Regex.Match(dest, "^(.*?)\\?[a-zA-Z0-9-_]+$");
             if (matched.Success)
             {
                 p_dir = matched.Groups[1].Value;
