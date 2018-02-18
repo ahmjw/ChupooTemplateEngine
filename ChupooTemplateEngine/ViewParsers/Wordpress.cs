@@ -30,7 +30,7 @@ namespace ChupooTemplateEngine.ViewParsers
             else if (File.Exists(path))
             {
                 view_content = File.ReadAllText(path);
-                view_content = ReplaceAssetUrlText(view_content, asset_level, Directories.View);
+                //view_content = ReplaceAssetUrlText(view_content, asset_level, Directories.View);
 
                 matched = Regex.Match(view_content, @"<c\.config\slayout=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");
                 if (matched.Success)
@@ -41,9 +41,9 @@ namespace ChupooTemplateEngine.ViewParsers
                 else
                     cfg_layout_name = "page";
 
-                string c_dir = Directories.View + "_" + route;
+                string c_dir = Directories.View + "@" + route;
                 if (Directory.Exists(c_dir))
-                    view_content = LoadPartialView(view_content, "_" + route);
+                    view_content = LoadPartialView(view_content, "@" + route);
                 else
                     view_content = LoadPartialView(view_content);
 

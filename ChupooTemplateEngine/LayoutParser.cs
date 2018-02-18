@@ -1,10 +1,12 @@
-﻿using System;
+﻿using ChupooTemplateEngine.LayoutParsers;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static ChupooTemplateEngine.Command;
 
 namespace ChupooTemplateEngine
 {
@@ -76,8 +78,75 @@ namespace ChupooTemplateEngine
             return content;
         }
 
+        protected string ReplaceAssetUrlText(string content, string asset_level, string component_name = null)
+        {
+            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(\...*?)"".*?>";
+            MatchCollection matches = Regex.Matches(content, pattern);
+            if (matches.Count > 0)
+            {
+                int newLength = 0;
+                if (CurrentCommand == CommandType.LAUNCH)
+                {
+                    asset_level = asset_level.Substring(2);
+                }
+                else if (CurrentCommand == CommandType.RENDER_BACKUP)
+                {
+                    asset_level = asset_level.Substring(2) + "..";
+                }
+                else
+                {
+                    asset_level = asset_level.Substring(2) + "../modules";
+                }
+
+                foreach (Match match in matches)
+                {
+                    string new_value = "";
+                    if (match.Groups[1].Value.Substring(0, 2) == "./")
+                    {
+                        if (CurrentCommand != CommandType.LAUNCH)
+                            new_value = asset_level + match.Groups[1].Value.Substring(1);
+                        else
+                        {
+                            if (match.Groups[1].Length >= 6 && match.Groups[1].Value.Substring(2, 6) == "assets")
+                            {
+                                if (this is Wordpress)
+                                    new_value += "<?= get_template_directory_uri() ?>/" + asset_level + match.Groups[1].Value.Substring(2);
+                                else
+                                    new_value += asset_level + match.Groups[1].Value.Substring(2);
+                            }
+                            else
+                            {
+                                string view_asset = asset_level + match.Groups[1].Value.Substring(2);
+                                new_value += LaunchViewAssets(view_asset);
+                            }
+                        }
+                    }
+                    else if (Regex.Match(match.Groups[1].Value, @"^\.[a-zA-Z0-9-_]+\/").Success)
+                    {
+                        if (CurrentCommand != CommandType.LAUNCH)
+                        {
+                            new_value = asset_level + "/layouts/" + component_name + "/" + match.Groups[1].Value.Substring(1);
+                        }
+                        else
+                        {
+                            string view_asset = asset_level + component_name + match.Groups[1].Value.Substring(1);
+                            new_value += LaunchViewAssets(view_asset);
+                        }
+                    }
+                    else
+                    {
+                        new_value = match.Groups[1].Value;
+                    }
+                    content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
+                    newLength += new_value.Length - match.Groups[1].Length;
+                }
+            }
+            return content;
+        }
+
         protected string RenderLayoutComponent(string name, string content, string parent_route = null)
         {
+            content = ReplaceAssetUrlText(content, "./", name);
             content = RenderPartialLayout(content);
             RenderPartialAssets(name, Directories.Layout, content, true, parent_route);
             content = SeparateLayoutStyle(content);

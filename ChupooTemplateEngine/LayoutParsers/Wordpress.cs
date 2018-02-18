@@ -72,7 +72,7 @@ namespace ChupooTemplateEngine.LayoutParsers
                 }
 
                 layout_content = ReplaceLinkUrlText(layout_content, asset_level);
-                layout_content = ReplaceAssetUrlText(layout_content, asset_level, cfg_layout_name);
+                layout_content = ReplaceAssetUrlText(layout_content, asset_level, Directories.Layout);
 
                 // Make <layout>.php file
                 string p_file;
@@ -107,7 +107,7 @@ namespace ChupooTemplateEngine.LayoutParsers
                     part_content = PasteScripts(part_content);
                 }
                 part_content = ReplaceLinkUrlText(part_content, asset_level);
-                part_content = ReplaceAssetUrlText(part_content, asset_level, cfg_layout_name);
+                part_content = ReplaceAssetUrlText(part_content, asset_level, Directories.Layout);
                 string p_file = Directories.Public + partialName + ".php";
                 File.WriteAllText(p_file, part_content);
                 Console.WriteLine("OK: " + partialName + ".php");
@@ -124,7 +124,7 @@ namespace ChupooTemplateEngine.LayoutParsers
                 foreach (Match match in matches)
                 {
                     string name = match.Groups[1].Value;
-                    string layout_name = "_" + name;
+                    string layout_name = name;
                     string layout_file = Directories.Layout + layout_name + ".html";
 
                     if (name == "header" || name == "footer")

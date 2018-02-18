@@ -16,6 +16,7 @@ namespace ChupooTemplateEngine.LayoutParsers
             if (matched.Success)
             {
                 dest = matched.Groups[1].Value;
+                asset_level = "./";
             }
             if (dest[0] == '_')
             {
@@ -48,8 +49,7 @@ namespace ChupooTemplateEngine.LayoutParsers
 
             layout_content = PasteScripts(layout_content);
             layout_content = PasteStyles(layout_content);
-            layout_content = ReplaceLinkUrlText(layout_content, asset_level);
-            layout_content = ReplaceAssetUrlText(layout_content, asset_level, cfg_layout_name);
+            //layout_content = ReplaceAssetUrlText(layout_content, asset_level);
             string pattern = @"<c\.content(?:\s*\/)?>(?:<\/c\.content>)?";
             layout_content = ReplaceText(pattern, layout_content, view_content);
 
@@ -93,17 +93,17 @@ namespace ChupooTemplateEngine.LayoutParsers
                     }
                     else
                     {
-                        layout_file = Directories.Layout + layout_name + @"\main.html";
+                        layout_file = Directories.Layout + layout_name.Substring(1) + @"\main.html";
                         if (File.Exists(layout_file))
                         {
                             string part_content = File.ReadAllText(layout_file);
-                            part_content = RenderLayoutComponent(layout_name, part_content);
+                            part_content = RenderLayoutComponent(layout_name.Substring(1), part_content);
                             content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
                             newLength += part_content.Length - match.Length;
                         }
                         else
                         {
-                            Console.WriteLine("Warning: Partial layout " + layout_name + ".html is not found");
+                            Console.WriteLine("Warning: Partial layout " + layout_name.Substring(1) + ".html is not found");
                         }
                     }
                 }

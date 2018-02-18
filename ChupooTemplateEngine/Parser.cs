@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using static ChupooTemplateEngine.Command;
 using static ChupooTemplateEngine.Route;
 
 namespace ChupooTemplateEngine
@@ -70,11 +69,12 @@ namespace ChupooTemplateEngine
         protected void RenderPartialAssets(string route, string dir, string view_content, bool is_component = false, string parent_route = null)
         {
             string v_dir = dir;
+            string _route = route;
             if (parent_route != null)
             {
                 v_dir = dir + parent_route + @"\";
             }
-            else if (route[0] != '_' && Directory.Exists(dir + parent_route))
+            else if (route[0] != '@' && Directory.Exists(dir + parent_route))
             {
                 route = route + @"\";
                 is_component = true;
@@ -84,7 +84,14 @@ namespace ChupooTemplateEngine
             if (is_component)
             {
                 if (route[route.Length - 1] == '\\')
-                    path = v_dir + route + @"main.css";
+                {
+                    if (Directories.View == dir)
+                        path = v_dir + "@" + route + @"main.css";
+                    else
+                    {
+                        path = v_dir + route + @"main.css";
+                    }
+                }
                 else
                     path = v_dir + route + @"\main.css";
             }
@@ -92,18 +99,28 @@ namespace ChupooTemplateEngine
                 path = v_dir + route + ".css";
             if (File.Exists(path))
             {
-                string asset_url = "./" + path.Replace(Directories.Module, "").Replace('\\', '/');
+                string asset_url = "../modules/" + path.Replace(Directories.Module, "").Replace('\\', '/');
                 string content = @"<link rel=""stylesheet"" type=""text/css"" href=""" + asset_url + @""" />" + "\n";
                 v_style_file_list.Add(content);
             }
 
             if (is_component)
-                path = v_dir + route + @"\main.js";
+            {
+                if (route[route.Length - 1] == '\\')
+                {
+                    if (Directories.View == dir)
+                        path = v_dir + "@" + route + @"main.js";
+                    else
+                        path = v_dir + route + @"main.js";
+                }
+                else
+                    path = v_dir + route + @"\main.js";
+            }
             else
                 path = v_dir + route + ".js";
             if (File.Exists(path))
             {
-                string asset_url = "./" + path.Replace(Directories.Module, "").Replace('\\', '/');
+                string asset_url = "../modules/" + path.Replace(Directories.Module, "").Replace('\\', '/');
                 string content = "<script language=\"javascript\" src=\"" + asset_url + "\"></script>" + "\n";
                 v_script_code_list.Add(content);
             }
@@ -121,68 +138,6 @@ namespace ChupooTemplateEngine
                 {
                     string url_target = public_routes != null && public_routes.Count > 0 && public_routes[match.Groups[1].Value] != null ? public_routes[match.Groups[1].Value] + "" : "index";
                     string new_value = asset_level + url_target + ".html";
-                    content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
-                    newLength += new_value.Length - match.Groups[1].Length;
-                }
-            }
-            return content;
-        }
-
-        protected string ReplaceAssetUrlText(string content, string asset_level, string component_name = null)
-        {
-            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(\...*?)"".*?>";
-            MatchCollection matches = Regex.Matches(content, pattern);
-            if (matches.Count > 0)
-            {
-                int newLength = 0;
-                if (CurrentCommand == CommandType.LAUNCH)
-                {
-                    asset_level = asset_level.Substring(2);
-                }
-                else if (CurrentCommand == CommandType.RENDER_BACKUP)
-                {
-                    asset_level = asset_level.Substring(2) + "..";
-                }
-                else
-                {
-                    asset_level = asset_level.Substring(2) + "../modules";
-                }
-
-                foreach (Match match in matches)
-                {
-                    string new_value = CurrentCommand != CommandType.LAUNCH ? "./" : "";
-                    if (match.Groups[1].Value.Substring(0, 2) == "./")
-                    {
-                        if (CurrentCommand != CommandType.LAUNCH)
-                            new_value += asset_level + match.Groups[1].Value.Substring(1);
-                        else
-                        {
-                            if (match.Groups[1].Length >= 6 && match.Groups[1].Value.Substring(2, 6) == "assets")
-                            {
-                                if (this is LayoutParsers.Wordpress || this is ViewParsers.Wordpress)
-                                    new_value += "<?= get_template_directory_uri() ?>/" + asset_level + match.Groups[1].Value.Substring(2);
-                                else
-                                    new_value += asset_level + match.Groups[1].Value.Substring(2);
-                            }
-                            else
-                            {
-                                string view_asset = asset_level + match.Groups[1].Value.Substring(2);
-                                new_value += LaunchViewAssets(view_asset);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (CurrentCommand != CommandType.LAUNCH)
-                        {
-                            new_value += asset_level + "/" + component_name + match.Groups[1].Value.Substring(1);
-                        }
-                        else
-                        {
-                            string view_asset = asset_level + component_name + match.Groups[1].Value.Substring(1);
-                            new_value += LaunchViewAssets(view_asset);
-                        }
-                    }
                     content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
                     newLength += new_value.Length - match.Groups[1].Length;
                 }

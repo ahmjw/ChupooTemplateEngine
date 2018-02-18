@@ -168,8 +168,14 @@ namespace ChupooTemplateEngine
             {
                 try
                 {
+                    string path_stage = view_name;
                     HtmlTemplate viewParser = new HtmlTemplate();
-                    viewParser.Parse(view_name, view_name);
+                    Match matched = Regex.Match(view_name, @"^@([^\\]+)\\.*$");
+                    if (matched.Success)
+                    {
+                        path_stage = matched.Groups[1].Value;
+                    }
+                    viewParser.Parse(path_stage, path_stage);
                     RefreshBrowser();
                     CurrentCommand = CommandType.FILE_SYSTEM_WATCHER;
                 }

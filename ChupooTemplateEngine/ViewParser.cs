@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static ChupooTemplateEngine.Command;
 
 namespace ChupooTemplateEngine
 {
@@ -49,28 +50,35 @@ namespace ChupooTemplateEngine
             foreach (string dir in dirs)
             {
                 DirectoryInfo dinfo = new DirectoryInfo(dir);
-                if (dinfo.Name[0] == '_') continue;
-                string path_stage = dir.Replace(Directories.Current, "");
-                if (!Directory.Exists(Directories.Public + path_stage))
-                    Directory.CreateDirectory(Directories.Public + path_stage);
-
-                string[] subdirs = Directory.GetDirectories(path);
-                if (subdirs.Length > 0)
+                if (dinfo.Name[0] != '@') continue;
+                string file = dir + "\\main.html";
+                if (File.Exists(file))
                 {
-                    string old_asset_level = asset_level;
-                    RenderDirectoryRecursively(dir, asset_level + "../");
-                    asset_level = old_asset_level;
+                    string path_stage = file.Replace(Directories.Current, "").Substring(1).Replace("\\main.html", "");
+                    HtmlTemplate viewParser = new HtmlTemplate();
+                    viewParser.Parse(path_stage, path_stage);
                 }
+                //string path_stage = dir.Replace(Directories.Current, "");
+                //if (!Directory.Exists(Directories.Public + path_stage))
+                //    Directory.CreateDirectory(Directories.Public + path_stage);
+
+                //string[] subdirs = Directory.GetDirectories(path);
+                //if (subdirs.Length > 0)
+                //{
+                //    string old_asset_level = asset_level;
+                //    RenderDirectoryRecursively(dir, asset_level + "../");
+                //    asset_level = old_asset_level;
+                //}
             }
-            string[] files = Directory.GetFiles(path);
-            foreach (string file in files)
-            {
-                FileInfo finfo = new FileInfo(file);
-                if (finfo.Name[0] == '_' || finfo.Extension != ".html") continue;
-                string path_stage = file.Replace(Directories.Current, "").Replace(".html", "");
-                HtmlTemplate viewParser = new HtmlTemplate();
-                viewParser.Parse(path_stage, path_stage);
-            }
+            //string[] files = Directory.GetFiles(path);
+            //foreach (string file in files)
+            //{
+            //    FileInfo finfo = new FileInfo(file);
+            //    if (finfo.Name[0] == '_' || finfo.Extension != ".html") continue;
+            //    string path_stage = file.Replace(Directories.Current, "").Replace(".html", "");
+            //    HtmlTemplate viewParser = new HtmlTemplate();
+            //    viewParser.Parse(path_stage, path_stage);
+            //}
         }
 
         protected string SeparateViewStyle(string content)
@@ -172,11 +180,74 @@ namespace ChupooTemplateEngine
             return content;
         }
 
+        protected string ReplaceAssetUrlText(string content, string asset_level, string component_name = null)
+        {
+            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(\...*?)"".*?>";
+            MatchCollection matches = Regex.Matches(content, pattern);
+            if (matches.Count > 0)
+            {
+                int newLength = 0;
+                if (CurrentCommand == CommandType.LAUNCH)
+                {
+                    asset_level = asset_level.Substring(2);
+                }
+                else if (CurrentCommand == CommandType.RENDER_BACKUP)
+                {
+                    asset_level = asset_level.Substring(2) + "..";
+                }
+                else
+                {
+                    asset_level = asset_level.Substring(2) + "../modules";
+                }
+
+                foreach (Match match in matches)
+                {
+                    string new_value = "";
+                    if (match.Groups[1].Value.Substring(0, 2) == "./")
+                    {
+                        if (CurrentCommand != CommandType.LAUNCH)
+                            new_value += asset_level + match.Groups[1].Value.Substring(1);
+                        else
+                        {
+                            if (match.Groups[1].Length >= 6 && match.Groups[1].Value.Substring(2, 6) == "assets")
+                            {
+                                if (this is Wordpress)
+                                    new_value += "<?= get_template_directory_uri() ?>/" + asset_level + match.Groups[1].Value.Substring(2);
+                                else
+                                    new_value += asset_level + match.Groups[1].Value.Substring(2);
+                            }
+                            else
+                            {
+                                string view_asset = asset_level + match.Groups[1].Value.Substring(2);
+                                new_value += LaunchViewAssets(view_asset);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (CurrentCommand != CommandType.LAUNCH)
+                        {
+                            new_value += asset_level + "/" + component_name + match.Groups[1].Value.Substring(1);
+                        }
+                        else
+                        {
+                            string view_asset = asset_level + component_name + match.Groups[1].Value.Substring(1);
+                            new_value += LaunchViewAssets(view_asset);
+                        }
+                    }
+                    content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
+                    newLength += new_value.Length - match.Groups[1].Length;
+                }
+            }
+            return content;
+        }
+
         protected string RenderViewComponent(string layout_name, string layout_file, string parent_route)
         {
             FileInfo finfo = new FileInfo(layout_file);
             string content = File.ReadAllText(layout_file);
-            content = ReplaceAssetUrlText(content, "./", finfo.DirectoryName.Replace(Directories.Module, "").Replace('\\', '/') + "/");
+            string c_name = finfo.DirectoryName.Replace(Directories.Module, "").Replace('\\', '/') + "/";
+            content = ReplaceAssetUrlText(content, "./", c_name);
             content = LoadPartialView(content);
             RenderPartialAssets(layout_name, Directories.View, content, true, parent_route);
             content = RenderPartialCss(finfo.DirectoryName, content);
@@ -201,7 +272,7 @@ namespace ChupooTemplateEngine
                     }
                     else
                     {
-                        layout_name = "_" + match.Groups[1].Value;
+                        layout_name = match.Groups[1].Value;
                     }
 
                     string layout_file = Directories.View + layout_name + ".html";
