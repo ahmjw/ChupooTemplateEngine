@@ -6,6 +6,8 @@ Console Application to build linked HTML page. Make your web design more managea
   Clear console's screen.
 - `explore`
   Open project directory on Windows Explorer.
+- `explore <project-name>`
+  Open specific project directory on Windows Explorer.
 - `browse`
   Open current project to web browser.
 - `render`
