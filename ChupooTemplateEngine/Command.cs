@@ -18,7 +18,8 @@
             LOAD_PROJECT,
             CREATE_PROJECT,
             RENDER_BACKUP,
-            EXPLORE
+            EXPLORE,
+            EXPLORE_PROJECT
         }
     }
 }

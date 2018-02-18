@@ -238,6 +238,14 @@ namespace ChupooTemplateEngine
                 }
                 ran = true;
             }
+            matched = Regex.Match(command, @"^explore\s(.+?)$");
+            if (!ran && matched.Success)
+            {
+                CurrentCommand = CommandType.EXPLORE_PROJECT;
+                string dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + matched.Groups[1].Value + @"\modules\";
+                Process.Start(dir);
+                ran = true;
+            }
             matched = Regex.Match(command, @"^explore");
             if (!ran && matched.Success)
             {
