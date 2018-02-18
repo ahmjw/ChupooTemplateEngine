@@ -32,7 +32,7 @@ Console Application to build linked HTML page. Make your web design more managea
 # Features
 - Auto-render edited HTML file.
 - Backup data on version.
-- Able to combine with SASS/SASS.
+- Able to combine with SASS/LESS.
 - Able to use component for manageable web design data.
 - Launch to web template production. Using universal HTML rendering result.
 - Export to Wordpress.
