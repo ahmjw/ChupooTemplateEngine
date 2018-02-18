@@ -1,20 +1,18 @@
 ﻿using ChupooTemplateEngine.ViewParsers;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Permissions;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using System.Windows.Forms;
 using static ChupooTemplateEngine.Command;
 
 namespace ChupooTemplateEngine
 {
-    class Program
+    class Program : ApplicationContext
     {
         public static string current_route = ".temp";
         private static string w_view_dir;
@@ -22,7 +20,8 @@ namespace ChupooTemplateEngine
         private static string[] watcher_exts = { ".html" };
         private static string current_project_name;
         private static FileSystemWatcher watcher;
-        
+        private static Process browser;
+
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         static void Main(string[] args)
         {
@@ -36,6 +35,9 @@ namespace ChupooTemplateEngine
             }
             Run();
         }
+
+        [DllImport("User32.dll")]
+        static extern int SetForegroundWindow(IntPtr hWnd);
 
         private static void LoadBackup(string project_name)
         {
@@ -168,6 +170,7 @@ namespace ChupooTemplateEngine
                 {
                     HtmlTemplate viewParser = new HtmlTemplate();
                     viewParser.Parse(view_name, view_name);
+                    RefreshBrowser();
                     CurrentCommand = CommandType.FILE_SYSTEM_WATCHER;
                 }
                 finally
@@ -181,13 +184,25 @@ namespace ChupooTemplateEngine
             }
         }
 
-        private static void Run()
+        private static void RefreshBrowser()
         {
-            if (current_project_name != null)
-                Console.Write("Chupoo[" + current_project_name + "]$ ");
-            else
-                Console.Write("Chupoo$ ");
-            string command = Console.ReadLine();
+            if (browser != null)
+            {
+                try
+                {
+                    IntPtr ptr = browser.MainWindowHandle;
+                    SetForegroundWindow(ptr);
+                    SendKeys.SendWait("{F5}");
+                }
+                catch
+                {
+                    RunCommand("browse");
+                }
+            }
+        }
+
+        private static void RunCommand(string command)
+        {
             bool ran = false;
             Match matched;
             matched = Regex.Match(command, @"^clear$");
@@ -231,7 +246,13 @@ namespace ChupooTemplateEngine
                     {
                         path = Directories.Public + "index.html";
                         if (File.Exists(path))
-                            Process.Start(path);
+                        {
+                            Process process = new Process();
+                            process.StartInfo.FileName = "iexplore.exe";
+                            process.StartInfo.Arguments = path;
+                            process.Start();
+                            browser = process;
+                        }
                         else
                             Console.WriteLine("Error: No route for browsing");
                     }
@@ -334,6 +355,16 @@ namespace ChupooTemplateEngine
             if (!ran)
                 Console.WriteLine("Error: Invalid command");
             Run();
+        }
+
+        private static void Run()
+        {
+            if (current_project_name != null)
+                Console.Write("Chupoo[" + current_project_name + "]$ ");
+            else
+                Console.Write("Chupoo$ ");
+            string command = Console.ReadLine();
+            RunCommand(command);
         }
 
         private static void RenderBackup(string name)
