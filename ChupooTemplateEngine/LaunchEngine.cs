@@ -64,36 +64,23 @@ namespace ChupooTemplateEngine
             foreach (string dir in dirs)
             {
                 DirectoryInfo dinfo = new DirectoryInfo(dir);
-                if (dinfo.Name[0] == '_') continue;
-                string path_stage = dir.Replace(Directories.Current, "");
-                if (!Directory.Exists(Directories.Public + path_stage))
-                    Directory.CreateDirectory(Directories.Public + path_stage);
-
-                string[] subdirs = Directory.GetDirectories(path);
-                if (subdirs.Length > 0)
+                if (dinfo.Name[0] != '@') continue;
+                string file = dir + "\\main.html";
+                if (File.Exists(file))
                 {
-                    string old_asset_level = asset_level;
-                    RenderDirectoryRecursively(dir, asset_level + "../");
-                    asset_level = old_asset_level;
-                }
-            }
-            string[] files = Directory.GetFiles(path);
-            foreach (string file in files)
-            {
-                FileInfo finfo = new FileInfo(file);
-                if (finfo.Name[0] == '_' || finfo.Extension != ".html") continue;
-                string path_stage = file.Replace(Directories.Current, "").Replace(".html", "");
-                ViewParser viewParser = null;
-                switch (launchType)
-                {
-                    case LaunchTypeEnum.HTML_TEMPLATE:
-                        viewParser = new HtmlTemplate();
-                        viewParser.Parse(path_stage, path_stage);
-                        break;
-                    case LaunchTypeEnum.WORDPRESS:
-                        viewParser = new Wordpress();
-                        viewParser.Parse(path_stage, path_stage);
-                        break;
+                    string path_stage = file.Replace(Directories.Current, "").Substring(1).Replace("\\main.html", "");
+                    ViewParser viewParser = null;
+                    switch (launchType)
+                    {
+                        case LaunchTypeEnum.HTML_TEMPLATE:
+                            viewParser = new HtmlTemplate();
+                            viewParser.Parse(path_stage, path_stage);
+                            break;
+                        case LaunchTypeEnum.WORDPRESS:
+                            viewParser = new Wordpress();
+                            viewParser.Parse(path_stage, path_stage);
+                            break;
+                    }
                 }
             }
         }

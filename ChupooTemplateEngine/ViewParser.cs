@@ -58,27 +58,7 @@ namespace ChupooTemplateEngine
                     HtmlTemplate viewParser = new HtmlTemplate();
                     viewParser.Parse(path_stage, path_stage);
                 }
-                //string path_stage = dir.Replace(Directories.Current, "");
-                //if (!Directory.Exists(Directories.Public + path_stage))
-                //    Directory.CreateDirectory(Directories.Public + path_stage);
-
-                //string[] subdirs = Directory.GetDirectories(path);
-                //if (subdirs.Length > 0)
-                //{
-                //    string old_asset_level = asset_level;
-                //    RenderDirectoryRecursively(dir, asset_level + "../");
-                //    asset_level = old_asset_level;
-                //}
             }
-            //string[] files = Directory.GetFiles(path);
-            //foreach (string file in files)
-            //{
-            //    FileInfo finfo = new FileInfo(file);
-            //    if (finfo.Name[0] == '_' || finfo.Extension != ".html") continue;
-            //    string path_stage = file.Replace(Directories.Current, "").Replace(".html", "");
-            //    HtmlTemplate viewParser = new HtmlTemplate();
-            //    viewParser.Parse(path_stage, path_stage);
-            //}
         }
 
         protected string SeparateViewStyle(string content)

@@ -129,7 +129,7 @@ namespace ChupooTemplateEngine
                         }
                         else
                         {
-                            string view_asset = asset_level + component_name + match.Groups[1].Value.Substring(1);
+                            string view_asset = asset_level + component_name + "/" + match.Groups[1].Value.Substring(1);
                             new_value += LaunchViewAssets(view_asset);
                         }
                     }
