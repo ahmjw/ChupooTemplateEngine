@@ -51,6 +51,7 @@ namespace ChupooTemplateEngine
 
             Directories.Module = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\";
             Directories.View = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\views\";
+            Directories.Lib = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\libs\";
             w_view_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\views";
             Directories.Layout = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\layouts\";
             Directories.Asset = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\assets\";
@@ -87,6 +88,7 @@ namespace ChupooTemplateEngine
 
             Directories.Module = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\";
             Directories.View = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\views\";
+            Directories.Lib = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\libs\";
             w_view_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\views";
             Directories.Layout = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\layouts\";
             Directories.Asset = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\assets\";

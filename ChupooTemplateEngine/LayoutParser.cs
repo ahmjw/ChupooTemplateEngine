@@ -146,8 +146,10 @@ namespace ChupooTemplateEngine
 
         protected string RenderLayoutComponent(string name, string content, string parent_route = null)
         {
-            content = ReplaceAssetUrlText(content, "./", name);
+            LibParser lp = new LibParser();
+            content = lp.Parse(content);
             content = RenderPartialLayout(content);
+            content = ReplaceAssetUrlText(content, "./", name);
             RenderPartialAssets(name, Directories.Layout, content, true, parent_route);
             content = SeparateLayoutStyle(content);
             content = SeparateLayoutScript(content);

@@ -24,6 +24,12 @@ namespace ChupooTemplateEngine
         protected static List<string> l_script_code_list = new List<string>();
         protected static List<string> l_style_code_list = new List<string>();
 
+        public static void RegisterCssFile(string path, string url)
+        {
+            string content = @"<link rel=""stylesheet"" type=""text/css"" href=""" + url + @""" />" + "\n";
+            v_style_file_list.Add(content);
+        }
+
         private static string[] pic_exts = { ".ico", ".png", ".jpeg", ".jpg", ".jpeg", ".bmp", ".svg" };
         private static string[] vid_exts = { ".mp4", ".avi", ".mov", ".flv", ".wmv", ".3gp", ".mpg" };
         private static string[] aud_exts = { ".mp3", ".amr", ".ogg", ".wav", ".wma" };

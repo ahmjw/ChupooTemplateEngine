@@ -56,6 +56,7 @@
     <Compile Include="LayoutParser.cs" />
     <Compile Include="LayoutParsers\HtmlTemplate.cs" />
     <Compile Include="LayoutParsers\Wordpress.cs" />
+    <Compile Include="LibParser.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

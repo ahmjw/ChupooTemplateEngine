@@ -228,6 +228,8 @@ namespace ChupooTemplateEngine
             FileInfo finfo = new FileInfo(layout_file);
             string content = File.ReadAllText(layout_file);
             string c_name = finfo.DirectoryName.Replace(Directories.Module, "").Replace('\\', '/') + "/";
+            LibParser lp = new LibParser();
+            content = lp.Parse(content);
             content = ReplaceAssetUrlText(content, "./", c_name);
             content = LoadPartialView(content);
             RenderPartialAssets(layout_name, Directories.View, content, true, parent_route);
