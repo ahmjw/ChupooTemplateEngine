@@ -58,6 +58,7 @@ namespace ChupooTemplateEngine
                     HtmlTemplate viewParser = new HtmlTemplate();
                     viewParser.Parse(path_stage, path_stage);
                 }
+                Directories.Current = Directories.View;
             }
         }
 

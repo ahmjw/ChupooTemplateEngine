@@ -82,6 +82,7 @@ namespace ChupooTemplateEngine
                             break;
                     }
                 }
+                Directories.Current = Directories.View;
             }
         }
     }
