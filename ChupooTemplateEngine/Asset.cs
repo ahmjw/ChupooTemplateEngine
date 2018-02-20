@@ -11,6 +11,10 @@ namespace ChupooTemplateEngine
     {
         public static void ClearAssets()
         {
+            if (!Directory.Exists(Directories.Public))
+            {
+                return;
+            }
             string[] public_dirs = Directory.GetDirectories(Directories.Public);
             foreach (string dir in public_dirs)
             {

@@ -266,10 +266,10 @@ namespace ChupooTemplateEngine
 
         private string RenameAsset(string asset)
         {
-            Match match = Regex.Match(asset, @"(_.*)?/([a-zA-Z0-9-_]+)(\.[a-zA-Z0-9-_]+)$");
+            string d_root = Directories.PublicAsset + "local\\";
+            Match match = Regex.Match(asset, @"(_.*)?/([a-zA-Z0-9-_\.]+)(\.[a-zA-Z0-9-_]+)$");
             if (match.Success)
             {
-                string d_root = Directories.PublicAsset + "local\\";
                 string d_name = "";
                 string extension = match.Groups[3].Value;
                 string f_name = match.Groups[2].Value;
@@ -295,6 +295,22 @@ namespace ChupooTemplateEngine
                 else if (vid_exts.Any(extension.ToLower().Equals))
                 {
                     d_name = "videos";
+                    if (!Directory.Exists(d_root + d_name))
+                    {
+                        Directory.CreateDirectory(d_root + d_name);
+                    }
+                }
+                else if (extension == ".js")
+                {
+                    d_name = "scripts";
+                    if (!Directory.Exists(d_root + d_name))
+                    {
+                        Directory.CreateDirectory(d_root + d_name);
+                    }
+                }
+                else if (extension == ".css")
+                {
+                    d_name = "styles";
                     if (!Directory.Exists(d_root + d_name))
                     {
                         Directory.CreateDirectory(d_root + d_name);
