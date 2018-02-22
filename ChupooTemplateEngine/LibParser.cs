@@ -11,7 +11,7 @@ namespace ChupooTemplateEngine
 {
     class LibParser
     {
-        Hashtable attributes = new Hashtable();
+        private Hashtable attributes = new Hashtable();
 
         private void ReadAttributes(string text)
         {
@@ -44,6 +44,7 @@ namespace ChupooTemplateEngine
                         RegisterAssets(lib_name, lib_dir);
                         string part_content = File.ReadAllText(lib_file);
                         part_content = ReplaceAttributes(part_content);
+                        part_content = Parse(part_content);
 
                         content = Parser.SubsituteString(content, match.Index + newLength, match.Length, part_content);
                         newLength += part_content.Length - match.Length;
