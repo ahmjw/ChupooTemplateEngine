@@ -34,6 +34,8 @@ namespace ChupooTemplateEngine.ViewParsers
             else if (File.Exists(path))
             {
                 view_content = File.ReadAllText(path);
+                LibParser lp = new LibParser();
+                view_content = lp.Parse(view_content);
 
                 matched = Regex.Match(view_content, @"<c\.config\slayout=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");
                 if (matched.Success)

@@ -41,9 +41,12 @@ namespace ChupooTemplateEngine
                     string lib_file = lib_dir + "\\main.html";
                     if (File.Exists(lib_file))
                     {
-                        RegisterAssets(lib_name, lib_dir);
                         string part_content = File.ReadAllText(lib_file);
                         part_content = ReplaceAttributes(part_content);
+
+                        AssetParser ap = new AssetParser();
+                        part_content = ap.Parse(lib_name, part_content);
+
                         part_content = Parse(part_content);
 
                         content = Parser.SubsituteString(content, match.Index + newLength, match.Length, part_content);
@@ -52,13 +55,6 @@ namespace ChupooTemplateEngine
                 }
             }
             return content;
-        }
-
-        private void RegisterAssets(string name, string lib_dir)
-        {
-            string path = lib_dir + "\\main.css";
-            string url = "../modules/libs/" + name + "/main.css";
-            Parser.RegisterCssFile(path, url);
         }
 
         private string ReplaceAttributes(string content)

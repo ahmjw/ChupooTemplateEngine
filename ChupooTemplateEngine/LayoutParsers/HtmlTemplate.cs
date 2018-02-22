@@ -49,7 +49,6 @@ namespace ChupooTemplateEngine.LayoutParsers
 
             layout_content = PasteScripts(layout_content);
             layout_content = PasteStyles(layout_content);
-            //layout_content = ReplaceAssetUrlText(layout_content, asset_level);
             string pattern = @"<c\.content(?:\s*\/)?>(?:<\/c\.content>)?";
             layout_content = ReplaceText(pattern, layout_content, view_content);
 
