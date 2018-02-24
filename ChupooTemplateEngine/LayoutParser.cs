@@ -1,5 +1,6 @@
 ﻿using ChupooTemplateEngine.LayoutParsers;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -95,7 +96,7 @@ namespace ChupooTemplateEngine
                 }
                 else
                 {
-                    asset_level = asset_level.Substring(2) + "../modules";
+                    asset_level = asset_level.Substring(2) + "../dev";
                 }
 
                 foreach (Match match in matches)
@@ -147,7 +148,7 @@ namespace ChupooTemplateEngine
         protected string RenderLayoutComponent(string name, string content, string parent_route = null)
         {
             LibParser lp = new LibParser();
-            content = lp.Parse(content);
+            content = lp.Parse(name, content);
             content = RenderPartialLayout(content);
             content = ReplaceAssetUrlText(content, "./", name);
             RenderPartialAssets(name, Directories.Layout, content, true, parent_route);
@@ -164,9 +165,13 @@ namespace ChupooTemplateEngine
                 string appended = "";
                 foreach (string style in l_style_file_list)
                     appended += style;
-                foreach (string style in v_style_file_list)
+                foreach (string style in v_style_file_list2)
                 {
                     appended += style;
+                }
+                foreach (DictionaryEntry item in v_style_file_list)
+                {
+                    appended += item.Value;
                 }
                 string new_content = appended + matched.Value;
                 content = SubsituteString(content, matched.Index, matched.Length, new_content);
@@ -193,8 +198,14 @@ namespace ChupooTemplateEngine
                 string appended = "";
                 foreach (string script in l_script_file_list)
                     appended += script;
-                foreach (string script in v_script_file_list)
+                foreach (string script in v_script_file_list2)
+                {
                     appended += script;
+                }
+                foreach (DictionaryEntry item in v_script_file_list)
+                {
+                    appended += item.Value;
+                }
                 string new_content = appended + matched.Value;
                 content = SubsituteString(content, matched.Index, matched.Length, new_content);
             }

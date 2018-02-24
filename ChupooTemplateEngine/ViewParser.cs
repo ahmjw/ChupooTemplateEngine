@@ -66,19 +66,19 @@ namespace ChupooTemplateEngine
         {
             string pattern;
             MatchCollection matches;
-            pattern = @"<link.*?rel=""stylesheet"".*?>";
+            pattern = @"<link.*?rel=""stylesheet"".*?>\n?";
             matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
                 int newLength = 0;
                 foreach (Match match in matches)
                 {
-                    v_style_file_list.Add(match.Value);
+                    v_style_file_list2.Add(match.Value);
                     content = SubsituteString(content, match.Index + newLength, match.Length, "");
                     newLength += -match.Length;
                 }
             }
-            pattern = @"<style.*?>[\w\W]*?</style>";
+            pattern = @"<style.*?>[\w\W]*?</style>\n?";
             matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -97,19 +97,19 @@ namespace ChupooTemplateEngine
         {
             string pattern;
             MatchCollection matches;
-            pattern = @"<script.*?></script>";
+            pattern = @"<script.*?></script>\n?";
             matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
                 int newLength = 0;
                 foreach (Match match in matches)
                 {
-                    v_script_file_list.Add(match.Value);
+                    v_script_file_list2.Add(match.Value);
                     content = SubsituteString(content, match.Index + newLength, match.Length, "");
                     newLength += -match.Length;
                 }
             }
-            pattern = @"<script.*?>[\w\W]*?</script>";
+            pattern = @"<script.*?>[\w\W]*?</script>\n?";
             matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -163,7 +163,7 @@ namespace ChupooTemplateEngine
 
         protected string ReplaceAssetUrlText(string content, string asset_level, string component_name = null)
         {
-            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(\...*?)"".*?>";
+            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(\.[^\.].*?)"".*?>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -178,7 +178,7 @@ namespace ChupooTemplateEngine
                 }
                 else
                 {
-                    asset_level = asset_level.Substring(2) + "../modules";
+                    asset_level = asset_level.Substring(2) + "..";
                 }
 
                 foreach (Match match in matches)
@@ -227,9 +227,14 @@ namespace ChupooTemplateEngine
         {
             FileInfo finfo = new FileInfo(layout_file);
             string content = File.ReadAllText(layout_file);
-            string c_name = finfo.DirectoryName.Replace(Directories.Module, "").Replace('\\', '/') + "/";
+
             LibParser lp = new LibParser();
-            content = lp.Parse(content);
+            content = lp.Parse(layout_name, content);
+
+            ModuleParser mp = new ModuleParser();
+            content = mp.Parse(content);
+
+            string c_name = finfo.DirectoryName.Replace(Directories.Project, "").Replace('\\', '/') + "/";
             content = ReplaceAssetUrlText(content, "./", c_name);
             content = LoadPartialView(content);
             RenderPartialAssets(layout_name, Directories.View, content, true, parent_route);
@@ -241,7 +246,7 @@ namespace ChupooTemplateEngine
 
         protected string LoadPartialView(string content, string parent_route = null)
         {
-            string pattern = @"<c\.import\sname=""(.+)?""(?:\s*\/)?>(?:<\/c\.import>)?";
+            string pattern = @"<c\.part\[(.+)?\](.*?)(?:\s*\/)?>(?:<\/c\.part>)?";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {

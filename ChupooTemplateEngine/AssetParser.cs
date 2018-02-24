@@ -14,6 +14,14 @@ namespace ChupooTemplateEngine
         private string[] pic_exts = { ".ico", ".png", ".jpeg", ".jpg", ".jpeg", ".bmp", ".svg" };
         private string[] vid_exts = { ".mp4", ".avi", ".mov", ".flv", ".wmv", ".3gp", ".mpg" };
         private string[] aud_exts = { ".mp3", ".amr", ".ogg", ".wav", ".wma" };
+        private string v_dir;
+        private string dir_lv;
+
+        public AssetParser(string dir_lv, string v_dir)
+        {
+            this.dir_lv = dir_lv;
+            this.v_dir = v_dir;
+        }
 
         private void ParseCss(string dir, string src_path, string dst_path)
         {
@@ -28,7 +36,7 @@ namespace ChupooTemplateEngine
                 if (File.Exists(src_path))
                 {
                     FileInfo finfo2 = new FileInfo(src_path);
-                    string d_name = finfo2.DirectoryName.Replace(Directories.Module, "") + "\\" + finfo2.Name;
+                    string d_name = finfo2.DirectoryName.Replace(Directories.Project, "") + "\\" + finfo2.Name;
                     d_name = d_name.Replace("\\", "/");
                     i_dst_file_name = RenameAsset(d_name);
                     string i_dst_path = Directories.PublicAsset + "local\\" + i_dst_file_name;
@@ -104,7 +112,7 @@ namespace ChupooTemplateEngine
 
         private string ReplaceAssetUrlText(string asset_level, string name, string content)
         {
-            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(\...*?)"".*?>";
+            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(\.[^\.].*?)"".*?>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -119,9 +127,16 @@ namespace ChupooTemplateEngine
                 }
                 else
                 {
-                    asset_level = asset_level.Substring(2) + "../modules";
+                    if (dir_lv == "libs")
+                    {
+                        asset_level = asset_level.Substring(2) + "../../..";
+                    }
+                    else
+                    {
+                        asset_level = asset_level.Substring(2) + "../dev";
+                    }
                 }
-                asset_level += "/libs";
+                asset_level += "/" + dir_lv;
 
                 foreach (Match match in matches)
                 {
@@ -147,8 +162,21 @@ namespace ChupooTemplateEngine
                         }
                     }
 
-                    content = Parser.SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
-                    newLength += new_value.Length - match.Groups[1].Length;
+                    if (dir_lv == "libs")
+                    {
+                        if (!Parser.IsAssetExists(new_value))
+                        {
+                            Parser.RegisterAsset(new_value);
+                        }
+                        
+                        content = Parser.SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
+                        newLength += new_value.Length - match.Groups[1].Length;
+                    }
+                    else
+                    {
+                        content = Parser.SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
+                        newLength += new_value.Length - match.Groups[1].Length;
+                    }
                 }
             }
             return content;
@@ -156,18 +184,17 @@ namespace ChupooTemplateEngine
 
         public string Parse(string name, string content)
         {
-            string v_dir = Directories.Lib;
             string _route = name;
             content = ReplaceAssetUrlText("./", name, content);
 
             string path = v_dir + name + "\\main.css";
             if (File.Exists(path))
             {
-                string _m_name = path.Replace(Directories.Module, "").Replace('\\', '/');
+                string _m_name = path.Replace(Directories.Dev, "").Replace('\\', '/');
                 string asset_url;
                 if (CurrentCommand != CommandType.LAUNCH)
                 {
-                    asset_url = "../modules/" + _m_name;
+                    asset_url = "../dev/" + _m_name;
                 }
                 else
                 {
@@ -186,17 +213,17 @@ namespace ChupooTemplateEngine
                     }
                     asset_url = "assets/local/styles/" + m_name;
                 }
-                Parser.RegisterCssFile(asset_url);
+                Parser.RegisterCssFile(name, asset_url);
             }
 
             path = v_dir + name + "\\main.js";
             if (File.Exists(path))
             {
                 string asset_url;
-                string _m_name = path.Replace(Directories.Module, "").Replace('\\', '/');
+                string _m_name = path.Replace(Directories.Dev, "").Replace('\\', '/');
                 if (CurrentCommand != CommandType.LAUNCH)
                 {
-                    asset_url = "../modules/" + _m_name;
+                    asset_url = "../dev/" + _m_name;
                 }
                 else
                 {
@@ -215,7 +242,7 @@ namespace ChupooTemplateEngine
                     }
                     asset_url = "assets/local/scripts/" + m_name;
                 }
-                Parser.RegisterJsFile(asset_url);
+                Parser.RegisterJsFile(name, asset_url);
             }
             return content;
         }

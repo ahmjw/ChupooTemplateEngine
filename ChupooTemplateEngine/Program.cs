@@ -28,6 +28,7 @@ namespace ChupooTemplateEngine
             Console.WriteLine("Welcome to Chupoo View Engine's console.");
             Console.WriteLine("You can render your web design data to HTML linked-page here.");
             Directories.Resources = AppDomain.CurrentDomain.BaseDirectory + @"resources";
+            Directories.Lib = AppDomain.CurrentDomain.BaseDirectory + @"libs\\";
 
             if (Properties.Settings.Default.current_project_name != null && Properties.Settings.Default.current_project_name != "")
             {
@@ -49,9 +50,9 @@ namespace ChupooTemplateEngine
 
             current_project_name = project_name;
 
-            Directories.Module = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\";
+            Directories.Project = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\";
             Directories.View = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\views\";
-            Directories.Lib = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\libs\";
+            Directories.Module = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\";
             w_view_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\views";
             Directories.Layout = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\layouts\";
             Directories.Asset = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\assets\";
@@ -86,15 +87,16 @@ namespace ChupooTemplateEngine
             Properties.Settings.Default.current_project_name = project_name;
             Properties.Settings.Default.Save();
 
-            Directories.Module = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\";
-            Directories.View = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\views\";
-            Directories.Lib = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\libs\";
-            w_view_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\views";
-            Directories.Layout = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\layouts\";
-            Directories.Asset = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\assets\";
-            Directories.Config = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\config\";
-            Directories.Backup = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\backups\";
-            Directories.ViewDataJson = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\modules\views_data\";
+            Directories.Project = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\";
+            Directories.Dev = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\dev\";
+            Directories.View = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\dev\views\";
+            Directories.Module = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\dev\modules\";
+            w_view_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\dev\views";
+            Directories.Layout = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\dev\layouts\";
+            Directories.Asset = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\dev\assets\";
+            Directories.Config = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\dev\config\";
+            Directories.Backup = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\dev\backups\";
+            Directories.ViewDataJson = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\dev\views_data\";
             Directories.Public = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\";
             Directories.PublicAsset = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\assets\";
 
@@ -271,7 +273,7 @@ namespace ChupooTemplateEngine
             if (!ran && matched.Success)
             {
                 CurrentCommand = CommandType.EXPLORE_PROJECT;
-                string dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + matched.Groups[1].Value + @"\modules\";
+                string dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + matched.Groups[1].Value + @"\dev\";
                 Process.Start(dir);
                 ran = true;
             }
@@ -279,7 +281,7 @@ namespace ChupooTemplateEngine
             if (!ran && matched.Success)
             {
                 CurrentCommand = CommandType.EXPLORE;
-                Process.Start(Directories.Module);
+                Process.Start(Directories.Project);
                 ran = true;
             }
             matched = Regex.Match(command, @"^render$");
@@ -378,7 +380,7 @@ namespace ChupooTemplateEngine
         private static void RenderBackup(string name)
         {
             string t_name = current_project_name;
-            string t_dir = current_project_name + @"\modules\backups\" + name;
+            string t_dir = current_project_name + @"\dev\backups\" + name;
             LoadBackup(t_dir);
 
             Directories.Current = Directories.View;
@@ -445,10 +447,12 @@ namespace ChupooTemplateEngine
             if (!Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
             CopyDirectory(Directories.View, dir + @"\views\");
+            CopyDirectory(Directories.Lib, dir + @"\libs\");
             CopyDirectory(Directories.Layout, dir + @"\layouts\");
             CopyDirectory(Directories.Config, dir + @"\config\");
             CopyDirectory(Directories.ViewDataJson, dir + @"\views_data\");
             CopyDirectory(Directories.Asset, dir + @"\assets\");
+            Directory.CreateDirectory(dir + @"\public\");
             Console.WriteLine("Backed up to version " + version);
         }
     }

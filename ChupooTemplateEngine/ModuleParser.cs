@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ChupooTemplateEngine
 {
-    class LibParser
+    class ModuleParser
     {
         private Hashtable attributes = new Hashtable();
 
@@ -26,9 +26,9 @@ namespace ChupooTemplateEngine
             }
         }
 
-        public string Parse(string fileName, string content)
+        public string Parse(string content)
         {
-            string pattern = @"<c\.lib\[(.+)?\](.*?)(?:\s*\/)?>(?:<\/c\.lib>)?";
+            string pattern = @"<c\.module\[(.+)?\](.*?)(?:\s*\/)?>(?:<\/c\.module>)?";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -36,36 +36,28 @@ namespace ChupooTemplateEngine
                 foreach (Match match in matches)
                 {
                     string lib_name = match.Groups[1].Value;
-
-                    if (!Parser.IsLibExists(lib_name))
-                    {
-                        Parser.RegisterLib(lib_name);
-                    }
-                    else
-                    {
-                        content = Parser.SubsituteString(content, match.Index + newLength, match.Length, "");
-                        newLength += -match.Length;
-                        continue;
-                    }
-
+                    Console.WriteLine(lib_name);
                     ReadAttributes(match.Groups[2].Value);
-                    string lib_dir = Directories.Lib + lib_name.Replace("/", "\\");
+                    string lib_dir = Directories.Module + lib_name.Replace("/", "\\");
                     string lib_file = lib_dir + "\\main.html";
                     if (File.Exists(lib_file))
                     {
                         string part_content = File.ReadAllText(lib_file);
                         part_content = ReplaceAttributes(part_content);
 
-                        AssetParser ap = new AssetParser("libs", Directories.Lib);
+                        LibParser lp = new LibParser();
+                        part_content = lp.Parse(lib_name, part_content);
+
+                        AssetParser ap = new AssetParser("modules", Directories.Module);
                         part_content = ap.Parse(lib_name, part_content);
 
-                        part_content = Parse(lib_name, part_content);
+                        part_content = Parse(part_content);
 
                         content = Parser.SubsituteString(content, match.Index + newLength, match.Length, part_content);
                         newLength += part_content.Length - match.Length;
                     }
                     else
-                        Console.WriteLine("Warning: Library is not found > " + lib_name + " in " + fileName);
+                        Console.WriteLine("Warning: Module is not found > " + lib_name);
                 }
             }
             return content;

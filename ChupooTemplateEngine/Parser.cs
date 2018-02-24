@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using static ChupooTemplateEngine.Route;
 using static ChupooTemplateEngine.Command;
+using System.Collections;
 
 namespace ChupooTemplateEngine
 {
@@ -15,8 +16,16 @@ namespace ChupooTemplateEngine
         protected string cfg_layout_name = "page";
         protected static List<string> script_file_list = new List<string>();
         protected static List<string> style_file_list = new List<string>();
-        protected static List<string> v_script_file_list = new List<string>();
-        protected static List<string> v_style_file_list = new List<string>();
+
+        protected static Hashtable v_script_file_list = new Hashtable();
+        protected static Hashtable v_style_file_list = new Hashtable();
+        protected static List<string> v_script_file_list2 = new List<string>();
+        protected static List<string> v_style_file_list2 = new List<string>();
+
+        protected static List<string> asset_list = new List<string>();
+
+        protected static List<string> lib_list = new List<string>();
+
         protected static List<string> v_script_code_list = new List<string>();
         protected static List<string> v_style_code_list = new List<string>();
         protected static List<string> l_script_file_list = new List<string>();
@@ -24,16 +33,20 @@ namespace ChupooTemplateEngine
         protected static List<string> l_script_code_list = new List<string>();
         protected static List<string> l_style_code_list = new List<string>();
 
-        public static void RegisterCssFile(string url)
+        public static void RegisterCssFile(string name, string url)
         {
+            if (v_style_file_list.Contains(name))
+                return;
             string content = @"<link rel=""stylesheet"" type=""text/css"" href=""" + url + @""" />" + "\n";
-            v_style_file_list.Add(content);
+            v_style_file_list[name] = content;
         }
 
-        public static void RegisterJsFile(string url)
+        public static void RegisterJsFile(string name, string url)
         {
+            if (v_script_file_list.Contains(name))
+                return;
             string content = "<script language=\"javascript\" src=\"" + url + "\"></script>" + "\n";
-            v_script_file_list.Add(content);
+            v_script_file_list[name] = content;
         }
 
         private static string[] pic_exts = { ".ico", ".png", ".jpeg", ".jpg", ".jpeg", ".bmp", ".svg" };
@@ -62,6 +75,7 @@ namespace ChupooTemplateEngine
             l_style_code_list.Clear();
             v_style_file_list.Clear();
             v_style_code_list.Clear();
+            v_style_file_list2.Clear();
         }
 
         public static void ClearScripts()
@@ -71,12 +85,15 @@ namespace ChupooTemplateEngine
             v_script_code_list.Clear();
             l_script_file_list.Clear();
             l_script_code_list.Clear();
+            v_script_file_list2.Clear();
         }
 
         public static void ClearAll()
         {
             ClearStyles();
             ClearScripts();
+            asset_list.Clear();
+            lib_list.Clear();
         }
 
         protected void RenderPartialAssets(string route, string dir, string view_content, bool is_component = false, string parent_route = null)
@@ -112,11 +129,11 @@ namespace ChupooTemplateEngine
                 path = v_dir + route + ".css";
             if (File.Exists(path))
             {
-                string _m_name = path.Replace(Directories.Module, "").Replace('\\', '/');
+                string _m_name = path.Replace(Directories.Project, "").Replace('\\', '/');
                 string asset_url;
                 if (CurrentCommand != CommandType.LAUNCH)
                 {
-                    asset_url = "../modules/" + _m_name;
+                    asset_url = "../" + _m_name;
                 }
                 else
                 {
@@ -136,7 +153,7 @@ namespace ChupooTemplateEngine
                     asset_url = "assets/local/styles/" + m_name;
                 }
                 string content = @"<link rel=""stylesheet"" type=""text/css"" href=""" + asset_url + @""" />" + "\n";
-                v_style_file_list.Add(content);
+                v_style_file_list2.Add(content);
             }
 
             if (is_component)
@@ -156,10 +173,10 @@ namespace ChupooTemplateEngine
             if (File.Exists(path))
             {
                 string asset_url;
-                string _m_name = path.Replace(Directories.Module, "").Replace('\\', '/');
+                string _m_name = path.Replace(Directories.Project, "").Replace('\\', '/');
                 if (CurrentCommand != CommandType.LAUNCH)
                 {
-                    asset_url = "../modules/" + _m_name;
+                    asset_url = "../" + _m_name;
                 }
                 else
                 {
@@ -179,8 +196,28 @@ namespace ChupooTemplateEngine
                     asset_url = "assets/local/scripts/" + m_name;
                 }
                 string content = "<script language=\"javascript\" src=\"" + asset_url + "\"></script>" + "\n";
-                v_script_code_list.Add(content);
+                v_script_file_list2.Add(content);
             }
+        }
+
+        internal static void RegisterLib(string new_value)
+        {
+            lib_list.Add(new_value);
+        }
+
+        internal static bool IsLibExists(string new_value)
+        {
+            return lib_list.Contains(new_value);
+        }
+
+        internal static void RegisterAsset(string new_value)
+        {
+            asset_list.Add(new_value);
+        }
+
+        internal static bool IsAssetExists(string new_value)
+        {
+            return asset_list.Contains(new_value);
         }
 
         private void ParseCss(string dir, string src_path, string dst_path)
@@ -196,7 +233,7 @@ namespace ChupooTemplateEngine
                 if (File.Exists(src_path))
                 {
                     FileInfo finfo2 = new FileInfo(src_path);
-                    string d_name = finfo2.DirectoryName.Replace(Directories.Module, "") + "\\" + finfo2.Name;
+                    string d_name = finfo2.DirectoryName.Replace(Directories.Project, "") + "\\" + finfo2.Name;
                     d_name = d_name.Replace("\\", "/");
                     i_dst_file_name = RenameAsset(d_name);
                     string i_dst_path = Directories.PublicAsset + "local\\" + i_dst_file_name;
@@ -253,7 +290,7 @@ namespace ChupooTemplateEngine
             {
                 asset = "layouts/" + asset.Replace("//", "/");
             }
-            string src_path = Directories.Module + asset.Replace("/", "\\");
+            string src_path = Directories.Project + asset.Replace("/", "\\");
 
             if (File.Exists(src_path))
             {

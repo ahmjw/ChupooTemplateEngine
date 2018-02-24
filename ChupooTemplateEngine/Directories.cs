@@ -16,9 +16,11 @@ namespace ChupooTemplateEngine
         internal static string Asset;
         internal static string Backup;
         internal static string Config;
-        internal static string Module;
+        internal static string Project;
         internal static string PublicAsset;
         internal static string Current;
         internal static string Resources;
+        internal static string Module;
+        internal static string Dev;
     }
 }

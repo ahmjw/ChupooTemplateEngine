@@ -167,7 +167,7 @@ namespace ChupooTemplateEngine.LayoutParsers
         private void CopyResources()
         {
             string dst = Directories.Public + "style.css";
-            string src = Directories.Module + "\\launch\\wordpress\\style.css";
+            string src = Directories.Project + "\\launch\\wordpress\\style.css";
             File.Copy(src, dst);
         }
 
