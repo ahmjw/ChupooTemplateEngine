@@ -11,7 +11,7 @@ namespace ChupooTemplateEngine
     class LaunchEngine
     {
         private string[] asset_exts = { ".js", ".css", ".ico", ".png", ".jpeg", ".jpg", ".jpeg", ".bmp", ".svg" };
-        private LaunchTypeEnum launchType;
+        public static LaunchTypeEnum LaunchType { set; get; }
         public enum LaunchTypeEnum
         {
             HTML_TEMPLATE,
@@ -20,7 +20,7 @@ namespace ChupooTemplateEngine
 
         public void Run(LaunchTypeEnum launchType)
         {
-            this.launchType = launchType;
+            LaunchType = launchType;
             Asset.ClearAssets();
             Directory.CreateDirectory(Directories.PublicAsset);
             Directory.CreateDirectory(Directories.PublicAsset + "\\local");
@@ -70,7 +70,7 @@ namespace ChupooTemplateEngine
                 {
                     string path_stage = file.Replace(Directories.Current, "").Substring(1).Replace("\\main.html", "");
                     ViewParser viewParser = null;
-                    switch (launchType)
+                    switch (LaunchType)
                     {
                         case LaunchTypeEnum.HTML_TEMPLATE:
                             viewParser = new HtmlTemplate();
@@ -79,6 +79,7 @@ namespace ChupooTemplateEngine
                         case LaunchTypeEnum.WORDPRESS:
                             viewParser = new Wordpress();
                             viewParser.Parse(path_stage, path_stage);
+                            LayoutParsers.Wordpress.CreateFunctionsFile();
                             break;
                     }
                 }

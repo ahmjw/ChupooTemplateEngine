@@ -158,6 +158,12 @@ namespace ChupooTemplateEngine
                         {
                             // LAUNCH
                             new_value += match.Groups[1].Value.Substring(2);
+
+                            FileInfo finfo = new FileInfo(new_value);
+                            if (finfo.Extension == ".js")
+                                Parser.RegisterUniversalJsFile(new_value);
+                            else if (finfo.Extension == ".css")
+                                Parser.RegisterUniversalCssFile(new_value);
                         }
                     }
                     else
@@ -212,6 +218,11 @@ namespace ChupooTemplateEngine
                         File.Copy(filePath, destPath);
                     }
                     new_url = "assets/local/" + d_name + "/" + fname;
+
+                    if (matched.Groups[2].Value == ".js")
+                        Parser.RegisterUniversalJsFile(new_url);
+                    else if (matched.Groups[2].Value == ".css")
+                        Parser.RegisterUniversalCssFile(new_url);
                 }
             }
             return new_url;
@@ -247,6 +258,8 @@ namespace ChupooTemplateEngine
                         ParseCss(v_dir + name, path, a_dir + m_name);
                     }
                     asset_url = "assets/local/styles/" + m_name;
+
+                    Parser.RegisterUniversalCssFile(asset_url);
                 }
                 Parser.RegisterCssFile(name, asset_url);
             }
@@ -276,6 +289,8 @@ namespace ChupooTemplateEngine
                         File.Copy(path, a_dir + m_name);
                     }
                     asset_url = "assets/local/scripts/" + m_name;
+
+                    Parser.RegisterUniversalJsFile(asset_url);
                 }
                 Parser.RegisterJsFile(name, asset_url);
             }

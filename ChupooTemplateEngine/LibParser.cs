@@ -56,10 +56,10 @@ namespace ChupooTemplateEngine
                         string part_content = File.ReadAllText(lib_file);
                         part_content = ReplaceAttributes(part_content);
 
+                        part_content = Parse(lib_name, part_content);
+
                         AssetParser ap = new AssetParser("libs", Directories.Lib);
                         part_content = ap.Parse(lib_name, part_content);
-
-                        part_content = Parse(lib_name, part_content);
 
                         content = Parser.SubsituteString(content, match.Index + newLength, match.Length, part_content);
                         newLength += part_content.Length - match.Length;

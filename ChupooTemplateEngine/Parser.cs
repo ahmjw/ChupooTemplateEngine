@@ -33,6 +33,18 @@ namespace ChupooTemplateEngine
         protected static List<string> l_script_code_list = new List<string>();
         protected static List<string> l_style_code_list = new List<string>();
 
+        public static void RegisterUniversalCssFile(string url)
+        {
+            if (!style_file_list.Contains(url))
+            style_file_list.Add(url);
+        }
+
+        public static void RegisterUniversalJsFile(string url)
+        {
+            if (!script_file_list.Contains(url))
+                script_file_list.Add(url);
+        }
+
         public static void RegisterCssFile(string name, string url)
         {
             if (v_style_file_list.Contains(name))
@@ -152,6 +164,8 @@ namespace ChupooTemplateEngine
                         ParseCss(v_dir + route, path, a_dir + m_name);
                     }
                     asset_url = "assets/local/styles/" + m_name;
+
+                    RegisterUniversalCssFile(asset_url);
                 }
                 string content = @"<link rel=""stylesheet"" type=""text/css"" href=""" + asset_url + @""" />" + "\n";
                 v_style_file_list2.Add(content);
@@ -177,7 +191,7 @@ namespace ChupooTemplateEngine
                 string _m_name = path.Replace(Directories.Dev, "").Replace('\\', '/');
                 if (CurrentCommand != CommandType.LAUNCH)
                 {
-                    asset_url = "../" + _m_name;
+                    asset_url = "../dev/" + _m_name;
                 }
                 else
                 {
@@ -195,6 +209,8 @@ namespace ChupooTemplateEngine
                         File.Copy(path, a_dir + m_name);
                     }
                     asset_url = "assets/local/scripts/" + m_name;
+
+                    RegisterUniversalJsFile(asset_url);
                 }
                 string content = "<script language=\"javascript\" src=\"" + asset_url + "\"></script>" + "\n";
                 v_script_file_list2.Add(content);
@@ -306,9 +322,7 @@ namespace ChupooTemplateEngine
                     File.Copy(src_path, dst_path);
                 }
 
-                dst_file_name = "assets/local/" + dst_file_name;                
-                if (this is LayoutParsers.Wordpress || this is ViewParsers.Wordpress)
-                    return "<?= get_template_directory_uri() ?>/" + dst_file_name;
+                dst_file_name = "assets/local/" + dst_file_name;
                 return dst_file_name;
             }
             return asset;

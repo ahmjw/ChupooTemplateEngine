@@ -202,10 +202,7 @@ namespace ChupooTemplateEngine
                         {
                             if (match.Groups[1].Length >= 6 && match.Groups[1].Value.Substring(2, 6) == "assets")
                             {
-                                if (this is Wordpress)
-                                    new_value += "<?= get_template_directory_uri() ?>/" + asset_level + match.Groups[1].Value.Substring(2);
-                                else
-                                    new_value += asset_level + match.Groups[1].Value.Substring(2);
+                                new_value += asset_level + match.Groups[1].Value.Substring(2);
                             }
                             else
                             {
@@ -226,6 +223,20 @@ namespace ChupooTemplateEngine
                             new_value += LaunchViewAssets(view_asset);
                         }
                     }
+
+                    try
+                    {
+                        FileInfo finfo = new FileInfo(new_value);
+                        if (finfo.Extension == ".js")
+                            RegisterUniversalJsFile(new_value);
+                        else if (finfo.Extension == ".css")
+                            RegisterUniversalCssFile(new_value);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error > " + new_value + "\n    " + ex.Message);
+                    }
+
                     content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
                     newLength += new_value.Length - match.Groups[1].Length;
                 }
