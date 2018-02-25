@@ -10,10 +10,24 @@ using static ChupooTemplateEngine.Command;
 
 namespace ChupooTemplateEngine.ViewParsers
 {
-    class Wordpress : ViewParser
+    class ChupooWp : ViewParser
     {
+        public void LoopLayouts(string path)
+        {
+            string[] files = Directory.GetFiles(path);
+            foreach (string item in files)
+            {
+                FileInfo finfo = new FileInfo(item);
+                string dest = finfo.Name.Replace(finfo.Extension, "");
+                LayoutParsers.ChupooWp layoutParser = new LayoutParsers.ChupooWp();
+                layoutParser.Parse(dest, "./");
+            }
+        }
+
         public override void LoopViews(string path)
         {
+            Program.CopyDirectory(Directories.Resources + "\\launch_templates\\chupoowp\\public", Directories.Public);
+
             string[] dirs = Directory.GetDirectories(path);
             foreach (string dir in dirs)
             {
@@ -23,10 +37,13 @@ namespace ChupooTemplateEngine.ViewParsers
                 if (File.Exists(file))
                 {
                     string path_stage = file.Replace(Directories.Current, "").Substring(1).Replace("\\main.html", "");
+                    Console.WriteLine(path_stage);
                     Parse(path_stage, path_stage);
                 }
                 Directories.Current = Directories.View;
             }
+
+            LoopLayouts(Directories.Layout);
         }
 
         public override void Parse(string route, string dest)
@@ -38,7 +55,6 @@ namespace ChupooTemplateEngine.ViewParsers
                 path = Directories.View + "@" + route + "\\main.html";
             }
             Match matched = Regex.Match(route, @"^(.*?)\/?_[a-zA-Z0-9_-]+$");
-
             if (matched.Success)
             {
                 if (CurrentCommand == CommandType.FILE_SYSTEM_WATCHER)
@@ -51,33 +67,31 @@ namespace ChupooTemplateEngine.ViewParsers
             }
             else if (File.Exists(path))
             {
-                view_content = File.ReadAllText(path);
+                string content = File.ReadAllText(path);
 
                 LibParser lp = new LibParser();
-                view_content = lp.Parse(route, view_content);
+                content = lp.Parse(route, content);
 
                 ModuleParser mp = new ModuleParser();
-                view_content = mp.Parse(view_content);
+                content = mp.Parse(content);
 
-                matched = Regex.Match(view_content, @"<c\.config\slayout=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");
+                matched = Regex.Match(content, @"<c\.config\slayout=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");
                 if (matched.Success)
                 {
                     cfg_layout_name = matched.Groups[1].Value;
-                    view_content = SubsituteString(view_content, matched.Index, matched.Length, "");
+                    content = SubsituteString(content, matched.Index, matched.Length, "");
                 }
                 else
                     cfg_layout_name = "page";
 
                 string c_dir = Directories.View + "@" + route;
                 if (Directory.Exists(c_dir))
-                    view_content = LoadPartialView(view_content, "@" + route);
+                    content = LoadPartialView(content, "@" + route);
                 else
-                    view_content = LoadPartialView(view_content);
+                    content = LoadPartialView(content);
 
-                view_content = RenderPartialCss(c_dir, view_content);
-                RenderPartialAssets(route, Directories.View, view_content);
-                view_content = SeparateViewStyle(view_content);
-                view_content = SeparateViewScript(view_content);
+                content = RenderPartialCss(c_dir, content);
+                RenderPartialAssets(route, Directories.View, content);
 
                 string data_path = Directories.ViewDataJson + route + ".json";
                 if (File.Exists(data_path))
@@ -85,11 +99,12 @@ namespace ChupooTemplateEngine.ViewParsers
                     Console.WriteLine("Rendering " + route + ".html JSON data ...");
                     string json_str = File.ReadAllText(data_path);
                     JObject data = JObject.Parse(json_str);
-                    view_content = ReplaceFormattedDataText(view_content, data);
+                    content = ReplaceFormattedDataText(content, data);
                 }
-                view_content = ReplaceLinkUrlText(view_content, asset_level);
-                LayoutParsers.Wordpress layoutParser = new LayoutParsers.Wordpress();
-                layoutParser.Parse(dest, asset_level);
+                content = ReplaceLinkUrlText(content, asset_level);
+                string p_file = Directories.Public + "modules\\views\\" + dest + ".html";
+                File.WriteAllText(p_file, content);
+                Console.WriteLine("OK: " + dest + ".html");
             }
             else
             {

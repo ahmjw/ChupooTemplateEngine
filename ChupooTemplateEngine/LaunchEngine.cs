@@ -15,7 +15,8 @@ namespace ChupooTemplateEngine
         public enum LaunchTypeEnum
         {
             HTML_TEMPLATE,
-            WORDPRESS
+            WORDPRESS,
+            CHUPOO_WP_MVC
         }
 
         public void Run(LaunchTypeEnum launchType)
@@ -61,30 +62,21 @@ namespace ChupooTemplateEngine
 
         private void RenderDirectoryRecursively(string path, string asset_level)
         {
-            string[] dirs = Directory.GetDirectories(path);
-            foreach (string dir in dirs)
+            ViewParser viewParser = null;
+            switch (LaunchType)
             {
-                DirectoryInfo dinfo = new DirectoryInfo(dir);
-                if (dinfo.Name[0] != '@') continue;
-                string file = dir + "\\main.html";
-                if (File.Exists(file))
-                {
-                    string path_stage = file.Replace(Directories.Current, "").Substring(1).Replace("\\main.html", "");
-                    ViewParser viewParser = null;
-                    switch (LaunchType)
-                    {
-                        case LaunchTypeEnum.HTML_TEMPLATE:
-                            viewParser = new HtmlTemplate();
-                            viewParser.Parse(path_stage, path_stage);
-                            break;
-                        case LaunchTypeEnum.WORDPRESS:
-                            viewParser = new Wordpress();
-                            viewParser.Parse(path_stage, path_stage);
-                            LayoutParsers.Wordpress.CreateFunctionsFile();
-                            break;
-                    }
-                }
-                Directories.Current = Directories.View;
+                case LaunchTypeEnum.HTML_TEMPLATE:
+                    viewParser = new HtmlTemplate();
+                    viewParser.LoopViews(path);
+                    break;
+                case LaunchTypeEnum.WORDPRESS:
+                    viewParser = new Wordpress();
+                    viewParser.LoopViews(path);
+                    break;
+                case LaunchTypeEnum.CHUPOO_WP_MVC:
+                    viewParser = new ChupooWp();
+                    viewParser.LoopViews(path);
+                    break;
             }
         }
     }

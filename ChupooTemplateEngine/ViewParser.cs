@@ -14,6 +14,7 @@ namespace ChupooTemplateEngine
     abstract class ViewParser : Parser
     {
         public abstract void Parse(string route, string dest);
+        public abstract void LoopViews(string path);
 
         protected string GetAssetLeveling(string route)
         {
@@ -222,13 +223,16 @@ namespace ChupooTemplateEngine
                         }
                     }
 
+                    // INSIDE VIEW'S PART
                     FileInfo finfo = new FileInfo(new_value);
                     if (finfo.Extension == ".js")
                         RegisterUniversalJsFile(new_value);
                     else if (finfo.Extension == ".css")
                         RegisterUniversalCssFile(new_value);
-                    else if (LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                    else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
                         new_value = "<?= get_template_directory_uri() ?>/" + new_value;
+                    else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.CHUPOO_WP_MVC)
+                        new_value = "./" + new_value;
 
                     content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
                     newLength += new_value.Length - match.Groups[1].Length;

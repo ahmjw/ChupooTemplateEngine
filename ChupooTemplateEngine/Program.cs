@@ -305,12 +305,21 @@ namespace ChupooTemplateEngine
                 current_route = "index";
                 ran = true;
             }
-            matched = Regex.Match(command, @"^launch\s-f\swordpress$");
+            matched = Regex.Match(command, @"^launch\s-f\swp$");
             if (!ran && matched.Success)
             {
                 CurrentCommand = CommandType.LAUNCH;
                 LaunchEngine le = new LaunchEngine();
                 le.Run(LaunchEngine.LaunchTypeEnum.WORDPRESS);
+                current_route = "index";
+                ran = true;
+            }
+            matched = Regex.Match(command, @"^launch\s-f\scwm$");
+            if (!ran && matched.Success)
+            {
+                CurrentCommand = CommandType.LAUNCH;
+                LaunchEngine le = new LaunchEngine();
+                le.Run(LaunchEngine.LaunchTypeEnum.CHUPOO_WP_MVC);
                 current_route = "index";
                 ran = true;
             }
@@ -419,7 +428,7 @@ namespace ChupooTemplateEngine
             LoadProject(name);
         }
 
-        private static void CopyDirectory(string SourcePath, string DestinationPath)
+        public static void CopyDirectory(string SourcePath, string DestinationPath)
         {
             if (!Directory.Exists(DestinationPath))
                 Directory.CreateDirectory(DestinationPath);

@@ -138,18 +138,15 @@ namespace ChupooTemplateEngine
                         new_value = match.Groups[1].Value;
                     }
 
-                    try
-                    {
-                        FileInfo finfo = new FileInfo(new_value);
-                        if (finfo.Extension == ".js")
-                            RegisterUniversalJsFile(new_value);
-                        else if (finfo.Extension == ".css")
-                            RegisterUniversalCssFile(new_value);
-                    }
-                    catch(Exception ex)
-                    {
-                        Console.WriteLine("Error > " + new_value + "\n    " + ex.Message);
-                    }
+                    FileInfo finfo = new FileInfo(new_value);
+                    if (finfo.Extension == ".js")
+                        RegisterUniversalJsFile(new_value);
+                    else if (finfo.Extension == ".css")
+                        RegisterUniversalCssFile(new_value);
+                    else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                        new_value = "<?= get_template_directory_uri() ?>/" + new_value;
+                    else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.CHUPOO_WP_MVC)
+                        new_value = "./" + new_value;
 
                     content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
                     newLength += new_value.Length - match.Groups[1].Length;
@@ -179,9 +176,10 @@ namespace ChupooTemplateEngine
                 foreach (string item in style_file_list)
                 {
                     string _item = item;
-                    if (CurrentCommand == CommandType.LAUNCH && 
-                        LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                    if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
                         _item = "<?= get_template_directory_uri() ?>/" + item;
+                    else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.CHUPOO_WP_MVC)
+                        _item = "./" + _item;
                     appended += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + _item + "\">\n";
                 }
                 string new_content = appended + matched.Value;
@@ -210,9 +208,10 @@ namespace ChupooTemplateEngine
                 foreach(string item in script_file_list)
                 {
                     string _item = item;
-                    if (CurrentCommand == CommandType.LAUNCH &&
-                        LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                    if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
                         _item = "<?= get_template_directory_uri() ?>/" + item;
+                    else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.CHUPOO_WP_MVC)
+                        _item = "./" + _item;
                     appended += "<script type=\"text/javascript\" src=\"" + _item + "\"></script>\n";
                 }
                 string new_content = appended + matched.Value;

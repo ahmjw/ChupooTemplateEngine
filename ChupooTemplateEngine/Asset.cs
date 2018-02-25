@@ -34,9 +34,5 @@ namespace ChupooTemplateEngine
                 }
             }
         }
-
-        public static void Launch(string src, string dst, string url)
-        {
-        }
     }
 }

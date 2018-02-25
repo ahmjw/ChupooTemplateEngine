@@ -12,6 +12,23 @@ namespace ChupooTemplateEngine.ViewParsers
 {
     class HtmlTemplate : ViewParser
     {
+        public override void LoopViews(string path)
+        {
+            string[] dirs = Directory.GetDirectories(path);
+            foreach (string dir in dirs)
+            {
+                DirectoryInfo dinfo = new DirectoryInfo(dir);
+                if (dinfo.Name[0] != '@') continue;
+                string file = dir + "\\main.html";
+                if (File.Exists(file))
+                {
+                    string path_stage = file.Replace(Directories.Current, "").Substring(1).Replace("\\main.html", "");
+                    Parse(path_stage, path_stage);
+                }
+                Directories.Current = Directories.View;
+            }
+        }
+
         public override void Parse(string route, string dest)
         {
             string asset_level = GetAssetLeveling(route);
