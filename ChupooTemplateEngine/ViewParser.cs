@@ -222,18 +222,13 @@ namespace ChupooTemplateEngine
                         }
                     }
 
-                    try
-                    {
-                        FileInfo finfo = new FileInfo(new_value);
-                        if (finfo.Extension == ".js")
-                            RegisterUniversalJsFile(new_value);
-                        else if (finfo.Extension == ".css")
-                            RegisterUniversalCssFile(new_value);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Error > " + new_value + "\n    " + ex.Message);
-                    }
+                    FileInfo finfo = new FileInfo(new_value);
+                    if (finfo.Extension == ".js")
+                        RegisterUniversalJsFile(new_value);
+                    else if (finfo.Extension == ".css")
+                        RegisterUniversalCssFile(new_value);
+                    else if (LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                        new_value = "<?= get_template_directory_uri() ?>/" + new_value;
 
                     content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
                     newLength += new_value.Length - match.Groups[1].Length;
