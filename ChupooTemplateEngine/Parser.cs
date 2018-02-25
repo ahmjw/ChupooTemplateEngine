@@ -13,7 +13,7 @@ namespace ChupooTemplateEngine
     class Parser
     {
         protected static string view_content = "";
-        protected string cfg_layout_name = "page";
+        protected static string cfg_layout_name = "page";
         protected static List<string> script_file_list = new List<string>();
         protected static List<string> style_file_list = new List<string>();
 
@@ -133,7 +133,7 @@ namespace ChupooTemplateEngine
                     if (!File.Exists(a_dir + m_name))
                     {
                         Console.WriteLine("  File> " + _m_name);
-                        ParseCss(v_dir + route, path, a_dir + m_name);
+                        ParseCss(v_dir + route.Trim('\\'), path, a_dir + m_name);
                     }
                     asset_url = "assets/local/styles/" + m_name;
                 }
@@ -205,7 +205,12 @@ namespace ChupooTemplateEngine
             {
                 string c_name = match.Groups[1].Value.Replace("/", "\\");
                 src_path = dir + "\\" + c_name;
+                if (match.Groups[1].Value.Substring(0, 8) == "./assets")
+                {
+                    src_path = Directories.Asset + match.Groups[1].Value.Substring(9);
+                }
                 string i_dst_file_name = c_name;
+
                 if (File.Exists(src_path))
                 {
                     FileInfo finfo2 = new FileInfo(src_path);
