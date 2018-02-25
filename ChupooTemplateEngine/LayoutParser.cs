@@ -52,7 +52,7 @@ namespace ChupooTemplateEngine
         {
             string pattern;
             MatchCollection matches;
-            pattern = @"<script.*?></script>";
+            pattern = @"<script.*?src=\""(.*?)\"".*?></script>";
             matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -176,15 +176,13 @@ namespace ChupooTemplateEngine
             if (matched.Success)
             {
                 string appended = "";
-                foreach (string style in l_style_file_list)
-                    appended += style;
-                foreach (string style in v_style_file_list2)
+                foreach (string item in style_file_list)
                 {
-                    appended += style;
-                }
-                foreach (DictionaryEntry item in v_style_file_list)
-                {
-                    appended += item.Value;
+                    string _item = item;
+                    if (CurrentCommand == CommandType.LAUNCH && 
+                        LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                        _item = "<?= get_template_directory_uri() ?>/" + item;
+                    appended += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + _item + "\">\n";
                 }
                 string new_content = appended + matched.Value;
                 content = SubsituteString(content, matched.Index, matched.Length, new_content);
@@ -209,15 +207,13 @@ namespace ChupooTemplateEngine
             if (matched.Success)
             {
                 string appended = "";
-                foreach (string script in l_script_file_list)
-                    appended += script;
-                foreach (string script in v_script_file_list2)
+                foreach(string item in script_file_list)
                 {
-                    appended += script;
-                }
-                foreach (DictionaryEntry item in v_script_file_list)
-                {
-                    appended += item.Value;
+                    string _item = item;
+                    if (CurrentCommand == CommandType.LAUNCH &&
+                        LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                        _item = "<?= get_template_directory_uri() ?>/" + item;
+                    appended += "<script type=\"text/javascript\" src=\"" + _item + "\"></script>\n";
                 }
                 string new_content = appended + matched.Value;
                 content = SubsituteString(content, matched.Index, matched.Length, new_content);

@@ -17,13 +17,6 @@ namespace ChupooTemplateEngine
         protected static List<string> script_file_list = new List<string>();
         protected static List<string> style_file_list = new List<string>();
 
-        protected static Hashtable v_script_file_list = new Hashtable();
-        protected static Hashtable v_style_file_list = new Hashtable();
-        protected static List<string> v_script_file_list2 = new List<string>();
-        protected static List<string> v_style_file_list2 = new List<string>();
-
-        protected static List<string> asset_list = new List<string>();
-
         protected static List<string> lib_list = new List<string>();
 
         protected static List<string> v_script_code_list = new List<string>();
@@ -43,22 +36,6 @@ namespace ChupooTemplateEngine
         {
             if (!script_file_list.Contains(url))
                 script_file_list.Add(url);
-        }
-
-        public static void RegisterCssFile(string name, string url)
-        {
-            if (v_style_file_list.Contains(name))
-                return;
-            string content = @"<link rel=""stylesheet"" type=""text/css"" href=""" + url + @""" />" + "\n";
-            v_style_file_list[name] = content;
-        }
-
-        public static void RegisterJsFile(string name, string url)
-        {
-            if (v_script_file_list.Contains(name))
-                return;
-            string content = "<script language=\"javascript\" src=\"" + url + "\"></script>" + "\n";
-            v_script_file_list[name] = content;
         }
 
         private static string[] pic_exts = { ".ico", ".png", ".jpeg", ".jpg", ".jpeg", ".bmp", ".svg" };
@@ -85,26 +62,21 @@ namespace ChupooTemplateEngine
             style_file_list.Clear();
             l_style_file_list.Clear();
             l_style_code_list.Clear();
-            v_style_file_list.Clear();
             v_style_code_list.Clear();
-            v_style_file_list2.Clear();
         }
 
         public static void ClearScripts()
         {
             script_file_list.Clear();
-            v_script_file_list.Clear();
             v_script_code_list.Clear();
             l_script_file_list.Clear();
             l_script_code_list.Clear();
-            v_script_file_list2.Clear();
         }
 
         public static void ClearAll()
         {
             ClearStyles();
             ClearScripts();
-            asset_list.Clear();
             lib_list.Clear();
         }
 
@@ -164,11 +136,9 @@ namespace ChupooTemplateEngine
                         ParseCss(v_dir + route, path, a_dir + m_name);
                     }
                     asset_url = "assets/local/styles/" + m_name;
-
-                    RegisterUniversalCssFile(asset_url);
                 }
-                string content = @"<link rel=""stylesheet"" type=""text/css"" href=""" + asset_url + @""" />" + "\n";
-                v_style_file_list2.Add(content);
+
+                RegisterUniversalCssFile(asset_url);
             }
 
             if (is_component)
@@ -185,6 +155,7 @@ namespace ChupooTemplateEngine
             }
             else
                 path = v_dir + route + ".js";
+
             if (File.Exists(path))
             {
                 string asset_url;
@@ -209,11 +180,9 @@ namespace ChupooTemplateEngine
                         File.Copy(path, a_dir + m_name);
                     }
                     asset_url = "assets/local/scripts/" + m_name;
-
-                    RegisterUniversalJsFile(asset_url);
                 }
-                string content = "<script language=\"javascript\" src=\"" + asset_url + "\"></script>" + "\n";
-                v_script_file_list2.Add(content);
+
+                RegisterUniversalJsFile(asset_url);
             }
         }
 
@@ -225,16 +194,6 @@ namespace ChupooTemplateEngine
         internal static bool IsLibExists(string new_value)
         {
             return lib_list.Contains(new_value);
-        }
-
-        internal static void RegisterAsset(string new_value)
-        {
-            asset_list.Add(new_value);
-        }
-
-        internal static bool IsAssetExists(string new_value)
-        {
-            return asset_list.Contains(new_value);
         }
 
         private void ParseCss(string dir, string src_path, string dst_path)

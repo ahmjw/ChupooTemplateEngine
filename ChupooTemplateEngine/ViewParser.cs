@@ -83,7 +83,6 @@ namespace ChupooTemplateEngine
                 int newLength = 0;
                 foreach (Match match in matches)
                 {
-                    v_style_file_list2.Add(match.Value);
                     content = SubsituteString(content, match.Index + newLength, match.Length, "");
                     newLength += -match.Length;
                 }
@@ -114,7 +113,6 @@ namespace ChupooTemplateEngine
                 int newLength = 0;
                 foreach (Match match in matches)
                 {
-                    v_script_file_list2.Add(match.Value);
                     content = SubsituteString(content, match.Index + newLength, match.Length, "");
                     newLength += -match.Length;
                 }

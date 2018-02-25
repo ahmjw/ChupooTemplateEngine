@@ -20,6 +20,7 @@ namespace ChupooTemplateEngine
 
         public void Run(LaunchTypeEnum launchType)
         {
+            Parser.ClearAll();
             LaunchType = launchType;
             Asset.ClearAssets();
             Directory.CreateDirectory(Directories.PublicAsset);

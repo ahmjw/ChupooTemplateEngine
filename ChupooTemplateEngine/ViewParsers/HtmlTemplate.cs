@@ -58,8 +58,6 @@ namespace ChupooTemplateEngine.ViewParsers
 
                 view_content = RenderPartialCss(c_dir, view_content);
                 RenderPartialAssets(route, Directories.View, view_content);
-                view_content = SeparateViewStyle(view_content);
-                view_content = SeparateViewScript(view_content);
 
                 string data_path = Directories.ViewDataJson + route + ".json";
                 if (File.Exists(data_path))
