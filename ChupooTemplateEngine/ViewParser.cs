@@ -60,6 +60,16 @@ namespace ChupooTemplateEngine
                 }
                 Directories.Current = Directories.View;
             }
+
+            string[] files = Directory.GetFiles(path);
+            foreach (string file in files)
+            {
+                FileInfo finfo = new FileInfo(file);
+                string path_stage = finfo.Name.Replace(finfo.Extension, "");
+                HtmlTemplate viewParser = new HtmlTemplate();
+                viewParser.Parse(path_stage, path_stage);
+                Directories.Current = Directories.View;
+            }
         }
 
         protected string SeparateViewStyle(string content)

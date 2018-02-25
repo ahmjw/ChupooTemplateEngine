@@ -55,7 +55,6 @@ namespace ChupooTemplateEngine
 
         private string RenameAsset(string asset)
         {
-            string d_root = Directories.PublicAsset + "local\\";
             Match match = Regex.Match(asset, @"(_.*)?/([a-zA-Z0-9-_\.]+)(\.[a-zA-Z0-9-_]+)$");
             if (match.Success)
             {
@@ -65,49 +64,57 @@ namespace ChupooTemplateEngine
                 f_name = match.Groups[1].Value.Replace("/", "-") + f_name;
                 f_name = f_name.Replace("-main", "");
 
-                if (pic_exts.Any(extension.ToLower().Equals))
-                {
-                    d_name = "images";
-                    if (!Directory.Exists(d_root + d_name))
-                    {
-                        Directory.CreateDirectory(d_root + d_name);
-                    }
-                }
-                else if (aud_exts.Any(extension.ToLower().Equals))
-                {
-                    d_name = "audios";
-                    if (!Directory.Exists(d_root + d_name))
-                    {
-                        Directory.CreateDirectory(d_root + d_name);
-                    }
-                }
-                else if (vid_exts.Any(extension.ToLower().Equals))
-                {
-                    d_name = "videos";
-                    if (!Directory.Exists(d_root + d_name))
-                    {
-                        Directory.CreateDirectory(d_root + d_name);
-                    }
-                }
-                else if (extension == ".js")
-                {
-                    d_name = "scripts";
-                    if (!Directory.Exists(d_root + d_name))
-                    {
-                        Directory.CreateDirectory(d_root + d_name);
-                    }
-                }
-                else if (extension == ".css")
-                {
-                    d_name = "styles";
-                    if (!Directory.Exists(d_root + d_name))
-                    {
-                        Directory.CreateDirectory(d_root + d_name);
-                    }
-                }
+                d_name = LookupDirectoryName(extension);
                 return d_name + "/" + f_name + extension;
             }
             return asset;
+        }
+
+        private string LookupDirectoryName(string extension)
+        {
+            string d_name = "";
+            string d_root = Directories.PublicAsset + "local\\";
+            if (pic_exts.Any(extension.ToLower().Equals))
+            {
+                d_name = "images";
+                if (!Directory.Exists(d_root + d_name))
+                {
+                    Directory.CreateDirectory(d_root + d_name);
+                }
+            }
+            else if (aud_exts.Any(extension.ToLower().Equals))
+            {
+                d_name = "audios";
+                if (!Directory.Exists(d_root + d_name))
+                {
+                    Directory.CreateDirectory(d_root + d_name);
+                }
+            }
+            else if (vid_exts.Any(extension.ToLower().Equals))
+            {
+                d_name = "videos";
+                if (!Directory.Exists(d_root + d_name))
+                {
+                    Directory.CreateDirectory(d_root + d_name);
+                }
+            }
+            else if (extension == ".js")
+            {
+                d_name = "scripts";
+                if (!Directory.Exists(d_root + d_name))
+                {
+                    Directory.CreateDirectory(d_root + d_name);
+                }
+            }
+            else if (extension == ".css")
+            {
+                d_name = "styles";
+                if (!Directory.Exists(d_root + d_name))
+                {
+                    Directory.CreateDirectory(d_root + d_name);
+                }
+            }
+            return d_name;
         }
 
         private string ReplaceAssetUrlText(string asset_level, string name, string content)
@@ -144,10 +151,13 @@ namespace ChupooTemplateEngine
                     if (match.Groups[1].Value.Substring(0, 2) == "./")
                     {
                         if (CurrentCommand != CommandType.LAUNCH)
-                            new_value += asset_level + match.Groups[1].Value.Substring(1);
+                        {
+                            new_value += "../dev" + match.Groups[1].Value.Substring(1);
+                        }
                         else
                         {
                             // LAUNCH
+                            new_value += match.Groups[1].Value.Substring(2);
                         }
                     }
                     else
@@ -159,6 +169,7 @@ namespace ChupooTemplateEngine
                         else
                         {
                             // LAUNCH
+                            new_value = LookupAssetFile(dir_lv, name, match.Groups[1].Value.Substring(1));
                         }
                     }
 
@@ -180,6 +191,30 @@ namespace ChupooTemplateEngine
                 }
             }
             return content;
+        }
+
+        private string LookupAssetFile(string dir_lv, string name, string url)
+        {
+            string new_url = name + "/" + url;
+            string src_dir = dir_lv == "libs" ? Directories.Lib : Directories.Module;
+            string filePath = src_dir + name + "\\" + url.Replace("/", "\\");
+            if (File.Exists(filePath))
+            {
+                Match matched = Regex.Match(url, @"/([^\/]+)(\.[a-zA-Z0-9_-]+)$");
+                if (matched.Success)
+                {
+                    string fname = matched.Groups[1].Value + matched.Groups[2].Value;
+                    string d_name = LookupDirectoryName(matched.Groups[2].Value);
+                    string destPath = Directories.PublicAsset + "local\\" + d_name + "\\" + fname;
+                    if (!File.Exists(destPath))
+                    {
+                        Console.WriteLine("  HTML> " + new_url);
+                        File.Copy(filePath, destPath);
+                    }
+                    new_url = "assets/local/" + d_name + "/" + fname;
+                }
+            }
+            return new_url;
         }
 
         public string Parse(string name, string content)

@@ -44,6 +44,13 @@ namespace ChupooTemplateEngine.LayoutParsers
 
             Directories.Current = Directories.Layout;
             layout_content = File.ReadAllText(path);
+
+            LibParser lp = new LibParser();
+            layout_content = lp.Parse(dest, layout_content);
+
+            ModuleParser mp = new ModuleParser();
+            layout_content = mp.Parse(layout_content);
+
             layout_content = RenderPartialLayout(layout_content);
             layout_content = RenderLayoutComponent(cfg_layout_name, layout_content);
 
@@ -86,6 +93,11 @@ namespace ChupooTemplateEngine.LayoutParsers
                     if (File.Exists(layout_file))
                     {
                         string part_content = File.ReadAllText(layout_file);
+                        LibParser lp = new LibParser();
+                        part_content = lp.Parse(layout_name, part_content);
+
+                        ModuleParser mp = new ModuleParser();
+                        part_content = mp.Parse(part_content);
                         part_content = RenderLayoutComponent(layout_name, part_content);
                         content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
                         newLength += part_content.Length - match.Length;

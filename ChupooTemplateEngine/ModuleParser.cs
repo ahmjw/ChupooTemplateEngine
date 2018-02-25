@@ -36,7 +36,6 @@ namespace ChupooTemplateEngine
                 foreach (Match match in matches)
                 {
                     string lib_name = match.Groups[1].Value;
-                    Console.WriteLine(lib_name);
                     ReadAttributes(match.Groups[2].Value);
                     string lib_dir = Directories.Module + lib_name.Replace("/", "\\");
                     string lib_file = lib_dir + "\\main.html";

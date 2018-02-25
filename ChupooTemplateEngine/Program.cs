@@ -25,10 +25,10 @@ namespace ChupooTemplateEngine
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         static void Main(string[] args)
         {
-            Console.WriteLine("Welcome to Chupoo View Engine's console.");
+            Console.WriteLine("Welcome to Chupoo Template Engine's console.");
             Console.WriteLine("You can render your web design data to HTML linked-page here.");
             Directories.Resources = AppDomain.CurrentDomain.BaseDirectory + @"resources";
-            Directories.Lib = AppDomain.CurrentDomain.BaseDirectory + @"libs\\";
+            Directories.Lib = AppDomain.CurrentDomain.BaseDirectory + @"libs\";
 
             if (Properties.Settings.Default.current_project_name != null && Properties.Settings.Default.current_project_name != "")
             {
@@ -37,7 +37,7 @@ namespace ChupooTemplateEngine
             Run();
         }
 
-        [DllImport("User32.dll")]
+        [DllImport("user32.dll")]
         static extern int SetForegroundWindow(IntPtr hWnd);
 
         private static void LoadBackup(string project_name)
@@ -281,7 +281,7 @@ namespace ChupooTemplateEngine
             if (!ran && matched.Success)
             {
                 CurrentCommand = CommandType.EXPLORE;
-                Process.Start(Directories.Project);
+                Process.Start(Directories.Dev);
                 ran = true;
             }
             matched = Regex.Match(command, @"^render$");

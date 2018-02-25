@@ -105,7 +105,9 @@ namespace ChupooTemplateEngine
                     if (match.Groups[1].Value.Substring(0, 2) == "./")
                     {
                         if (CurrentCommand != CommandType.LAUNCH)
+                        {
                             new_value = asset_level + match.Groups[1].Value.Substring(1);
+                        }
                         else
                         {
                             if (match.Groups[1].Length >= 6 && match.Groups[1].Value.Substring(2, 6) == "assets")
@@ -138,6 +140,7 @@ namespace ChupooTemplateEngine
                     {
                         new_value = match.Groups[1].Value;
                     }
+                    
                     content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
                     newLength += new_value.Length - match.Groups[1].Length;
                 }

@@ -127,13 +127,14 @@ namespace ChupooTemplateEngine
             }
             else
                 path = v_dir + route + ".css";
+
             if (File.Exists(path))
             {
-                string _m_name = path.Replace(Directories.Project, "").Replace('\\', '/');
+                string _m_name = path.Replace(Directories.Dev, "").Replace('\\', '/');
                 string asset_url;
                 if (CurrentCommand != CommandType.LAUNCH)
                 {
-                    asset_url = "../" + _m_name;
+                    asset_url = "../dev/" + _m_name;
                 }
                 else
                 {
@@ -173,7 +174,7 @@ namespace ChupooTemplateEngine
             if (File.Exists(path))
             {
                 string asset_url;
-                string _m_name = path.Replace(Directories.Project, "").Replace('\\', '/');
+                string _m_name = path.Replace(Directories.Dev, "").Replace('\\', '/');
                 if (CurrentCommand != CommandType.LAUNCH)
                 {
                     asset_url = "../" + _m_name;
