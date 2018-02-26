@@ -26,10 +26,42 @@ namespace ChupooTemplateEngine
             }
         }
 
+        private string RenderNestedContent(string lib_name, string content)
+        {
+            string pattern = @"<c\.module\[(.+)?\](.*?)>([\w\W]*)?<\/c\.module>";
+            MatchCollection matches = Regex.Matches(content, pattern);
+            if (matches.Count > 0)
+            {
+                int newLength = 0;
+                foreach (Match match in matches)
+                {
+                    string part_content = match.Groups[3].Value;
+
+                    part_content = ReplaceAttributes(part_content);
+                    part_content = Parse(part_content);
+
+                    LibParser lp = new LibParser();
+                    part_content = lp.Parse(lib_name, part_content);
+
+                    AssetParser ap = new AssetParser("modules", Directories.Module);
+                    part_content = ap.Parse(lib_name, part_content);
+
+                    content = Parser.SubsituteString(content, match.Groups[3].Index + newLength, match.Groups[3].Length, part_content);
+                    newLength += part_content.Length - match.Groups[3].Length;
+                }
+            }
+            return content;
+        }
+
         public string Parse(string content)
         {
-            string pattern = @"<c\.module\[(.+)?\](.*?)(?:\s*\/)?>(?:<\/c\.module>)?";
+            string pattern = @"<c\.module\[(.+)?\](.*?)>([\w\W]*)?<\/c\.module>";
             MatchCollection matches = Regex.Matches(content, pattern);
+            if (matches.Count == 0)
+            {
+                pattern = @"<c\.module\[(.+)?\](.*?)(?:\s*\/)?>(?:<\/c\.module>)?";
+                matches = Regex.Matches(content, pattern);
+            }
             if (matches.Count > 0)
             {
                 int newLength = 0;
@@ -42,8 +74,14 @@ namespace ChupooTemplateEngine
                     if (File.Exists(lib_file))
                     {
                         string part_content = File.ReadAllText(lib_file);
-                        part_content = ReplaceAttributes(part_content);
+                        part_content = RenderNestedContent(lib_name, part_content);
 
+                        if (match.Groups[3].Value != "")
+                        {
+                            part_content = Parser.ReplaceText(@"<c\.content(?:\s*\/)?>(?:<\/c\.content>)?", part_content, match.Groups[3].Value);
+                        }
+
+                        part_content = ReplaceAttributes(part_content);
                         part_content = Parse(part_content);
 
                         LibParser lp = new LibParser();

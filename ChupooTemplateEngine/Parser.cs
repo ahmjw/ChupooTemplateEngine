@@ -42,7 +42,7 @@ namespace ChupooTemplateEngine
         private static string[] vid_exts = { ".mp4", ".avi", ".mov", ".flv", ".wmv", ".3gp", ".mpg" };
         private static string[] aud_exts = { ".mp3", ".amr", ".ogg", ".wav", ".wma" };
 
-        protected string ReplaceText(string pattern, string content, string replacement)
+        public static string ReplaceText(string pattern, string content, string replacement)
         {
             Match matched = Regex.Match(content, pattern);
             if (matched.Success)
