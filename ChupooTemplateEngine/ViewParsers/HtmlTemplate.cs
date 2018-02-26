@@ -28,6 +28,18 @@ namespace ChupooTemplateEngine.ViewParsers
                 Directories.Current = Directories.View;
                 ClearAll();
             }
+
+            string[] files = Directory.GetFiles(path);
+            foreach (string file in files)
+            {
+                FileInfo finfo = new FileInfo(file);
+                string path_stage = finfo.Name.Replace(finfo.Extension, "");
+                HtmlTemplate viewParser = new HtmlTemplate();
+                viewParser.Parse(path_stage, path_stage);
+
+                Directories.Current = Directories.View;
+                ClearAll();
+            }
         }
 
         public override void Parse(string route, string dest)
@@ -52,6 +64,8 @@ namespace ChupooTemplateEngine.ViewParsers
             else if (File.Exists(path))
             {
                 view_content = File.ReadAllText(path);
+
+                view_content = ReplaceAssetUrlText(view_content, "./", "dev/views/@" + route + "/");
 
                 LibParser lp = new LibParser();
                 view_content = lp.Parse(route, view_content);
