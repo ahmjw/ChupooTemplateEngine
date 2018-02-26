@@ -20,8 +20,10 @@ Console Application to build linked HTML page. Make your web design more managea
   Render a backup data to HTML pages.
 - `launch`
   Launch HTML pages on production.
-- `launch -f wordpress`
+- `launch -f wp`
   Launch HTML pages with Wordpress format.
+- `launch -f cwm`
+  Launch HTML pages with Chupoo Wordpress MVC.
 - `backup`
   Back up data into a new version.
 - `project create <project-name>`
