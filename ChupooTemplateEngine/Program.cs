@@ -351,6 +351,7 @@ namespace ChupooTemplateEngine
             {
                 CurrentCommand = CommandType.RENDER_FILE;
                 string view_name = matched.Groups[1].Value;
+                Parser.ClearAll();
                 HtmlTemplate viewParser = new HtmlTemplate();
                 viewParser.Parse(view_name, view_name);
                 current_route = view_name;
@@ -361,6 +362,7 @@ namespace ChupooTemplateEngine
             {
                 CurrentCommand = CommandType.RENDER_DIRECTORY;
                 string view_name = matched.Groups[1].Value;
+                Parser.ClearAll();
                 HtmlTemplate viewParser = new HtmlTemplate();
                 viewParser.RenderDirectory(view_name);
                 current_route = view_name;
@@ -371,6 +373,7 @@ namespace ChupooTemplateEngine
             {
                 CurrentCommand = CommandType.RENDER_TEMPORARILY;
                 string view_name = matched.Groups[1].Value;
+                Parser.ClearAll();
                 HtmlTemplate viewParser = new HtmlTemplate();
                 viewParser.Parse(view_name, ".temp");
                 current_route = ".temp";

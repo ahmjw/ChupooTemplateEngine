@@ -59,7 +59,9 @@ namespace ChupooTemplateEngine
                     HtmlTemplate viewParser = new HtmlTemplate();
                     viewParser.Parse(path_stage, path_stage);
                 }
+
                 Directories.Current = Directories.View;
+                ClearAll();
             }
 
             string[] files = Directory.GetFiles(path);
@@ -69,10 +71,10 @@ namespace ChupooTemplateEngine
                 string path_stage = finfo.Name.Replace(finfo.Extension, "");
                 HtmlTemplate viewParser = new HtmlTemplate();
                 viewParser.Parse(path_stage, path_stage);
-                Directories.Current = Directories.View;
-            }
 
-            ClearAll();
+                Directories.Current = Directories.View;
+                ClearAll();
+            }
         }
 
         protected string SeparateViewStyle(string content)
