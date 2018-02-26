@@ -60,6 +60,7 @@
     <Compile Include="LayoutParsers\Wordpress.cs" />
     <Compile Include="LibParser.cs" />
     <Compile Include="ModuleParser.cs" />
+    <Compile Include="NestedModuleOnViewParser.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

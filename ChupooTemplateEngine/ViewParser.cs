@@ -249,6 +249,8 @@ namespace ChupooTemplateEngine
         {
             FileInfo finfo = new FileInfo(layout_file);
             string content = File.ReadAllText(layout_file);
+            NestedModuleOnViewParser np = new NestedModuleOnViewParser();
+            content = np.ParseText(parent_route, layout_name, content);
 
             LibParser lp = new LibParser();
             content = lp.Parse(layout_name, content);

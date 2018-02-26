@@ -40,7 +40,9 @@ namespace ChupooTemplateEngine.ViewParsers
                     Console.WriteLine(path_stage);
                     Parse(path_stage, path_stage);
                 }
+
                 Directories.Current = Directories.View;
+                ClearAll();
             }
 
             LoopLayouts(Directories.Layout);
