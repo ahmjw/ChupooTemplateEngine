@@ -207,24 +207,34 @@ namespace ChupooTemplateEngine
                 src_path = dir + "\\" + c_name;
                 if (match.Groups[1].Value.Substring(0, 8) == "./assets")
                 {
-                    src_path = Directories.Asset + match.Groups[1].Value.Substring(9);
+                    src_path = Directories.Asset + match.Groups[1].Value.Substring(9).Replace("/", "\\");
                 }
                 string i_dst_file_name = c_name;
 
                 if (File.Exists(src_path))
                 {
                     FileInfo finfo2 = new FileInfo(src_path);
-                    string d_name = finfo2.DirectoryName.Replace(Directories.Project, "") + "\\" + finfo2.Name;
+                    string d_name = finfo2.DirectoryName.Replace(Directories.Dev, "") + "\\" + finfo2.Name;
                     d_name = d_name.Replace("\\", "/");
-                    i_dst_file_name = RenameAsset(d_name);
-                    string i_dst_path = Directories.PublicAsset + "local\\" + i_dst_file_name;
-                    if (!File.Exists(i_dst_path))
+                    string i_dst_path;
+                    if (match.Groups[1].Value.Substring(0, 8) != "./assets")
                     {
-                        Console.WriteLine("  CSS> " + d_name);
-                        File.Copy(src_path, i_dst_path);
+                        i_dst_file_name = RenameAsset(d_name);
+                        i_dst_path = Directories.PublicAsset + "local\\" + i_dst_file_name;
+                        if (!File.Exists(i_dst_path))
+                        {
+                            Console.WriteLine("  CSS> " + d_name);
+                            File.Copy(src_path, i_dst_path);
+                        }
+                        i_dst_file_name = d_name;
+                    }
+                    else
+                    {
+                        i_dst_path = Directories.Public + "\\" + match.Groups[1].Value.Substring(9).Replace("/", "\\");
+                        i_dst_file_name = "../../" + d_name;
                     }
                 }
-                string new_value = "../" + i_dst_file_name;
+                string new_value = "../" + i_dst_file_name.Replace("\\", "/");
                 content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
                 newLength += new_value.Length - match.Groups[1].Length;
             }
@@ -271,18 +281,19 @@ namespace ChupooTemplateEngine
             {
                 asset = "layouts/" + asset.Replace("//", "/");
             }
+
             string src_path = Directories.Project + asset.Replace("/", "\\");
 
             if (File.Exists(src_path))
             {
                 FileInfo finfo = new FileInfo(src_path);
-                Console.WriteLine("  HTML> " + asset);
 
                 string dst_file_name = RenameAsset(asset);
                 string dst_path = Directories.PublicAsset + "local\\" + dst_file_name.Replace("/", "\\");
 
-                if (!File.Exists(dst_path))
+                if (!LaunchEngine.IsCodeOnly && !File.Exists(dst_path))
                 {
+                    Console.WriteLine("  HTML> " + asset);
                     File.Copy(src_path, dst_path);
                 }
 

@@ -11,13 +11,17 @@ namespace ChupooTemplateEngine
     class LaunchEngine
     {
         private string[] asset_exts = { ".js", ".css", ".ico", ".png", ".jpeg", ".jpg", ".jpeg", ".bmp", ".svg" };
+
         public static LaunchTypeEnum LaunchType { set; get; }
+
         public enum LaunchTypeEnum
         {
             HTML_TEMPLATE,
             WORDPRESS,
             CHUPOO_WP_MVC
         }
+
+        public static bool IsCodeOnly { set; get; }
 
         public void Run(LaunchTypeEnum launchType)
         {

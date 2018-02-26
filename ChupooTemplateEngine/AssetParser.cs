@@ -40,7 +40,7 @@ namespace ChupooTemplateEngine
                     d_name = d_name.Replace("\\", "/");
                     i_dst_file_name = RenameAsset(d_name);
                     string i_dst_path = Directories.PublicAsset + "local\\" + i_dst_file_name;
-                    if (!File.Exists(i_dst_path))
+                    if (!LaunchEngine.IsCodeOnly && !File.Exists(i_dst_path))
                     {
                         Console.WriteLine("  CSS> " + d_name);
                         File.Copy(src_path, i_dst_path);
@@ -211,7 +211,7 @@ namespace ChupooTemplateEngine
                     string fname = matched.Groups[1].Value + matched.Groups[2].Value;
                     string d_name = LookupDirectoryName(matched.Groups[2].Value);
                     string destPath = Directories.PublicAsset + "local\\" + d_name + "\\" + fname;
-                    if (!File.Exists(destPath))
+                    if (!LaunchEngine.IsCodeOnly && !File.Exists(destPath))
                     {
                         Console.WriteLine("  HTML> " + new_url);
                         File.Copy(filePath, destPath);

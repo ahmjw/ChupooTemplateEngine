@@ -71,6 +71,8 @@ namespace ChupooTemplateEngine
                 viewParser.Parse(path_stage, path_stage);
                 Directories.Current = Directories.View;
             }
+
+            ClearAll();
         }
 
         protected string SeparateViewStyle(string content)
@@ -229,9 +231,9 @@ namespace ChupooTemplateEngine
                         RegisterUniversalJsFile(new_value);
                     else if (finfo.Extension == ".css")
                         RegisterUniversalCssFile(new_value);
-                    else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                    else if (!LaunchEngine.IsCodeOnly && CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
                         new_value = "<?= get_template_directory_uri() ?>/" + new_value;
-                    else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.CHUPOO_WP_MVC)
+                    else if (!LaunchEngine.IsCodeOnly && CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.CHUPOO_WP_MVC)
                         new_value = "./" + new_value;
 
                     content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);

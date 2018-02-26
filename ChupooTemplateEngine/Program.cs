@@ -300,6 +300,17 @@ namespace ChupooTemplateEngine
             if (!ran && matched.Success)
             {
                 CurrentCommand = CommandType.LAUNCH;
+                LaunchEngine.IsCodeOnly = false;
+                LaunchEngine le = new LaunchEngine();
+                le.Run(LaunchEngine.LaunchTypeEnum.HTML_TEMPLATE);
+                current_route = "index";
+                ran = true;
+            }
+            matched = Regex.Match(command, @"^launch\s-co$");
+            if (!ran && matched.Success)
+            {
+                CurrentCommand = CommandType.LAUNCH;
+                LaunchEngine.IsCodeOnly = true;
                 LaunchEngine le = new LaunchEngine();
                 le.Run(LaunchEngine.LaunchTypeEnum.HTML_TEMPLATE);
                 current_route = "index";
@@ -309,6 +320,7 @@ namespace ChupooTemplateEngine
             if (!ran && matched.Success)
             {
                 CurrentCommand = CommandType.LAUNCH;
+                LaunchEngine.IsCodeOnly = false;
                 LaunchEngine le = new LaunchEngine();
                 le.Run(LaunchEngine.LaunchTypeEnum.WORDPRESS);
                 current_route = "index";
@@ -318,6 +330,7 @@ namespace ChupooTemplateEngine
             if (!ran && matched.Success)
             {
                 CurrentCommand = CommandType.LAUNCH;
+                LaunchEngine.IsCodeOnly = false;
                 LaunchEngine le = new LaunchEngine();
                 le.Run(LaunchEngine.LaunchTypeEnum.CHUPOO_WP_MVC);
                 current_route = "index";
