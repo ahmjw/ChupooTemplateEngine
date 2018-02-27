@@ -60,7 +60,7 @@
     <Compile Include="LayoutParsers\Wordpress.cs" />
     <Compile Include="LibParser.cs" />
     <Compile Include="ModuleParser.cs" />
-    <Compile Include="NestedModuleOnViewParser.cs" />
+    <Compile Include="NestedModuleParser.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -71,6 +71,7 @@
     </Compile>
     <Compile Include="ResourceParser.cs" />
     <Compile Include="Route.cs" />
+    <Compile Include="TextTagParser.cs" />
     <Compile Include="ViewParser.cs" />
     <Compile Include="ViewParsers\ChupooWp.cs" />
     <Compile Include="ViewParsers\HtmlTemplate.cs" />

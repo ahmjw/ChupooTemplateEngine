@@ -28,7 +28,7 @@ namespace ChupooTemplateEngine
 
         private string RenderNestedContent(string lib_name, string content)
         {
-            string pattern = @"<c\.module\[(.+)?\](.*?)(?:\s*\/)?>([\w\W]+)?<\/c\.module>";
+            string pattern = @"<c.module\[(.*?)\](.*?)(?:\s*\/)?>([\w\W]+?)</c.module>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -53,9 +53,42 @@ namespace ChupooTemplateEngine
             return content;
         }
 
+        public string ParseModule(string lib_name, string attributes, string inner_text = "")
+        {
+            string part_content = "";
+            ReadAttributes(attributes);
+            string lib_dir = Directories.Module + lib_name.Replace("/", "\\");
+            string lib_file = lib_dir + "\\main.html";
+            if (File.Exists(lib_file))
+            {
+                part_content = File.ReadAllText(lib_file);
+                part_content = RenderNestedContent(lib_name, part_content);
+
+                NestedModuleParser np = new NestedModuleParser();
+                part_content = np.ParseText("", lib_name, part_content);
+
+                if (inner_text != "")
+                {
+                    part_content = Parser.ReplaceText(@"<c\.content(?:\s*\/)?>(?:<\/c\.content>)?", part_content, inner_text);
+                }
+
+                part_content = ReplaceAttributes(part_content);
+                part_content = Parse(part_content);
+
+                LibParser lp = new LibParser();
+                part_content = lp.Parse(lib_name, part_content);
+
+                AssetParser ap = new AssetParser("modules", Directories.Module);
+                part_content = ap.Parse(lib_name, part_content);
+            }
+            else
+                Console.WriteLine("Warning: Module is not found > " + lib_name);
+            return part_content;
+        }
+
         public string Parse(string content)
         {
-            string pattern = @"<c\.module\[(.+)?\](.*?)(?:\s*\/)?>([\w\W]+)?<\/c\.module>";
+            string pattern = @"<c.module\[(.*?)\](.*?)(?:\s*\/)?>([\w\W]+?)</c.module>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count == 0)
             {
@@ -75,6 +108,9 @@ namespace ChupooTemplateEngine
                     {
                         string part_content = File.ReadAllText(lib_file);
                         part_content = RenderNestedContent(lib_name, part_content);
+
+                        NestedModuleParser np = new NestedModuleParser();
+                        part_content = np.ParseText("", lib_name, part_content);
 
                         if (match.Groups[3].Value != "")
                         {

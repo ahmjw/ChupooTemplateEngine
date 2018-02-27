@@ -65,6 +65,9 @@ namespace ChupooTemplateEngine.ViewParsers
             {
                 view_content = File.ReadAllText(path);
 
+                NestedModuleParser np = new NestedModuleParser();
+                view_content = np.ParseText("", route, view_content);
+
                 view_content = ReplaceAssetUrlText(view_content, "./", "dev/views/@" + route + "/");
 
                 LibParser lp = new LibParser();

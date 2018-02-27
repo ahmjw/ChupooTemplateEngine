@@ -8,11 +8,13 @@ using System.Threading.Tasks;
 
 namespace ChupooTemplateEngine
 {
-    class NestedModuleOnViewParser : ViewParser
+    class NestedModuleParser : ViewParser
     {
+        public Hashtable TextData { set; get; }
+
         public string ParseText(string package_name, string lib_name, string content)
         {
-            string pattern = @"<c\.module\[(.+)?\](.*?)(?:\s*\/)?>([\w\W]+)?<\/c\.module>";
+            string pattern = @"<c.module\[(.*?)\](.*?)(?:\s*\/)?>([\w\W]+?)</c.module>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -20,14 +22,20 @@ namespace ChupooTemplateEngine
                 foreach (Match match in matches)
                 {
                     string part_content = match.Groups[3].Value;
+                    string mod_name = match.Groups[1].Value;
+                    string attributes = match.Groups[2].Value;
 
                     LibParser lp = new LibParser();
-                    part_content = lp.Parse(lib_name, part_content);
+                    part_content = lp.Parse(mod_name, part_content);
 
                     part_content = ReplaceAssetUrlText(part_content, "./", "dev/views/" + package_name + "/" + lib_name + "/");
 
-                    content = SubsituteString(content, match.Groups[3].Index + newLength, match.Groups[3].Length, part_content);
-                    newLength += part_content.Length - match.Groups[3].Length;
+                    // Text parser
+                    TextTagParser tp = new TextTagParser();
+                    part_content = tp.Parse(mod_name, attributes, part_content);
+
+                    content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
+                    newLength += part_content.Length - match.Length;
                 }
             }
             return content;
