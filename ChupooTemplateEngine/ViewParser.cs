@@ -326,5 +326,43 @@ namespace ChupooTemplateEngine
             }
             return content;
         }
+
+        protected string PasteStyles(string content)
+        {
+            string appended = "";
+            foreach (string item in style_file_list)
+            {
+                string _item = item;
+                if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                    _item = "<?= get_template_directory_uri() ?>/" + item;
+                else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.CHUPOO_WP_MVC)
+                    _item = "./" + _item;
+                appended += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + _item + "\">\n";
+            }
+            foreach (string style in v_style_code_list)
+                appended += style;
+            foreach (string style in l_style_code_list)
+                appended += style;
+            return appended + content;
+        }
+
+        protected string PasteScripts(string content)
+        {
+            string appended = "";
+            foreach (string item in script_file_list)
+            {
+                string _item = item;
+                if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                    _item = "<?= get_template_directory_uri() ?>/" + item;
+                else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.CHUPOO_WP_MVC)
+                    _item = "./" + _item;
+                appended += "<script type=\"text/javascript\" src=\"" + _item + "\"></script>\n";
+            }
+            foreach (string script in l_script_code_list)
+                appended += script;
+            foreach (string script in v_script_code_list)
+                appended += script;
+            return appended + content;
+        }
     }
 }

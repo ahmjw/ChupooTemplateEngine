@@ -55,7 +55,6 @@
     <Compile Include="LaunchEngine.cs" />
     <Compile Include="Layout.cs" />
     <Compile Include="LayoutParser.cs" />
-    <Compile Include="LayoutParsers\ChupooWp.cs" />
     <Compile Include="LayoutParsers\HtmlTemplate.cs" />
     <Compile Include="LayoutParsers\Wordpress.cs" />
     <Compile Include="LibParser.cs" />
@@ -73,7 +72,6 @@
     <Compile Include="Route.cs" />
     <Compile Include="TextTagParser.cs" />
     <Compile Include="ViewParser.cs" />
-    <Compile Include="ViewParsers\ChupooWp.cs" />
     <Compile Include="ViewParsers\HtmlTemplate.cs" />
     <Compile Include="ViewParsers\Wordpress.cs" />
   </ItemGroup>

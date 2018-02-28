@@ -12,8 +12,30 @@ namespace ChupooTemplateEngine.ViewParsers
 {
     class Wordpress : ViewParser
     {
+
+        private void CopyResources()
+        {
+            string fname = "style.css";
+            string dst = Directories.Public + fname;
+            string src = Directories.Dev + "\\launch\\wordpress\\" + fname;
+            if (!File.Exists(dst))
+            {
+                File.Copy(src, dst);
+            }
+
+            fname = "functions.php";
+            dst = Directories.Public + fname;
+            src = Directories.Dev + "\\launch\\wordpress\\" + fname;
+            if (!File.Exists(dst))
+            {
+                File.Copy(src, dst);
+            }
+        }
+
         public override void LoopViews(string path)
         {
+            CopyResources();
+
             string[] dirs = Directory.GetDirectories(path);
             foreach (string dir in dirs)
             {
@@ -26,6 +48,19 @@ namespace ChupooTemplateEngine.ViewParsers
                     Parse(path_stage, path_stage);
                 }
                 Directories.Current = Directories.View;
+                ClearAll();
+            }
+
+            string[] files = Directory.GetFiles(path);
+            foreach (string file in files)
+            {
+                FileInfo finfo = new FileInfo(file);
+                string path_stage = finfo.Name.Replace(finfo.Extension, "");
+                HtmlTemplate viewParser = new HtmlTemplate();
+                viewParser.Parse(path_stage, path_stage);
+
+                Directories.Current = Directories.View;
+                ClearAll();
             }
         }
 
@@ -38,7 +73,6 @@ namespace ChupooTemplateEngine.ViewParsers
                 path = Directories.View + "@" + route + "\\main.html";
             }
             Match matched = Regex.Match(route, @"^(.*?)\/?_[a-zA-Z0-9_-]+$");
-
             if (matched.Success)
             {
                 if (CurrentCommand == CommandType.FILE_SYSTEM_WATCHER)
@@ -52,6 +86,11 @@ namespace ChupooTemplateEngine.ViewParsers
             else if (File.Exists(path))
             {
                 view_content = File.ReadAllText(path);
+
+                NestedModuleParser np = new NestedModuleParser();
+                view_content = np.ParseText("", route, view_content);
+
+                view_content = ReplaceAssetUrlText(view_content, "./", "dev/views/@" + route + "/");
 
                 LibParser lp = new LibParser();
                 view_content = lp.Parse(route, view_content);
@@ -76,8 +115,6 @@ namespace ChupooTemplateEngine.ViewParsers
 
                 view_content = RenderPartialCss(c_dir, view_content);
                 RenderPartialAssets(route, Directories.View, view_content);
-                view_content = SeparateViewStyle(view_content);
-                view_content = SeparateViewScript(view_content);
 
                 string data_path = Directories.ViewDataJson + route + ".json";
                 if (File.Exists(data_path))

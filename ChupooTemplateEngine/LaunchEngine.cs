@@ -77,10 +77,6 @@ namespace ChupooTemplateEngine
                     viewParser = new Wordpress();
                     viewParser.LoopViews(path);
                     break;
-                case LaunchTypeEnum.CHUPOO_WP_MVC:
-                    viewParser = new ChupooWp();
-                    viewParser.LoopViews(path);
-                    break;
             }
         }
     }

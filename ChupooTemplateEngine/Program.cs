@@ -326,16 +326,6 @@ namespace ChupooTemplateEngine
                 current_route = "index";
                 ran = true;
             }
-            matched = Regex.Match(command, @"^launch\s-f\scwm$");
-            if (!ran && matched.Success)
-            {
-                CurrentCommand = CommandType.LAUNCH;
-                LaunchEngine.IsCodeOnly = false;
-                LaunchEngine le = new LaunchEngine();
-                le.Run(LaunchEngine.LaunchTypeEnum.CHUPOO_WP_MVC);
-                current_route = "index";
-                ran = true;
-            }
             matched = Regex.Match(command, @"^backup$");
             if (!ran && matched.Success)
             {
