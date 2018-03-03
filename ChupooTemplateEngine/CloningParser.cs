@@ -59,7 +59,7 @@ namespace ChupooTemplateEngine
 
                 if (File.Exists(file_path))
                 {
-                    Console.WriteLine("Loading JSON file " + file_name + " ...");
+                    MessageController.Show("Loading JSON file " + file_name + " ...");
                     string json_text = File.ReadAllText(file_path);
                     JArray data = (JArray)JsonConvert.DeserializeObject(json_text);
                     string new_content = "";
@@ -71,7 +71,7 @@ namespace ChupooTemplateEngine
                 }
                 else
                 {
-                    Console.WriteLine("Error: JSON file is not found > " + file_name);
+                    MessageController.Show("Error: JSON file is not found > " + file_name);
                 }
             }
             return content;

@@ -103,7 +103,7 @@ namespace ChupooTemplateEngine
                         newLength += part_content.Length - match.Length;
                     }
                     else
-                        Console.WriteLine("Warning: Library is not found > " + lib_name + " in " + fileName);
+                        MessageController.Show("Warning: Library is not found > " + lib_name + " in " + fileName);
                 }
             }
             return content;

@@ -32,7 +32,7 @@ namespace ChupooTemplateEngine
             string path = Directories.View + route;
             if (!Directory.Exists(path))
             {
-                Console.WriteLine("Error: " + route + " directory is not found");
+                MessageController.Show("Error: " + route + " directory is not found");
                 return;
             }
             string[] files = Directory.GetFiles(path);
@@ -151,7 +151,7 @@ namespace ChupooTemplateEngine
                 }
                 else
                 {
-                    Console.WriteLine("Warning: CSS file " + matched.Groups[1].Value + " is not found");
+                    MessageController.Show("Warning: CSS file " + matched.Groups[1].Value + " is not found");
                 }
             }
             return view_content;
@@ -324,12 +324,12 @@ namespace ChupooTemplateEngine
                             }
                             else
                             {
-                                Console.WriteLine("Warning: Partial view " + layout_name + "/main.html is not found");
+                                MessageController.Show("Warning: Partial view " + layout_name + "/main.html is not found");
                             }
                         }
                         else
                         {
-                            Console.WriteLine("Warning: Partial view " + layout_name + ".html is not found");
+                            MessageController.Show("Warning: Partial view " + layout_name + ".html is not found");
                         }
                     }
                 }

@@ -81,7 +81,7 @@ namespace ChupooTemplateEngine.ViewParsers
                     RenderDirectory(dir_route);
                 }
                 else
-                    Console.WriteLine("Skip file " + route + ".html");
+                    MessageController.Show("Skip file " + route + ".html");
             }
             else if (File.Exists(path))
             {
@@ -119,7 +119,7 @@ namespace ChupooTemplateEngine.ViewParsers
                 string data_path = Directories.ViewDataJson + route + ".json";
                 if (File.Exists(data_path))
                 {
-                    Console.WriteLine("Rendering " + route + ".html JSON data ...");
+                    MessageController.Show("Rendering " + route + ".html JSON data ...");
                     string json_str = File.ReadAllText(data_path);
                     JObject data = JObject.Parse(json_str);
                     view_content = ReplaceFormattedDataText(view_content, data);
@@ -130,7 +130,7 @@ namespace ChupooTemplateEngine.ViewParsers
             }
             else
             {
-                Console.WriteLine("View file is not found: " + route + ".html");
+                MessageController.Show("View file is not found: " + route + ".html");
             }
         }
     }

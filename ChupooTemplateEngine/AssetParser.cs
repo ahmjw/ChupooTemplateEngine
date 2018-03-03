@@ -42,7 +42,7 @@ namespace ChupooTemplateEngine
                     string i_dst_path = Directories.PublicAsset + "local\\" + i_dst_file_name;
                     if (!LaunchEngine.IsCodeOnly && !File.Exists(i_dst_path))
                     {
-                        Console.WriteLine("  CSS> " + d_name);
+                        MessageController.Show("  CSS> " + d_name);
                         File.Copy(src_path, i_dst_path);
                     }
                 }
@@ -211,7 +211,7 @@ namespace ChupooTemplateEngine
                     string destPath = Directories.PublicAsset + "local\\" + d_name + "\\" + fname;
                     if (!LaunchEngine.IsCodeOnly && !File.Exists(destPath))
                     {
-                        Console.WriteLine("  HTML> " + new_url);
+                        MessageController.Show("  HTML> " + new_url);
                         File.Copy(filePath, destPath);
                     }
                     new_url = "assets/local/" + d_name + "/" + fname;
@@ -246,7 +246,7 @@ namespace ChupooTemplateEngine
                     }
                     if (!File.Exists(a_dir + m_name))
                     {
-                        Console.WriteLine("  File> " + _m_name);
+                        MessageController.Show("  File> " + _m_name);
                         ParseCss(v_dir + name, path, a_dir + m_name);
                     }
                     asset_url = "assets/local/styles/" + m_name;
@@ -276,7 +276,7 @@ namespace ChupooTemplateEngine
                     }
                     if (!File.Exists(a_dir + m_name))
                     {
-                        Console.WriteLine("  File> " + _m_name);
+                        MessageController.Show("  File> " + _m_name);
                         File.Copy(path, a_dir + m_name);
                     }
                     asset_url = "assets/local/scripts/" + m_name;

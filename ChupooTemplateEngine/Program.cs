@@ -25,8 +25,8 @@ namespace ChupooTemplateEngine
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         static void Main(string[] args)
         {
-            Console.WriteLine("Welcome to Chupoo Template Engine's console.");
-            Console.WriteLine("You can render your web design data to HTML linked-page here.");
+            MessageController.Show("Welcome to Chupoo Template Engine's console.");
+            MessageController.Show("You can render your web design data to HTML linked-page here.");
             Directories.Resources = AppDomain.CurrentDomain.BaseDirectory + @"resources";
             Directories.Lib = AppDomain.CurrentDomain.BaseDirectory + @"libs\";
 
@@ -44,7 +44,7 @@ namespace ChupooTemplateEngine
         {
             if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name))
             {
-                Console.WriteLine("Project " + project_name + " is invalid name");
+                MessageController.Show("Project " + project_name + " is invalid name");
                 return;
             }
 
@@ -61,17 +61,17 @@ namespace ChupooTemplateEngine
             Directories.Public = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\";
             Directories.PublicAsset = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\assets\";
 
-            Console.WriteLine("Project " + current_project_name + " has loaded.");
+            MessageController.Show("Project " + current_project_name + " has loaded.");
 
             string public_route_file = Directories.Config + "public_routes.json";
             if (File.Exists(public_route_file))
             {
                 string public_route = File.ReadAllText(public_route_file);
                 Route.public_routes = JObject.Parse(public_route);
-                Console.WriteLine("Loaded using public routes.");
+                MessageController.Show("Loaded using public routes.");
             }
             else
-                Console.WriteLine("Loaded without public routes.");
+                MessageController.Show("Loaded without public routes.");
         }
 
         private static void LoadProject(string project_name)
@@ -79,7 +79,7 @@ namespace ChupooTemplateEngine
             project_name = Regex.Replace(project_name, @"^([a-zA-Z0-9-_]+)\\.*?$", "$1");
             if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name))
             {
-                Console.WriteLine("Project " + project_name + " is invalid name");
+                MessageController.Show("Project " + project_name + " is invalid name");
                 return;
             }
 
@@ -115,17 +115,17 @@ namespace ChupooTemplateEngine
             watcher.Filter = "*.*";
             watcher.IncludeSubdirectories = true;
             watcher.EnableRaisingEvents = true;
-            Console.WriteLine("Project " + current_project_name + " has loaded.");
+            MessageController.Show("Project " + current_project_name + " has loaded.");
 
             string public_route_file = Directories.Config + "public_routes.json";
             if (File.Exists(public_route_file))
             {
                 string public_route = File.ReadAllText(public_route_file);
                 Route.public_routes = JObject.Parse(public_route);
-                Console.WriteLine("Loaded using public routes.");
+                MessageController.Show("Loaded using public routes.");
             }
             else
-                Console.WriteLine("Loaded without public routes.");
+                MessageController.Show("Loaded without public routes.");
         }
 
         private static bool WaitForFile(string fullPath, string short_name)
@@ -148,7 +148,7 @@ namespace ChupooTemplateEngine
                 {
                     if (numTries > 10)
                     {
-                        Console.WriteLine("Wait for file {0} giving up after 10 tries", short_name);
+                        MessageController.Show("Error: File access denied!");
                         return false;
                     }
                     System.Threading.Thread.Sleep(500);
@@ -240,7 +240,7 @@ namespace ChupooTemplateEngine
             }
             if (!ran && current_project_name == null)
             {
-                Console.WriteLine("No project was loaded. Please run command: project load <name>");
+                MessageController.Show("No project was loaded. Please run command: project load <name>");
                 Run();
             }
 
@@ -263,7 +263,7 @@ namespace ChupooTemplateEngine
                             Process.Start(path);
                         }
                         else
-                            Console.WriteLine("Error: No route for browsing");
+                            MessageController.Show("Error: No route for browsing");
                     }
                 }
                 ran = true;
@@ -377,7 +377,7 @@ namespace ChupooTemplateEngine
                 ran = true;
             }
             if (!ran)
-                Console.WriteLine("Error: Invalid command");
+                MessageController.Show("Error: Invalid command");
             Run();
         }
 
@@ -414,7 +414,7 @@ namespace ChupooTemplateEngine
                     if (File.Exists(path))
                         Process.Start(path);
                     else
-                        Console.WriteLine("Error: No route for browsing");
+                        MessageController.Show("Error: No route for browsing");
                 }
             }
 
@@ -425,11 +425,11 @@ namespace ChupooTemplateEngine
 
         private static void CreateProject(string name)
         {
-            Console.WriteLine("Creating project " + name + " ... please wait");
+            MessageController.Show("Creating project " + name + " ... please wait");
             string new_p_dir = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + name;
             Directory.CreateDirectory(new_p_dir);
             CopyDirectory(Directories.Resources + "\\project_dir", new_p_dir);
-            Console.WriteLine("Project " + name + " has successfully created");
+            MessageController.Show("Project " + name + " has successfully created");
             LoadProject(name);
         }
 
@@ -468,7 +468,7 @@ namespace ChupooTemplateEngine
             CopyDirectory(Directories.Asset, dir + @"\assets\");
             CopyDirectory(Directories.Launch, dir + @"\launch\");
             Directory.CreateDirectory(dir + @"\public\");
-            Console.WriteLine("Backed up to version " + version);
+            MessageController.Show("Backed up to version " + version);
         }
     }
 }

@@ -61,6 +61,7 @@
     <Compile Include="LayoutParsers\HtmlTemplate.cs" />
     <Compile Include="LayoutParsers\Wordpress.cs" />
     <Compile Include="LibParser.cs" />
+    <Compile Include="MessageController.cs" />
     <Compile Include="ModuleParser.cs" />
     <Compile Include="NestedModuleParser.cs" />
     <Compile Include="Parser.cs" />

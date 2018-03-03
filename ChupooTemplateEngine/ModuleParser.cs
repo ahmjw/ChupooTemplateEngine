@@ -92,7 +92,7 @@ namespace ChupooTemplateEngine
                 part_content = ap.Parse(lib_name, part_content);
             }
             else
-                Console.WriteLine("Warning: Module is not found > " + lib_name);
+                MessageController.Show("Warning: Module is not found > " + lib_name);
             return part_content;
         }
 
@@ -147,7 +147,7 @@ namespace ChupooTemplateEngine
                         newLength += part_content.Length - match.Length;
                     }
                     else
-                        Console.WriteLine("Warning: Module is not found > " + lib_name);
+                        MessageController.Show("Warning: Module is not found > " + lib_name);
                 }
             }
             return content;

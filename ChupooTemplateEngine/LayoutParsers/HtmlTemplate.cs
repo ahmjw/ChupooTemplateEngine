@@ -20,7 +20,7 @@ namespace ChupooTemplateEngine.LayoutParsers
             }
             if (dest[0] == '_')
             {
-                Console.WriteLine("Rendering route " + dest + " was skipped");
+                MessageController.Show("Rendering route " + dest + " was skipped");
                 return;
             }
 
@@ -28,16 +28,16 @@ namespace ChupooTemplateEngine.LayoutParsers
             string path = Directories.Layout + cfg_layout_name + ".html";
             if (!File.Exists(path))
             {
-                Console.WriteLine("Warning: " + dest + " >> Layout file is not found: " + cfg_layout_name + ".html");
+                MessageController.Show("Warning: " + dest + " >> Layout file is not found: " + cfg_layout_name + ".html");
                 cfg_layout_name = "page";
                 path = Directories.Layout + cfg_layout_name + ".html";
                 if (File.Exists(path))
                 {
-                    Console.WriteLine("\tChange layout to " + cfg_layout_name + ".html");
+                    MessageController.Show("\tChange layout to " + cfg_layout_name + ".html");
                 }
                 else
                 {
-                    Console.WriteLine("Warning: " + dest + " >> Layout file is not found: " + cfg_layout_name + ".html");
+                    MessageController.Show("Warning: " + dest + " >> Layout file is not found: " + cfg_layout_name + ".html");
                     return;
                 }
             }
@@ -78,11 +78,11 @@ namespace ChupooTemplateEngine.LayoutParsers
                     dest = write_as;
                 }
                 File.WriteAllText(p_file, layout_content);
-                Console.WriteLine("OK: " + dest + ".html");
+                MessageController.Show("OK: " + dest + ".html");
             }
             else
             {
-                Console.WriteLine("Error: Layout directory " + p_dir + " is not found");
+                MessageController.Show("Error: Layout directory " + p_dir + " is not found");
             }
         }
 
@@ -122,7 +122,7 @@ namespace ChupooTemplateEngine.LayoutParsers
                         }
                         else
                         {
-                            Console.WriteLine("Warning: Partial layout " + layout_name.Substring(1) + ".html is not found");
+                            MessageController.Show("Warning: Partial layout " + layout_name.Substring(1) + ".html is not found");
                         }
                     }
                 }
