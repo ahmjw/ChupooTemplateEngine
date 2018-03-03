@@ -52,9 +52,6 @@ namespace ChupooTemplateEngine
             {
                 ReadAttributes(matched.Groups[1].Value);
                 string file_name = attributes["json"] + ".json";
-                if (attributes["inherit"] != null && attributes["inherit"].ToString() == "true")
-                {
-                }
                 string file_path = Directories.ViewDataJson + file_name;
 
                 if (File.Exists(file_path))
@@ -75,6 +72,11 @@ namespace ChupooTemplateEngine
                 }
             }
             return content;
+        }
+
+        internal void ClearParentAttributes()
+        {
+            parent_attributes.Clear();
         }
 
         internal void SetParentAttributes(Hashtable attributes)
