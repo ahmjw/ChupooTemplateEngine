@@ -10,8 +10,10 @@ namespace ChupooTemplateEngine
 {
     class CloningPage
     {
+        public int Index { set; get; }
         public string Name { set; get; }
         public string Content { set; get; }
         public List<JToken> Data { set; get; }
+        public string NewName { get; internal set; }
     }
 }

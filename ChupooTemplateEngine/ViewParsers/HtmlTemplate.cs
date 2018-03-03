@@ -74,7 +74,9 @@ namespace ChupooTemplateEngine.ViewParsers
                     {
                         JObject page_data = (JObject)datum;
                         view_content = ReplaceFormattedDataText(cp.Content, page_data);
-                        ParseFile(route, cpp.GetName(page_data), asset_level, matched, cp.Content, page_data);
+                        CloningPage newContent = cpp.ApplyData(cp, page_data);
+
+                        ParseFile(route, newContent.NewName, asset_level, matched, newContent.Content, page_data);
                     }
                 }
                 else
@@ -95,8 +97,14 @@ namespace ChupooTemplateEngine.ViewParsers
 
             content = ReplaceAssetUrlText(content, "./", "dev/views/@" + route + "/");
 
+            ShowHidingParser shp = new ShowHidingParser();
+            content = shp.Parse(content, page_data);
+
             LibParser lp = new LibParser();
             content = lp.Parse(route, content);
+
+            CloningParser cp = new CloningParser();
+            content = cp.Parse(content);
 
             ModuleParser mp = new ModuleParser();
             content = mp.Parse(content);

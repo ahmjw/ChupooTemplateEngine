@@ -29,12 +29,15 @@ namespace ChupooTemplateEngine
             }
         }
 
-        private JObject HashTable2JObject(Hashtable data)
+        public static JObject HashTable2JObject(Hashtable data)
         {
             JObject obj = new JObject();
-            foreach(DictionaryEntry datum in data)
+            if (data != null)
             {
-                obj.Add(datum.Key + "", datum.Value + "");
+                foreach (DictionaryEntry datum in data)
+                {
+                    obj.Add(datum.Key + "", datum.Value + "");
+                }
             }
             return obj;
         }

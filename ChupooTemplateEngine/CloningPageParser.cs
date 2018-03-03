@@ -15,6 +15,12 @@ namespace ChupooTemplateEngine
     {
         private Hashtable attributes = new Hashtable();
         private CloningPage cloningPage;
+        private static int index;
+
+        public CloningPageParser()
+        {
+            index = 0;
+        }
 
         private void ReadAttributes(string text)
         {
@@ -95,19 +101,33 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        internal string GetName(JObject data)
+        internal CloningPage ApplyData(CloningPage _cloningPage, JObject data)
         {
             string name = attributes["as"] + "";
             name = ViewParser.ReplaceFormattedDataText(name, data);
+
+            CloningPage __cloningPage = new CloningPage();
+            __cloningPage.Index = ++index;
+            __cloningPage.Name = _cloningPage.Name;
+            __cloningPage.Content = _cloningPage.Content;
+
             JObject info = new JObject();
-            info.Add("name", cloningPage.Name);
-            name = ReplaceFormattedDataText(name, info);
-            return name;
+            info.Add("index", __cloningPage.Index);
+            info.Add("name", __cloningPage.Name);
+
+            if (data["index"] == null)
+                data.Add("index", __cloningPage.Index);
+            if (data["name"] == null)
+                data.Add("name", __cloningPage.Name);
+
+            __cloningPage.NewName = ReplaceFormattedDataText(name, info);
+            __cloningPage.Content = ReplaceFormattedDataText(__cloningPage.Content, info);
+            return __cloningPage;
         }
 
         private string ReplaceFormattedDataText(string content, JObject data)
         {
-            string pattern = @"\{\$([a-zA-Z0-9_-]+)\}";
+            string pattern = @"\{\{\$page\.([a-zA-Z0-9_-]+)\}\}";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {

@@ -119,6 +119,9 @@ namespace ChupooTemplateEngine
                         string part_content = File.ReadAllText(lib_file);
                         part_content = RenderNestedContent(lib_name, part_content);
 
+                        ShowHidingParser shp = new ShowHidingParser();
+                        part_content = shp.Parse(part_content, attributes);
+
                         CloningParser cp = new CloningParser();
                         cp.SetParentAttributes(attributes);
                         part_content = cp.Parse(part_content);

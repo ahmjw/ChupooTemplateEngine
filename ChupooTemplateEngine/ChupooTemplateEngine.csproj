@@ -73,6 +73,7 @@
     </Compile>
     <Compile Include="ResourceParser.cs" />
     <Compile Include="Route.cs" />
+    <Compile Include="ShowHidingParser.cs" />
     <Compile Include="TextTagParser.cs" />
     <Compile Include="ViewParser.cs" />
     <Compile Include="ViewParsers\HtmlTemplate.cs" />
