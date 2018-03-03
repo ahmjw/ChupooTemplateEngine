@@ -14,7 +14,7 @@ namespace ChupooTemplateEngine
 
         public string ParseText(string package_name, string lib_name, string content)
         {
-            string pattern = @"<c.module\[(.*?)\](.*?)(?:\s*\/)?>([\w\W]+?)</c.module>";
+            string pattern = @"<c.module\[(.*?)\]([\w\W]+?)(?:\s*\/)?>([\w\W]+?)</c.module>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {

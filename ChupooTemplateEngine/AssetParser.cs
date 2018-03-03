@@ -180,8 +180,6 @@ namespace ChupooTemplateEngine
                         Parser.RegisterUniversalCssFile(new_value);
                     else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
                         new_value = "<?= get_template_directory_uri() ?>/" + new_value;
-                    else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.CHUPOO_WP_MVC)
-                        new_value = "./" + new_value;
 
                     if (dir_lv == "libs")
                     {                        

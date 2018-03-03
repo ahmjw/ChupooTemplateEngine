@@ -22,5 +22,6 @@ namespace ChupooTemplateEngine
         internal static string Resources;
         internal static string Module;
         internal static string Dev;
+        internal static string Launch;
     }
 }

@@ -226,7 +226,10 @@ namespace ChupooTemplateEngine
                             Console.WriteLine("  CSS> " + d_name);
                             File.Copy(src_path, i_dst_path);
                         }
-                        i_dst_file_name = d_name;
+                        if (CurrentCommand != CommandType.LAUNCH)
+                        {
+                            i_dst_file_name = d_name;
+                        }
                     }
                     else
                     {
@@ -235,6 +238,7 @@ namespace ChupooTemplateEngine
                     }
                 }
                 string new_value = "../" + i_dst_file_name.Replace("\\", "/");
+                
                 content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
                 newLength += new_value.Length - match.Groups[1].Length;
             }

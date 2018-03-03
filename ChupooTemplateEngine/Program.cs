@@ -99,6 +99,7 @@ namespace ChupooTemplateEngine
             Directories.ViewDataJson = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\dev\views_data\";
             Directories.Public = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\";
             Directories.PublicAsset = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\public\assets\";
+            Directories.Launch = AppDomain.CurrentDomain.BaseDirectory + @"projects\" + project_name + @"\dev\launch\";
 
             if (watcher != null)
             {
@@ -251,17 +252,15 @@ namespace ChupooTemplateEngine
                 if (current_route != null)
                 {
                     if (File.Exists(path))
+                    {
                         Process.Start(path);
+                    }
                     else
                     {
                         path = Directories.Public + "index.html";
                         if (File.Exists(path))
                         {
-                            Process process = new Process();
-                            process.StartInfo.FileName = "chrome.exe";
-                            process.StartInfo.Arguments = path;
-                            process.Start();
-                            browser = process;
+                            Process.Start(path);
                         }
                         else
                             Console.WriteLine("Error: No route for browsing");
@@ -462,11 +461,12 @@ namespace ChupooTemplateEngine
             if (!Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
             CopyDirectory(Directories.View, dir + @"\views\");
-            CopyDirectory(Directories.Lib, dir + @"\libs\");
+            CopyDirectory(Directories.Module, dir + @"\modules\");
             CopyDirectory(Directories.Layout, dir + @"\layouts\");
             CopyDirectory(Directories.Config, dir + @"\config\");
             CopyDirectory(Directories.ViewDataJson, dir + @"\views_data\");
             CopyDirectory(Directories.Asset, dir + @"\assets\");
+            CopyDirectory(Directories.Launch, dir + @"\launch\");
             Directory.CreateDirectory(dir + @"\public\");
             Console.WriteLine("Backed up to version " + version);
         }

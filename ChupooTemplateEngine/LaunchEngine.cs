@@ -17,8 +17,7 @@ namespace ChupooTemplateEngine
         public enum LaunchTypeEnum
         {
             HTML_TEMPLATE,
-            WORDPRESS,
-            CHUPOO_WP_MVC
+            WORDPRESS
         }
 
         public static bool IsCodeOnly { set; get; }

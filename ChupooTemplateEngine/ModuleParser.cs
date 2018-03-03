@@ -28,7 +28,7 @@ namespace ChupooTemplateEngine
 
         private string RenderNestedContent(string lib_name, string content)
         {
-            string pattern = @"<c.module\[(.*?)\](.*?)(?:\s*\/)?>([\w\W]+?)</c.module>";
+            string pattern = @"<c.module\[(.*?)\]([\w\W]+?)(?:\s*\/)?>([\w\W]+?)</c.module>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -88,11 +88,11 @@ namespace ChupooTemplateEngine
 
         public string Parse(string content)
         {
-            string pattern = @"<c.module\[(.*?)\](.*?)(?:\s*\/)?>([\w\W]+?)</c.module>";
+            string pattern = @"<c.module\[(.*?)\]([\w\W]+?)(?:\s*\/)?>([\w\W]+?)</c.module>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count == 0)
             {
-                pattern = @"<c\.module\[(.+)?\](.*?)(?:\s*\/)?>(?:<\/c\.module>)?";
+                pattern = @"<c\.module\[(.+)?\]([\w\W]+?)(?:\s*\/)?>(?:<\/c\.module>)?";
                 matches = Regex.Matches(content, pattern);
             }
             if (matches.Count > 0)
