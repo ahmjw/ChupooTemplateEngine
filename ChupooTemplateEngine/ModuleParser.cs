@@ -37,6 +37,10 @@ namespace ChupooTemplateEngine
                 {
                     string part_content = match.Groups[3].Value;
 
+                    CloningParser cp = new CloningParser();
+                    cp.SetParentAttributes(attributes);
+                    part_content = cp.Parse(part_content);
+
                     part_content = ReplaceAttributes(part_content);
                     part_content = Parse(part_content);
 
@@ -72,6 +76,10 @@ namespace ChupooTemplateEngine
                     part_content = Parser.ReplaceText(@"<c\.content(?:\s*\/)?>(?:<\/c\.content>)?", part_content, inner_text);
                 }
 
+                CloningParser cp = new CloningParser();
+                cp.SetParentAttributes(this.attributes);
+                part_content = cp.Parse(part_content);
+
                 part_content = ReplaceAttributes(part_content);
                 part_content = Parse(part_content);
 
@@ -79,6 +87,8 @@ namespace ChupooTemplateEngine
                 part_content = lp.Parse(lib_name, part_content);
 
                 AssetParser ap = new AssetParser("modules", Directories.Module);
+                part_content = ap.Parse(lib_name, part_content);
+
                 part_content = ap.Parse(lib_name, part_content);
             }
             else

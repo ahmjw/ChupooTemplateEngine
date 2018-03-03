@@ -255,8 +255,9 @@ namespace ChupooTemplateEngine
                 asset_level = asset_level.Substring(2);
                 foreach (Match match in matches)
                 {
-                    string url_target = public_routes != null && public_routes.Count > 0 && public_routes[match.Groups[1].Value] != null ? public_routes[match.Groups[1].Value] + "" : "index";
-                    string new_value = asset_level + url_target + ".html";
+                    string url_target = match.Groups[1].Value;
+                    //string url_target = public_routes != null && public_routes.Count > 0 && public_routes[match.Groups[1].Value] != null ? public_routes[match.Groups[1].Value] + "" : "index";
+                    string new_value = asset_level + url_target;
                     content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
                     newLength += new_value.Length - match.Groups[1].Length;
                 }

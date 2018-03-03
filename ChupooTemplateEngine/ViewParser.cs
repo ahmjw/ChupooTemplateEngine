@@ -157,7 +157,7 @@ namespace ChupooTemplateEngine
             return view_content;
         }
 
-        public static string ReplaceFormattedDataText(string content, JObject data)
+        public static string ReplaceFormattedDataText(string content, JObject data, bool remove_footage = true)
         {
             string pattern = @"\{\{([^\.][a-zA-Z0-9_-]+)\}\}";
             MatchCollection matches = Regex.Matches(content, pattern);
@@ -166,9 +166,21 @@ namespace ChupooTemplateEngine
                 int newLength = 0;
                 foreach (Match match in matches)
                 {
-                    string new_value = data[match.Groups[1].Value] + "";
-                    content = SubsituteString(content, match.Index + newLength, match.Length, new_value);
-                    newLength += new_value.Length - match.Length;
+                    bool do_remove = false;
+                    if (remove_footage)
+                    {
+                        do_remove = true;
+                    }
+                    else if (data[match.Groups[1].Value] != null)
+                    {
+                        do_remove = true;
+                    }
+                    if (do_remove)
+                    {
+                        string new_value = data[match.Groups[1].Value] + "";
+                        content = SubsituteString(content, match.Index + newLength, match.Length, new_value);
+                        newLength += new_value.Length - match.Length;
+                    }
                 }
             }
             return content;

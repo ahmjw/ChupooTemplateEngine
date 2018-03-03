@@ -38,12 +38,39 @@ namespace ChupooTemplateEngine
             if (matched.Success)
             {
                 JArray data = (JArray)JsonConvert.DeserializeObject(matched.Groups[2].Value);
-                foreach(JToken datum in (JToken)data)
+                foreach (JToken datum in (JToken)data)
                 {
                     cloningPage.Data.Add(datum);
                 }
                 ReadAttributes(matched.Groups[1].Value);
                 content = Parser.SubsituteString(content, matched.Index, matched.Length, "");
+            }
+            else
+            {
+                pattern = @"<c\.clone-page([\w\W]+?)(?:\s*\/)?>(?:<\/c\.clone-page>)?";
+                matched = Regex.Match(content, pattern);
+                if (matched.Success)
+                {
+                    ReadAttributes(matched.Groups[1].Value);
+                    string file_name = attributes["json"] + ".json";
+                    string file_path = Directories.ViewDataJson + file_name;
+
+                    if (File.Exists(file_path))
+                    {
+                        Console.WriteLine("Loading JSON file " + file_name + " ...");
+                        string json_text = File.ReadAllText(file_path);
+                        JArray data = (JArray)JsonConvert.DeserializeObject(json_text);
+                        foreach (JToken datum in (JToken)data)
+                        {
+                            cloningPage.Data.Add(datum);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error: JSON file is not found > " + file_name);
+                    }
+                    content = Parser.SubsituteString(content, matched.Index, matched.Length, "");
+                }
             }
             cloningPage.Name = route;
             cloningPage.Content = content;
