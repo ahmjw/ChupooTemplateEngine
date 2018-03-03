@@ -11,7 +11,7 @@ namespace ChupooTemplateEngine.LayoutParsers
 {
     class Wordpress : LayoutParser
     {
-        public override void Parse(string dest, string asset_level)
+        public override void Parse(string dest, string asset_level, string write_as = null)
         {
             Match matched = Regex.Match(dest, @"^_([^\\]+)\\.*?$");
             if (matched.Success)

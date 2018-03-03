@@ -50,6 +50,8 @@
   <ItemGroup>
     <Compile Include="Asset.cs" />
     <Compile Include="AssetParser.cs" />
+    <Compile Include="CloningPage.cs" />
+    <Compile Include="CloningPageParser.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="Directories.cs" />
     <Compile Include="LaunchEngine.cs" />

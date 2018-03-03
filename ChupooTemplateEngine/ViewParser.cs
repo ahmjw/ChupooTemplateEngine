@@ -157,7 +157,7 @@ namespace ChupooTemplateEngine
             return view_content;
         }
 
-        protected string ReplaceFormattedDataText(string content, JObject data)
+        public static string ReplaceFormattedDataText(string content, JObject data)
         {
             string pattern = @"\{\{([^\.][a-zA-Z0-9_-]+)\}\}";
             MatchCollection matches = Regex.Matches(content, pattern);

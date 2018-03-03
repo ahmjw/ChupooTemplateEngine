@@ -10,7 +10,7 @@ namespace ChupooTemplateEngine.LayoutParsers
 {
     class HtmlTemplate : LayoutParser
     {
-        public override void Parse(string dest, string asset_level)
+        public override void Parse(string dest, string asset_level, string write_as = null)
         {
             Match matched = Regex.Match(dest, @"^_([^\\]+)\\.*?$");
             if (matched.Success)
@@ -67,7 +67,16 @@ namespace ChupooTemplateEngine.LayoutParsers
             }
             if (Directory.Exists(Directories.Public + p_dir))
             {
-                string p_file = Directories.Public + dest + ".html";
+                string p_file;
+                if (write_as == null)
+                {
+                    p_file = Directories.Public + dest + ".html";
+                }
+                else
+                {
+                    p_file = Directories.Public + write_as + ".html";
+                    dest = write_as;
+                }
                 File.WriteAllText(p_file, layout_content);
                 Console.WriteLine("OK: " + dest + ".html");
             }

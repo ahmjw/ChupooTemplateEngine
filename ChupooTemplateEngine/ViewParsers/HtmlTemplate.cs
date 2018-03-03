@@ -65,51 +65,80 @@ namespace ChupooTemplateEngine.ViewParsers
             {
                 view_content = File.ReadAllText(path);
 
-                NestedModuleParser np = new NestedModuleParser();
-                view_content = np.ParseText("", route, view_content);
-
-                view_content = ReplaceAssetUrlText(view_content, "./", "dev/views/@" + route + "/");
-
-                LibParser lp = new LibParser();
-                view_content = lp.Parse(route, view_content);
-
-                ModuleParser mp = new ModuleParser();
-                view_content = mp.Parse(view_content);
-
-                matched = Regex.Match(view_content, @"<c\.config\slayout=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");
-                if (matched.Success)
+                // Cloning page
+                CloningPageParser cpp = new CloningPageParser();
+                CloningPage cp = cpp.Parse(route, view_content);
+                if (cp.Data.Count > 0)
                 {
-                    cfg_layout_name = matched.Groups[1].Value;
-                    view_content = SubsituteString(view_content, matched.Index, matched.Length, "");
+                    foreach (JToken datum in cp.Data)
+                    {
+                        JObject page_data = (JObject)datum;
+                        view_content = ReplaceFormattedDataText(cp.Content, page_data);
+                        ParseFile(route, cpp.GetName(page_data), asset_level, matched, cp.Content, page_data);
+                    }
                 }
                 else
-                    cfg_layout_name = "page";
-
-                string c_dir = Directories.View + "@" + route;
-                if (Directory.Exists(c_dir))
-                    view_content = LoadPartialView(view_content, "@" + route);
-                else
-                    view_content = LoadPartialView(view_content);
-
-                view_content = RenderPartialCss(c_dir, view_content);
-                RenderPartialAssets(route, Directories.View, view_content);
-
-                string data_path = Directories.ViewDataJson + route + ".json";
-                if (File.Exists(data_path))
                 {
-                    Console.WriteLine("Rendering " + route + ".html JSON data ...");
-                    string json_str = File.ReadAllText(data_path);
-                    JObject data = JObject.Parse(json_str);
-                    view_content = ReplaceFormattedDataText(view_content, data);
+                    ParseFile(route, dest, asset_level, matched, view_content);
                 }
-                view_content = ReplaceLinkUrlText(view_content, asset_level);
-                LayoutParsers.HtmlTemplate layoutParser = new LayoutParsers.HtmlTemplate();
-                layoutParser.Parse(dest, asset_level);
             }
             else
             {
                 Console.WriteLine("View file is not found: " + route + ".html");
             }
+        }
+
+        private void ParseFile(string route, string dest, string asset_level, Match matched, string content, JObject page_data = null)
+        {
+            NestedModuleParser np = new NestedModuleParser();
+            content = np.ParseText("", route, content);
+
+            content = ReplaceAssetUrlText(content, "./", "dev/views/@" + route + "/");
+
+            LibParser lp = new LibParser();
+            content = lp.Parse(route, content);
+
+            ModuleParser mp = new ModuleParser();
+            content = mp.Parse(content);
+
+            matched = Regex.Match(content, @"<c\.config\slayout=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");
+            if (matched.Success)
+            {
+                cfg_layout_name = matched.Groups[1].Value;
+                content = SubsituteString(content, matched.Index, matched.Length, "");
+            }
+            else
+                cfg_layout_name = "page";
+
+            string c_dir = Directories.View + "@" + route;
+            if (Directory.Exists(c_dir))
+                content = LoadPartialView(content, "@" + route);
+            else
+                content = LoadPartialView(content);
+
+            content = RenderPartialCss(c_dir, content);
+            RenderPartialAssets(route, Directories.View, content);
+
+            // Replace data
+            if (page_data == null)
+            {
+                string data_path = Directories.ViewDataJson + route + ".json";
+                if (File.Exists(data_path))
+                {
+                    Console.WriteLine("Rendering " + route + ".html JSON data ...");
+                    string json_str = File.ReadAllText(data_path);
+                    page_data = JObject.Parse(json_str);
+                    content = ReplaceFormattedDataText(content, page_data);
+                }
+            }
+            else
+            {
+                content = ReplaceFormattedDataText(content, page_data);
+            }
+
+            view_content = ReplaceLinkUrlText(content, asset_level);
+            LayoutParsers.HtmlTemplate layoutParser = new LayoutParsers.HtmlTemplate();
+            layoutParser.Parse(route, asset_level, dest);
         }
     }
 }

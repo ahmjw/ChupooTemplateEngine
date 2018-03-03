@@ -13,7 +13,7 @@ namespace ChupooTemplateEngine
 {
     abstract class LayoutParser : Parser
     {
-        public abstract void Parse(string dest, string asset_level);
+        public abstract void Parse(string dest, string asset_level, string write_as = null);
 
         protected abstract string RenderPartialLayout(string content);
 
