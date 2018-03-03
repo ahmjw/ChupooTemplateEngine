@@ -119,6 +119,10 @@ namespace ChupooTemplateEngine
                         string part_content = File.ReadAllText(lib_file);
                         part_content = RenderNestedContent(lib_name, part_content);
 
+                        CloningParser cp = new CloningParser();
+                        cp.SetParentAttributes(attributes);
+                        part_content = cp.Parse(part_content);
+
                         NestedModuleParser np = new NestedModuleParser();
                         part_content = np.ParseText("", lib_name, part_content);
 
