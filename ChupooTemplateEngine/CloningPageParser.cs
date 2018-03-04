@@ -49,6 +49,7 @@ namespace ChupooTemplateEngine
                     cloningPage.Data.Add(datum);
                 }
                 ReadAttributes(matched.Groups[1].Value);
+                
                 content = Parser.SubsituteString(content, matched.Index, matched.Length, "");
             }
             else
@@ -115,13 +116,14 @@ namespace ChupooTemplateEngine
             info.Add("index", __cloningPage.Index);
             info.Add("name", __cloningPage.Name);
 
+            __cloningPage.NewName = ReplaceFormattedDataText(name, info);
+            __cloningPage.Content = ReplaceFormattedDataText(__cloningPage.Content, info);
+
             if (data["index"] == null)
                 data.Add("index", __cloningPage.Index);
             if (data["name"] == null)
                 data.Add("name", __cloningPage.Name);
 
-            __cloningPage.NewName = ReplaceFormattedDataText(name, info);
-            __cloningPage.Content = ReplaceFormattedDataText(__cloningPage.Content, info);
             return __cloningPage;
         }
 

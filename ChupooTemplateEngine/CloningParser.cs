@@ -50,10 +50,6 @@ namespace ChupooTemplateEngine
             {
                 // Combine data from attributes
                 ReadAttributes(matched.Groups[1].Value);
-                string file_name = attributes["json"] + ".json";
-                //if (file_name == "_talks-div.json")
-                //    Console.WriteLine(content);
-                attributes.Clear();
                 content = ViewParser.ReplaceFormattedDataText(content, HashTable2JObject(parent_attributes), false);
 
                 // Reload content
@@ -61,7 +57,7 @@ namespace ChupooTemplateEngine
                 matched = Regex.Match(content, pattern);
 
                 ReadAttributes(matched.Groups[1].Value);
-                file_name = attributes["json"] + ".json";
+                string file_name = attributes["json"] + ".json";
                 string file_path = Directories.ViewDataJson + file_name;
 
                 if (File.Exists(file_path))
@@ -72,10 +68,9 @@ namespace ChupooTemplateEngine
                     string new_content = "";
                     foreach (JObject datum in (JToken)data)
                     {
-                        //if (file_name == "_talks-div.json")
-                        //    MessageController.Show(matched.Groups[2].Value);
                         new_content += ViewParser.ReplaceFormattedDataText(matched.Groups[2].Value, datum);
                     }
+
                     content = Parser.SubsituteString(content, matched.Index, matched.Length, new_content);
                 }
                 else

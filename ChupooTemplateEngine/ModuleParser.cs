@@ -155,11 +155,11 @@ namespace ChupooTemplateEngine
                     }
                     else
                         MessageController.Show("Warning: Module is not found > " + lib_name);
-                }
 
-                if (ClonedPage)
-                {
-                    attributes.Clear();
+                    if (ClonedPage)
+                    {
+                        attributes.Clear();
+                    }
                 }
             }
             return content;

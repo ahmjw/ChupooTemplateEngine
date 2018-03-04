@@ -17,6 +17,7 @@ namespace ChupooTemplateEngine
 
         public static void Show(Hashtable data)
         {
+            if (data == null) return;
             foreach (DictionaryEntry de in data)
             {
                 Console.WriteLine(de.Key + "=" + de.Value);
