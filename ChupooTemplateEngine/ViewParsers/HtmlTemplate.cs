@@ -75,7 +75,7 @@ namespace ChupooTemplateEngine.ViewParsers
                         JObject page_data = (JObject)datum;
                         view_content = ReplaceFormattedDataText(cp.Content, page_data);
                         CloningPage newContent = cpp.ApplyData(cp, page_data);
-                        newContent.Content = ReplaceFormattedDataText(newContent.Content, page_data, false);
+                        //newContent.Content = ReplaceFormattedDataText(newContent.Content, page_data, false);
                         ParseFile(route, newContent.NewName, asset_level, matched, newContent.Content, page_data);
                     }
                 }
@@ -97,9 +97,6 @@ namespace ChupooTemplateEngine.ViewParsers
 
             content = ReplaceAssetUrlText(content, "./", "dev/views/@" + route + "/");
 
-            ShowHidingParser shp = new ShowHidingParser();
-            content = shp.Parse(content, page_data);
-
             CloningParser cp = new CloningParser();
             content = cp.Parse(content);
 
@@ -109,6 +106,9 @@ namespace ChupooTemplateEngine.ViewParsers
             ModuleParser mp = new ModuleParser();
             mp.ClonedPage = true;
             content = mp.Parse(content);
+
+            ShowHidingParser shp = new ShowHidingParser();
+            content = shp.Parse(content, page_data);
 
             matched = Regex.Match(content, @"<c\.config\slayout=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");
             if (matched.Success)

@@ -54,7 +54,6 @@
     <Compile Include="CloningPageParser.cs" />
     <Compile Include="CloningParser.cs" />
     <Compile Include="Command.cs" />
-    <Compile Include="Debugger.cs" />
     <Compile Include="Directories.cs" />
     <Compile Include="LaunchEngine.cs" />
     <Compile Include="Layout.cs" />
