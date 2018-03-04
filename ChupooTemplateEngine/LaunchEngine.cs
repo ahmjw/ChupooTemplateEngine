@@ -30,11 +30,26 @@ namespace ChupooTemplateEngine
             Directory.CreateDirectory(Directories.PublicAsset);
             Directory.CreateDirectory(Directories.PublicAsset + "\\local");
             Directories.Current = Directories.View;
-            RenderDirectoryRecursively(Directories.View, "");
+            ViewParser viewParser = GetViewParser();
+            viewParser.LoopViews(Directories.View);
+
             LaunchAssets(Directories.Asset);
             Directories.Current = null;
         }
-        
+
+        public void Run(string route, LaunchTypeEnum launchType)
+        {
+            Parser.ClearAll();
+            LaunchType = launchType;
+            Asset.ClearAssets();
+            Directory.CreateDirectory(Directories.PublicAsset);
+            Directory.CreateDirectory(Directories.PublicAsset + "\\local");
+            Directories.Current = Directories.View;
+            ViewParser viewParser = GetViewParser();
+            viewParser.Parse(route, route);
+            Directories.Current = null;
+        }
+
         private void LaunchAssets(string path)
         {
             string[] dirs = Directory.GetDirectories(path);
@@ -63,20 +78,19 @@ namespace ChupooTemplateEngine
             }
         }
 
-        private void RenderDirectoryRecursively(string path, string asset_level)
+        private ViewParser GetViewParser()
         {
             ViewParser viewParser = null;
             switch (LaunchType)
             {
                 case LaunchTypeEnum.HTML_TEMPLATE:
                     viewParser = new HtmlTemplate();
-                    viewParser.LoopViews(path);
                     break;
                 case LaunchTypeEnum.WORDPRESS:
                     viewParser = new Wordpress();
-                    viewParser.LoopViews(path);
                     break;
             }
+            return viewParser;
         }
     }
 }
