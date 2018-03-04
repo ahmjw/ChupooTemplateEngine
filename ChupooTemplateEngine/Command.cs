@@ -19,7 +19,8 @@
             CREATE_PROJECT,
             RENDER_BACKUP,
             EXPLORE,
-            EXPLORE_PROJECT
+            EXPLORE_PROJECT,
+            HELP
         }
     }
 }

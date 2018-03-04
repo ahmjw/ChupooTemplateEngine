@@ -305,7 +305,7 @@ namespace ChupooTemplateEngine
                 current_route = "index";
                 ran = true;
             }
-            matched = Regex.Match(command, @"^launch\s-f\s(.+?)$");
+            matched = Regex.Match(command, @"^launch\s-r\s(.+?)$");
             if (!ran && matched.Success)
             {
                 CurrentCommand = CommandType.LAUNCH;
@@ -326,7 +326,7 @@ namespace ChupooTemplateEngine
                 current_route = "index";
                 ran = true;
             }
-            matched = Regex.Match(command, @"^launch\s-f\swp$");
+            matched = Regex.Match(command, @"^launch\s-f\s((?:wp|wordpress))$");
             if (!ran && matched.Success)
             {
                 CurrentCommand = CommandType.LAUNCH;
@@ -346,7 +346,7 @@ namespace ChupooTemplateEngine
                 Directories.Current = null;
                 ran = true;
             }
-            matched = Regex.Match(command, @"^render\s-f\s(.+?)$");
+            matched = Regex.Match(command, @"^render\s-r\s(.+?)$");
             if (!ran && matched.Success)
             {
                 CurrentCommand = CommandType.RENDER_FILE;
@@ -387,9 +387,46 @@ namespace ChupooTemplateEngine
                 RenderBackup(view_name);
                 ran = true;
             }
+            matched = Regex.Match(command, @"^help$");
+            if (!ran && matched.Success)
+            {
+                CurrentCommand = CommandType.HELP;
+                ShowHelp();
+                ran = true;
+            }
             if (!ran)
                 MessageController.Show("Error: Invalid command");
             Run();
+        }
+
+        private static void ShowHelp()
+        {
+            Console.Clear();
+            ShowHelpRow("clear", 5, "Clears screen.");
+            ShowHelpRow("project create <project-name>", 2, "Creates a new project.");
+            ShowHelpRow("project load <project-name>", 2, "Loads the project.");
+            ShowHelpRow("explore", 5, "Opens the project use Windows Explorer.");
+            ShowHelpRow("explore <project-name>", 3, "Opens the specific project use Windows Explorer.");
+            ShowHelpRow("browse", 5, "Opens the rendered or launched web page use web browser app.");
+            ShowHelpRow("render", 5, "Renders development data to web page.");
+            ShowHelpRow("render -r <file-name>", 3, "Renders only 1 web page.");
+            ShowHelpRow("render -b <backup-version>", 2, "Renders the backed up development data to web page.");
+            ShowHelpRow("launch", 5, "Launchs the web page for production.");
+            ShowHelpRow("launch -f wordpress | launch -f wp", 1, "Launchs the web page for Wordpress.");
+            ShowHelpRow("launch -r <file-name>", 3, "Launchs only 1 web page.");
+            ShowHelpRow("launch -co", 4, "Launchs only code of the web page without its assets.");
+            ShowHelpRow("backup", 5, "Backups the development data into a version.");
+            Console.WriteLine();
+        }
+
+        private static void ShowHelpRow(string command, int indent, string desc)
+        {
+            Console.Write(command);
+            for(int i = 0; i < indent; i++)
+            {
+                Console.Write("\t");
+            }
+            Console.WriteLine(desc);
         }
 
         private static void Run()
