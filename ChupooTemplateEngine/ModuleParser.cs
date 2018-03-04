@@ -13,6 +13,13 @@ namespace ChupooTemplateEngine
     {
         private Hashtable attributes = new Hashtable();
 
+        public bool ClonedPage { get; internal set; }
+
+        public ModuleParser()
+        {
+            ClonedPage = false;
+        }
+
         private void ReadAttributes(string text)
         {
             string pattern = @"([a-zA-Z0-9_-]+)\=""([^""]+)""";
@@ -148,6 +155,11 @@ namespace ChupooTemplateEngine
                     }
                     else
                         MessageController.Show("Warning: Module is not found > " + lib_name);
+                }
+
+                if (ClonedPage)
+                {
+                    attributes.Clear();
                 }
             }
             return content;

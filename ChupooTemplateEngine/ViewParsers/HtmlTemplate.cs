@@ -100,7 +100,6 @@ namespace ChupooTemplateEngine.ViewParsers
             ShowHidingParser shp = new ShowHidingParser();
             content = shp.Parse(content, page_data);
 
-
             CloningParser cp = new CloningParser();
             content = cp.Parse(content);
 
@@ -108,6 +107,7 @@ namespace ChupooTemplateEngine.ViewParsers
             content = lp.Parse(route, content);
 
             ModuleParser mp = new ModuleParser();
+            mp.ClonedPage = true;
             content = mp.Parse(content);
 
             matched = Regex.Match(content, @"<c\.config\slayout=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");

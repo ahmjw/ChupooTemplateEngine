@@ -171,15 +171,23 @@ namespace ChupooTemplateEngine
                     {
                         do_remove = true;
                     }
-                    else if (data[match.Groups[1].Value] != null)
+                    else if (data != null && data[match.Groups[1].Value] != null)
                     {
                         do_remove = true;
                     }
                     if (do_remove)
                     {
-                        string new_value = data[match.Groups[1].Value] + "";
-                        content = SubsituteString(content, match.Index + newLength, match.Length, new_value);
-                        newLength += new_value.Length - match.Length;
+                        if (data != null)
+                        {
+                            string new_value = data[match.Groups[1].Value] + "";
+                            content = SubsituteString(content, match.Index + newLength, match.Length, new_value);
+                            newLength += new_value.Length - match.Length;
+                        }
+                        else
+                        {
+                            content = SubsituteString(content, match.Index + newLength, match.Length, "");
+                            newLength += match.Length;
+                        }
                     }
                 }
             }

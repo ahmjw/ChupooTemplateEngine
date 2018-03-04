@@ -44,12 +44,17 @@ namespace ChupooTemplateEngine
 
         internal string Parse(string content)
         {
-            content = ViewParser.ReplaceFormattedDataText(content, HashTable2JObject(parent_attributes), false);
-
             string pattern = @"<c.clone([\w\W]+?)>([\w\W]+?)</c.clone>";
             Match matched = Regex.Match(content, pattern);
             if (matched.Success)
             {
+                // Combine data from attributes
+                content = ViewParser.ReplaceFormattedDataText(content, HashTable2JObject(parent_attributes), false);
+
+                // Reload content
+                pattern = @"<c.clone([\w\W]+?)>([\w\W]+?)</c.clone>";
+                matched = Regex.Match(content, pattern);
+
                 ReadAttributes(matched.Groups[1].Value);
                 string file_name = attributes["json"] + ".json";
                 string file_path = Directories.ViewDataJson + file_name;
@@ -72,11 +77,6 @@ namespace ChupooTemplateEngine
                 }
             }
             return content;
-        }
-
-        internal void ClearParentAttributes()
-        {
-            parent_attributes.Clear();
         }
 
         internal void SetParentAttributes(Hashtable attributes)
