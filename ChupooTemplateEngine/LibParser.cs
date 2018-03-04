@@ -28,7 +28,7 @@ namespace ChupooTemplateEngine
 
         private string RenderNestedContent(string lib_name, string content)
         {
-            string pattern = @"<c.lib\[([^\]]+)\]([\w\W]+?)>([\w\W]+)?<\/c\.lib>";
+            string pattern = @"<c.lib\[([^\]]+)\]([\w\W]+?)>([\w\W]+?)<\/c\.lib>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -55,7 +55,7 @@ namespace ChupooTemplateEngine
 
         public string Parse(string fileName, string content)
         {
-            string pattern = @"<c.lib\[([^\]]+)\]([\w\W]+?)>([\w\W]+)?<\/c\.lib>";
+            string pattern = @"<c.lib\[([^\]]+)\]([^\/>]+?)>([\w\W]+?)<\/c\.lib>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count == 0)
             {
@@ -68,6 +68,7 @@ namespace ChupooTemplateEngine
                 foreach (Match match in matches)
                 {
                     string lib_name = match.Groups[1].Value;
+                    Console.WriteLine(lib_name);
 
                     if (!Parser.IsLibExists(lib_name))
                     {
