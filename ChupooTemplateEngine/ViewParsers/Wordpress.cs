@@ -17,7 +17,14 @@ namespace ChupooTemplateEngine.ViewParsers
         {
             string fname = "style.css";
             string dst = Directories.Public + fname;
-            string src = Directories.Dev + "\\launch\\wordpress\\" + fname;
+            string wp_dir = Directories.Dev + "launch\\wordpress\\";
+            if (!Directory.Exists(wp_dir))
+            {
+                MessageController.Show("Warning: Wordpress launching directory is not available");
+                return;
+            }
+
+            string src = wp_dir + fname;
             if (!File.Exists(dst))
             {
                 File.Copy(src, dst);
@@ -25,7 +32,7 @@ namespace ChupooTemplateEngine.ViewParsers
 
             fname = "functions.php";
             dst = Directories.Public + fname;
-            src = Directories.Dev + "\\launch\\wordpress\\" + fname;
+            src = wp_dir + fname;
             if (!File.Exists(dst))
             {
                 File.Copy(src, dst);
