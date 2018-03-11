@@ -181,14 +181,19 @@ namespace ChupooTemplateEngine
                 string new_content = appended + matched.Value;
                 content = SubsituteString(content, matched.Index, matched.Length, new_content);
             }
+
             matched = Regex.Match(content, @"</head>[\w\W]*?<body.*?>");
             if (matched.Success)
             {
                 string appended = "";
                 foreach (string style in v_style_code_list)
                     appended += style;
+                v_style_code_list.Clear();
+
                 foreach (string style in l_style_code_list)
                     appended += style;
+                l_style_code_list.Clear();
+
                 string new_content = appended + matched.Value;
                 content = SubsituteString(content, matched.Index, matched.Length, new_content);
             }
@@ -217,8 +222,12 @@ namespace ChupooTemplateEngine
                 string appended = "";
                 foreach (string script in l_script_code_list)
                     appended += script;
+                l_script_code_list.Clear();
+
                 foreach (string script in v_script_code_list)
                     appended += script;
+                v_script_code_list.Clear();
+
                 string new_content = appended + matched.Value;
                 content = SubsituteString(content, matched.Index, matched.Length, new_content);
             }

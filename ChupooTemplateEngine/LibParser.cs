@@ -68,7 +68,6 @@ namespace ChupooTemplateEngine
                 foreach (Match match in matches)
                 {
                     string lib_name = match.Groups[1].Value;
-                    Console.WriteLine(lib_name);
 
                     if (!Parser.IsLibExists(lib_name))
                     {
