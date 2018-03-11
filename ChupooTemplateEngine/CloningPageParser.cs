@@ -72,6 +72,17 @@ namespace ChupooTemplateEngine
                             cloningPage.Data.Add(datum);
                         }
                     }
+                    else if (attributes["for"] != null)
+                    {
+                        string[] for_data = attributes["for"].ToString().Split(',');
+                        int a = int.Parse(for_data[0]);
+                        int b = int.Parse(for_data[1]);
+                        int c = int.Parse(for_data[2]);
+                        for (int i = a; i <= b; i += c)
+                        {
+                            cloningPage.Data.Add(new JObject(new JProperty("index", i)));
+                        }
+                    }
                     else
                     {
                         MessageController.Show("Error: JSON file is not found > " + file_name);
@@ -79,6 +90,7 @@ namespace ChupooTemplateEngine
                     content = Parser.SubsituteString(content, matched.Index, matched.Length, "");
                 }
             }
+
             cloningPage.Name = route;
             cloningPage.Content = content;
             return cloningPage;
