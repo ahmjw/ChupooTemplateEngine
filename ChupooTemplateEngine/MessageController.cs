@@ -18,6 +18,7 @@ namespace ChupooTemplateEngine
         public static void Show(Hashtable data)
         {
             if (data == null) return;
+
             foreach (DictionaryEntry de in data)
             {
                 Console.WriteLine(de.Key + "=" + de.Value);
@@ -27,6 +28,8 @@ namespace ChupooTemplateEngine
 
         public static void Show(JObject data)
         {
+            if (data == null) return;
+
             foreach (var de in data)
             {
                 Console.WriteLine(de.Key + "=" + de.Value);

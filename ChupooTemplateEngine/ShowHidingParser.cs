@@ -130,11 +130,10 @@ namespace ChupooTemplateEngine
             }
             else
             {
-                pattern = @"\{(!?[a-zA-Z0-9-_]+)@([^\,]+)\,([^\(]+)\(([^\:]+)\:([^\)]+?)\)\}";
+                pattern = @"\{(!?[a-zA-Z0-9-_]+)@([^\,]+)\,([^\(]+)\(([^\:]*)\:([^\)]*?)\)\}";
                 matches = Regex.Matches(content, pattern);
                 if (matches.Count > 0)
                 {
-                    //Debugger.Enumerator(attributes);
                     int newLength = 0;
                     foreach (Match match in matches)
                     {
@@ -146,8 +145,7 @@ namespace ChupooTemplateEngine
 
                         if (func_name == "equal")
                         {
-                            //Console.WriteLine(attributes[ord_a].ToString()+" == "+attributes[ord_b].ToString());
-                            if(!(attributes.Contains(ord_a) && attributes.Contains(ord_b)
+                            if (!(attributes.Contains(ord_a) && attributes.Contains(ord_b)
                                 && attributes[ord_a].ToString() == attributes[ord_b].ToString()))
                             {
                                 content = Parser.SubsituteString(content, match.Index + newLength, match.Length, true_target);

@@ -75,6 +75,9 @@ namespace ChupooTemplateEngine
                 part_content = File.ReadAllText(lib_file);
                 part_content = RenderNestedContent(lib_name, part_content);
 
+                ShowHidingParser shp = new ShowHidingParser();
+                part_content = shp.Parse(part_content, this.attributes);
+
                 NestedModuleParser np = new NestedModuleParser();
                 part_content = np.ParseText("", lib_name, part_content);
 

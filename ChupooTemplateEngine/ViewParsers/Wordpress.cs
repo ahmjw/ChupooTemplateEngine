@@ -63,7 +63,7 @@ namespace ChupooTemplateEngine.ViewParsers
             {
                 FileInfo finfo = new FileInfo(file);
                 string path_stage = finfo.Name.Replace(finfo.Extension, "");
-                HtmlTemplate viewParser = new HtmlTemplate();
+                Wordpress viewParser = new Wordpress();
                 viewParser.Parse(path_stage, path_stage);
 
                 Directories.Current = Directories.View;
@@ -116,9 +116,9 @@ namespace ChupooTemplateEngine.ViewParsers
 
                 string c_dir = Directories.View + "@" + route;
                 if (Directory.Exists(c_dir))
-                    view_content = LoadPartialView(view_content, "@" + route);
+                    view_content = LoadPartialView(view_content, null, "@" + route);
                 else
-                    view_content = LoadPartialView(view_content);
+                    view_content = LoadPartialView(view_content, null);
 
                 view_content = RenderPartialCss(c_dir, view_content);
                 RenderPartialAssets(route, Directories.View, view_content);

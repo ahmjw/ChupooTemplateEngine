@@ -125,9 +125,9 @@ namespace ChupooTemplateEngine.ViewParsers
 
             string c_dir = Directories.View + "@" + route;
             if (Directory.Exists(c_dir))
-                content = LoadPartialView(content, "@" + route);
+                content = LoadPartialView(content, page_data, "@" + route);
             else
-                content = LoadPartialView(content);
+                content = LoadPartialView(content, page_data);
 
             content = RenderPartialCss(c_dir, content);
             RenderPartialAssets(route, Directories.View, content);

@@ -263,10 +263,12 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        protected string RenderViewComponent(string layout_name, string layout_file, string parent_route)
+        protected string RenderViewComponent(string layout_name, string layout_file, string parent_route, JObject page_data)
         {
             FileInfo finfo = new FileInfo(layout_file);
             string content = File.ReadAllText(layout_file);
+
+            content = ReplaceFormattedDataText(content, page_data, false);
 
             NestedModuleParser np = new NestedModuleParser();
             content = np.ParseText(parent_route, layout_name, content);
@@ -279,7 +281,7 @@ namespace ChupooTemplateEngine
 
             string c_name = finfo.DirectoryName.Replace(Directories.Project, "").Replace('\\', '/') + "/";
             content = ReplaceAssetUrlText(content, "./", c_name);
-            content = LoadPartialView(content);
+            content = LoadPartialView(content, page_data);
             RenderPartialAssets(layout_name, Directories.View, content, true, parent_route);
             content = RenderPartialCss(finfo.DirectoryName, content);
             content = SeparateViewStyle(content);
@@ -287,7 +289,7 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        protected string LoadPartialView(string content, string parent_route = null)
+        protected string LoadPartialView(string content, JObject page_data, string parent_route = null)
         {
             string pattern = @"<c\.part\[(.+)?\](.*?)(?:\s*\/)?>(?:<\/c\.part>)?";
             MatchCollection matches = Regex.Matches(content, pattern);
@@ -310,7 +312,7 @@ namespace ChupooTemplateEngine
 
                     if (File.Exists(layout_file))
                     {
-                        string part_content = RenderViewComponent(layout_name, layout_file, parent_route);
+                        string part_content = RenderViewComponent(layout_name, layout_file, parent_route, page_data);
                         content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
                         newLength += part_content.Length - match.Length;
                     }
@@ -326,7 +328,7 @@ namespace ChupooTemplateEngine
                             layout_file = v_dir + @"\main.html";
                             if (File.Exists(layout_file))
                             {
-                                string part_content = RenderViewComponent(layout_name, layout_file, parent_route);
+                                string part_content = RenderViewComponent(layout_name, layout_file, parent_route, page_data);
                                 content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
                                 newLength += part_content.Length - match.Length;
                             }
