@@ -39,25 +39,55 @@ namespace ChupooTemplateEngine
         {
             cloningPage = new CloningPage();
             cloningPage.Data = new List<JToken>();
-            string pattern = @"<c.clone-page([\w\W]+?)>([\w\W]+?)</c.clone-page>";
-            Match matched = Regex.Match(content, pattern);
+            string pattern;
+            Match matched;
+            bool is_match = false;
+
+            pattern = @"<c\.clone-page([\w\W]+?)>([\w\W]+?)<\/c\.clone-page>?";
+            matched = Regex.Match(content, pattern);
             if (matched.Success)
             {
-                JArray data = (JArray)JsonConvert.DeserializeObject(matched.Groups[2].Value);
-                foreach (JToken datum in (JToken)data)
-                {
-                    cloningPage.Data.Add(datum);
-                }
+                is_match = true;
                 ReadAttributes(matched.Groups[1].Value);
-                
+                pattern = "<part>(.*?)</part>";
+                MatchCollection mc = Regex.Matches(matched.Groups[2].Value, pattern);
+                int i = 0;
+                foreach(Match match in mc)
+                {
+                    JObject datum = new JObject();
+                    datum.Add("$page.part", match.Groups[1].Value);
+                    cloningPage.Data.Add(datum);
+                    i++;
+                }
+
                 content = Parser.SubsituteString(content, matched.Index, matched.Length, "");
             }
-            else
+            
+            if (!is_match)
             {
+                pattern = @"<c.clone-page([\w\W]+?)>([\w\W]+?)</c.clone-page>";
+                matched = Regex.Match(content, pattern);
+                if (matched.Success)
+                {
+                    is_match = true;
+                    JArray data = (JArray)JsonConvert.DeserializeObject(matched.Groups[2].Value);
+                    foreach (JToken datum in (JToken)data)
+                    {
+                        cloningPage.Data.Add(datum);
+                    }
+                    ReadAttributes(matched.Groups[1].Value);
+
+                    content = Parser.SubsituteString(content, matched.Index, matched.Length, "");
+                }
+            }
+
+            if (!is_match)
+            { 
                 pattern = @"<c\.clone-page([\w\W]+?)(?:\s*\/)?>(?:<\/c\.clone-page>)?";
                 matched = Regex.Match(content, pattern);
                 if (matched.Success)
                 {
+                    is_match = true;
                     ReadAttributes(matched.Groups[1].Value);
                     string file_name = attributes["json"] + ".json";
                     string file_path = Directories.ViewDataJson + file_name;
@@ -123,10 +153,15 @@ namespace ChupooTemplateEngine
             __cloningPage.Index = ++index;
             __cloningPage.Name = _cloningPage.Name;
             __cloningPage.Content = _cloningPage.Content;
+            if (data["$page.part"] != null)
+            {
+                __cloningPage.Part = data["$page.part"] + "";
+            }
 
             JObject info = new JObject();
             info.Add("index", __cloningPage.Index);
             info.Add("name", __cloningPage.Name);
+            info.Add("part", __cloningPage.Part);
 
             __cloningPage.NewName = ReplaceFormattedDataText(name, info);
             __cloningPage.Content = ReplaceFormattedDataText(__cloningPage.Content, info);
@@ -135,6 +170,8 @@ namespace ChupooTemplateEngine
                 data.Add("index", __cloningPage.Index);
             if (data["name"] == null)
                 data.Add("name", __cloningPage.Name);
+            if (data["part"] == null)
+                data.Add("part", __cloningPage.Part);
 
             return __cloningPage;
         }
