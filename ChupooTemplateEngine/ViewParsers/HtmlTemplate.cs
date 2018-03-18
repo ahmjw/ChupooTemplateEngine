@@ -76,6 +76,7 @@ namespace ChupooTemplateEngine.ViewParsers
                         view_content = ReplaceFormattedDataText(cp.Content, page_data);
                         CloningPage newContent = cpp.ApplyData(cp, page_data);
                         ParseFile(route, newContent.NewName, asset_level, matched, newContent.Content, page_data);
+                        Directories.Current = Directories.View;
                     }
                 }
                 else
