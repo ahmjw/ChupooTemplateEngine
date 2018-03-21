@@ -291,8 +291,6 @@ namespace ChupooTemplateEngine
 
             if (File.Exists(src_path))
             {
-                FileInfo finfo = new FileInfo(src_path);
-
                 string dst_file_name = RenameAsset(asset);
                 string dst_path = Directories.PublicAsset + "local\\" + dst_file_name.Replace("/", "\\");
 
@@ -311,7 +309,7 @@ namespace ChupooTemplateEngine
         private string RenameAsset(string asset)
         {
             string d_root = Directories.PublicAsset + "local\\";
-            Match match = Regex.Match(asset, @"(_.*)?/([a-zA-Z0-9-_\.]+)(\.[a-zA-Z0-9-_]+)$");
+            Match match = Regex.Match(asset, @"(_.*)?/[a-zA-Z0-9-_\.]+/([^\///]+(?:[^\///]+))(\.[a-zA-Z0-9-_]+)$");
             if (match.Success)
             {
                 string d_name = "";

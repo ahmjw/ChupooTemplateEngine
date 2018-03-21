@@ -281,7 +281,7 @@ namespace ChupooTemplateEngine
 
             string c_name = finfo.DirectoryName.Replace(Directories.Project, "").Replace('\\', '/') + "/";
             content = ReplaceAssetUrlText(content, "./", c_name);
-            content = LoadPartialView(content, page_data);
+            content = LoadPartialView(content, page_data, parent_route);
             RenderPartialAssets(layout_name, Directories.View, content, true, parent_route);
             content = RenderPartialCss(finfo.DirectoryName, content);
             content = SeparateViewStyle(content);
@@ -298,21 +298,22 @@ namespace ChupooTemplateEngine
                 int newLength = 0;
                 foreach (Match match in matches)
                 {
+                    string _layout_name = match.Groups[1].Value.Replace("/", "\\");
                     string layout_name;
+                    string layout_file;
                     if (parent_route != null)
                     {
-                        layout_name = match.Groups[1].Value;
+                        layout_name = parent_route + "\\" + _layout_name;
                     }
                     else
                     {
-                        layout_name = match.Groups[1].Value;
+                        layout_name = match.Groups[1].Value.Replace("/", "\\");
                     }
-
-                    string layout_file = Directories.View + layout_name + ".html";
+                    layout_file = Directories.View + layout_name + ".html";
 
                     if (File.Exists(layout_file))
                     {
-                        string part_content = RenderViewComponent(layout_name, layout_file, parent_route, page_data);
+                        string part_content = RenderViewComponent(_layout_name, layout_file, parent_route, page_data);
                         content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
                         newLength += part_content.Length - match.Length;
                     }
@@ -321,14 +322,15 @@ namespace ChupooTemplateEngine
                         string v_dir = Directories.View + layout_name;
                         if (parent_route != null)
                         {
-                            v_dir = Directories.View + parent_route + @"\" + layout_name;
+                            v_dir = Directories.View + @"\" + layout_name;
                         }
+
                         if (Directory.Exists(v_dir))
                         {
                             layout_file = v_dir + @"\main.html";
                             if (File.Exists(layout_file))
                             {
-                                string part_content = RenderViewComponent(layout_name, layout_file, parent_route, page_data);
+                                string part_content = RenderViewComponent(_layout_name, layout_file, parent_route, page_data);
                                 content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
                                 newLength += part_content.Length - match.Length;
                             }
