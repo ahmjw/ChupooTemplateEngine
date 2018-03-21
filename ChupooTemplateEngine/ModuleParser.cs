@@ -68,10 +68,19 @@ namespace ChupooTemplateEngine
         {
             string part_content = "";
             ReadAttributes(attributes);
-            string lib_dir = Directories.Module + lib_name.Replace("/", "\\");
+            string lib_dir = Directories.GlobalModule + lib_name.Replace("/", "\\");
             string lib_file = lib_dir + "\\main.html";
-            if (File.Exists(lib_file))
+            bool is_exists = true;
+            if (!File.Exists(lib_file))
             {
+                lib_dir = Directories.Module + lib_name.Replace("/", "\\");
+                lib_file = lib_dir + "\\main.html";
+                if (!File.Exists(lib_file))
+                    is_exists = false;
+            }
+
+            if (is_exists)
+            { 
                 part_content = File.ReadAllText(lib_file);
                 part_content = RenderNestedContent(lib_name, part_content);
 
