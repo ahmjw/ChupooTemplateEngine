@@ -131,9 +131,19 @@ namespace ChupooTemplateEngine
                 {
                     string lib_name = match.Groups[1].Value;
                     ReadAttributes(match.Groups[2].Value);
-                    string lib_dir = Directories.Module + lib_name.Replace("/", "\\");
+                    string lib_dir = Directories.GlobalModule + lib_name.Replace("/", "\\");
                     string lib_file = lib_dir + "\\main.html";
-                    if (File.Exists(lib_file))
+                    bool is_exists = true;
+
+                    if (!File.Exists(lib_file))
+                    {
+                        lib_dir = Directories.Module + lib_name.Replace("/", "\\");
+                        lib_file = lib_dir + "\\main.html";
+                        if (!File.Exists(lib_file))
+                            is_exists = false;
+                    }
+
+                    if (is_exists)
                     {
                         string part_content = File.ReadAllText(lib_file);
                         part_content = RenderNestedContent(lib_name, part_content);
@@ -166,7 +176,9 @@ namespace ChupooTemplateEngine
                         newLength += part_content.Length - match.Length;
                     }
                     else
+                    {
                         MessageController.Show("Warning: Module is not found > " + lib_name);
+                    }
 
                     if (ClonedPage)
                     {
