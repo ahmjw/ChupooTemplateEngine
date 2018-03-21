@@ -97,10 +97,10 @@ namespace ChupooTemplateEngine
                         part_content = Parse(lib_name, part_content);
 
                         AssetParser ap = new AssetParser("libs", Directories.Lib);
-                        part_content = ap.Parse(lib_name, part_content);
+                        ap.Parse(lib_name, part_content);
 
-                        content = Parser.SubsituteString(content, match.Index + newLength, match.Length, part_content);
-                        newLength += part_content.Length - match.Length;
+                        content = Parser.SubsituteString(content, match.Index + newLength, match.Length, "");
+                        newLength += -match.Length;
                     }
                     else
                         MessageController.Show("Warning: Library is not found > " + lib_name + " in " + fileName);
