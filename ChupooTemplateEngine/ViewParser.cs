@@ -159,7 +159,7 @@ namespace ChupooTemplateEngine
 
         public static string ReplaceFormattedDataText(string content, JObject data, bool remove_footage = true)
         {
-            string pattern = @"\{\{([^\.][a-zA-Z0-9_-]+)\}\}";
+            string pattern = @"\{\{([^\.][^\}]+)\}\}";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -179,9 +179,28 @@ namespace ChupooTemplateEngine
                     {
                         if (data != null)
                         {
-                            string new_value = data[match.Groups[1].Value] + "";
-                            content = SubsituteString(content, match.Index + newLength, match.Length, new_value);
-                            newLength += new_value.Length - match.Length;
+                            string new_value;
+                            string var_name = match.Groups[1].Value;
+                            if (!Regex.Match(var_name, @"^\$page\.").Success)
+                            {
+                                string[] arrays = var_name.Split('.');
+                                if (arrays.Length > 0)
+                                {
+                                    JToken current_data = data;
+                                    new_value = "";
+                                    foreach (string item in arrays)
+                                    {
+                                        new_value = current_data[item] + "";
+                                        current_data = current_data[item];
+                                    }
+                                }
+                                else
+                                {
+                                    new_value = data[match.Groups[1].Value] + "";
+                                }
+                                content = SubsituteString(content, match.Index + newLength, match.Length, new_value);
+                                newLength += new_value.Length - match.Length;
+                            }
                         }
                         else
                         {

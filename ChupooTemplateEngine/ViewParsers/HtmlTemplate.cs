@@ -142,13 +142,21 @@ namespace ChupooTemplateEngine.ViewParsers
                     MessageController.Show("Rendering " + route + ".html JSON data ...");
                     string json_str = File.ReadAllText(data_path);
                     page_data = JObject.Parse(json_str);
-                    content = ReplaceFormattedDataText(content, page_data);
+                }
+                else
+                {
+                    matched = Regex.Match(content, @"<c\.config\sdata-source=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");
+                    if (matched.Success)
+                    {
+                        string data_source_url = matched.Groups[1].Value;
+                        MessageController.Show("Loading data from URL > " + data_source_url);
+                        Http http = new Http();
+                        string json_text = http.GetResponse(data_source_url);
+                        page_data = JObject.Parse(json_text);
+                    }
                 }
             }
-            else
-            {
-                content = ReplaceFormattedDataText(content, page_data);
-            }
+            content = ReplaceFormattedDataText(content, page_data);
 
             view_content = ReplaceLinkUrlText(content, asset_level);
             LayoutParsers.HtmlTemplate layoutParser = new LayoutParsers.HtmlTemplate();
