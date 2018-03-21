@@ -69,14 +69,30 @@ namespace ChupooTemplateEngine
             string part_content = "";
             ReadAttributes(attributes);
             string lib_dir = Directories.GlobalModule + lib_name.Replace("/", "\\");
-            string lib_file = lib_dir + "\\main.html";
-            bool is_exists = true;
-            if (!File.Exists(lib_file))
+            string lib_file;
+            bool is_exists = false;
+
+            lib_file = lib_dir + ".html";
+            is_exists = File.Exists(lib_file);
+
+            if (!is_exists)
+            {
+                lib_file = lib_dir + "\\main.html";
+                is_exists = File.Exists(lib_file);
+            }
+
+            if (!is_exists)
+            {
+                lib_dir = Directories.Module + lib_name.Replace("/", "\\");
+                lib_file = lib_dir + ".html";
+                is_exists = File.Exists(lib_file);
+            }
+
+            if (!is_exists)
             {
                 lib_dir = Directories.Module + lib_name.Replace("/", "\\");
                 lib_file = lib_dir + "\\main.html";
-                if (!File.Exists(lib_file))
-                    is_exists = false;
+                is_exists = File.Exists(lib_file);
             }
 
             if (is_exists)
@@ -132,15 +148,30 @@ namespace ChupooTemplateEngine
                     string lib_name = match.Groups[1].Value;
                     ReadAttributes(match.Groups[2].Value);
                     string lib_dir = Directories.GlobalModule + lib_name.Replace("/", "\\");
-                    string lib_file = lib_dir + "\\main.html";
-                    bool is_exists = true;
+                    string lib_file;
+                    bool is_exists = false;
 
-                    if (!File.Exists(lib_file))
+                    lib_file = lib_dir + ".html";
+                    is_exists = File.Exists(lib_file);
+
+                    if (!is_exists)
+                    {
+                        lib_file = lib_dir + "\\main.html";
+                        is_exists = File.Exists(lib_file);
+                    }
+
+                    if (!is_exists)
+                    {
+                        lib_dir = Directories.Module + lib_name.Replace("/", "\\");
+                        lib_file = lib_dir + ".html";
+                        is_exists = File.Exists(lib_file);
+                    }
+
+                    if (!is_exists)
                     {
                         lib_dir = Directories.Module + lib_name.Replace("/", "\\");
                         lib_file = lib_dir + "\\main.html";
-                        if (!File.Exists(lib_file))
-                            is_exists = false;
+                        is_exists = File.Exists(lib_file);
                     }
 
                     if (is_exists)
