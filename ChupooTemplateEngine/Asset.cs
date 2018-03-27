@@ -16,13 +16,20 @@ namespace ChupooTemplateEngine
                 return;
             }
             string[] public_dirs = Directory.GetDirectories(Directories.Public);
-            foreach (string dir in public_dirs)
+            try
             {
-                DirectoryInfo dinfo = new DirectoryInfo(dir);
-                if (!Directory.Exists(Directories.View + dinfo.Name))
+                foreach (string dir in public_dirs)
                 {
-                    Directory.Delete(dir, true);
+                    DirectoryInfo dinfo = new DirectoryInfo(dir);
+                    if (!Directory.Exists(Directories.View + dinfo.Name))
+                    {
+                        Directory.Delete(dir, true);
+                    }
                 }
+            }
+            catch(Exception ex)
+            {
+                MessageController.Show("Error: " + ex.Message);
             }
             string[] public_files = Directory.GetFiles(Directories.Public);
             foreach (string file in public_files)
