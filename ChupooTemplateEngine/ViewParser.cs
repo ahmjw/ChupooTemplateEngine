@@ -190,6 +190,8 @@ namespace ChupooTemplateEngine
                                     new_value = "";
                                     foreach (string item in arrays)
                                     {
+                                        if (current_data[item] == null)
+                                            break;
                                         new_value = current_data[item] + "";
                                         current_data = current_data[item];
                                     }

@@ -33,7 +33,7 @@ namespace ChupooTemplateEngine
                     // Text parser
                     TextTagParser tp = new TextTagParser();
                     part_content = tp.Parse(mod_name, attributes, part_content);
-
+                    
                     content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
                     newLength += part_content.Length - match.Length;
                 }

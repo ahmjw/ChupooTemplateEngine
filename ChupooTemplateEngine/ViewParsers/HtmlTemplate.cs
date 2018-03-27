@@ -151,8 +151,16 @@ namespace ChupooTemplateEngine.ViewParsers
                         string data_source_url = matched.Groups[1].Value;
                         MessageController.Show("Loading data from URL > " + data_source_url);
                         Http http = new Http();
-                        string json_text = http.GetResponse(data_source_url);
-                        page_data = JObject.Parse(json_text);
+                        try
+                        {
+                            string json_text = http.GetResponse(data_source_url);
+                            page_data = JObject.Parse(json_text);
+                        }
+                        catch
+                        {
+                            MessageController.Show("Error: Failed to connect to server");
+                            page_data = new JObject();
+                        }
                     }
                 }
             }

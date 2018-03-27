@@ -67,18 +67,19 @@ namespace ChupooTemplateEngine.LayoutParsers
             }
             if (Directory.Exists(Directories.Public + p_dir))
             {
+                string ext = ".html";
                 string p_file;
                 if (write_as == null)
                 {
-                    p_file = Directories.Public + dest + ".html";
+                    p_file = Directories.Public + dest + ext;
                 }
                 else
                 {
-                    p_file = Directories.Public + write_as + ".html";
+                    p_file = Directories.Public + write_as + ext;
                     dest = write_as;
                 }
                 File.WriteAllText(p_file, layout_content);
-                MessageController.Show("OK: " + dest + ".html");
+                MessageController.Show("OK: " + dest + ext);
             }
             else
             {

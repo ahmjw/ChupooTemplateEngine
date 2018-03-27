@@ -68,9 +68,19 @@ namespace ChupooTemplateEngine.LayoutParsers
             }
             if (Directory.Exists(Directories.Public + p_dir))
             {
-                string p_file = Directories.Public + dest + ".php";
+                string ext = ".php";
+                string p_file;
+                if (write_as == null)
+                {
+                    p_file = Directories.Public + dest + ext;
+                }
+                else
+                {
+                    p_file = Directories.Public + write_as + ext;
+                    dest = write_as;
+                }
                 File.WriteAllText(p_file, layout_content);
-                MessageController.Show("OK: " + dest + ".php");
+                MessageController.Show("OK: " + dest + ext);
             }
             else
             {
