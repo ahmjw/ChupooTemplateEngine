@@ -40,5 +40,9 @@ namespace ChupooTemplateEngine
             }
             return content;
         }
+
+        protected override void OnViewParsed(string route, string dest, string asset_level)
+        {
+        }
     }
 }

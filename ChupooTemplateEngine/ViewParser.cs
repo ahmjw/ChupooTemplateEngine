@@ -15,6 +15,8 @@ namespace ChupooTemplateEngine
     {
         public static string Extension { get; set; }
 
+        abstract protected void OnViewParsed(string route, string dest, string asset_level);
+
         public void LoopViews(string path)
         {
             string[] dirs = Directory.GetDirectories(path);
@@ -70,15 +72,22 @@ namespace ChupooTemplateEngine
                 // Cloning page
                 CloningPageParser cpp = new CloningPageParser();
                 CloningPage cp = cpp.Parse(route, view_content);
-                if (cp.Data.Count > 0)
+                if (cp.IsCloningPage)
                 {
-                    foreach (JToken datum in cp.Data)
+                    if (!cpp.SingleLaunch)
                     {
-                        JObject page_data = (JObject)datum;
-                        view_content = ReplaceFormattedDataText(cp.Content, page_data);
-                        CloningPage newContent = cpp.ApplyData(cp, page_data);
-                        ParseFile(route, newContent.NewName, asset_level, matched, newContent.Content, page_data);
-                        Directories.Current = Directories.View;
+                        foreach (JToken datum in cp.Data)
+                        {
+                            JObject page_data = (JObject)datum;
+                            view_content = ReplaceFormattedDataText(cp.Content, page_data);
+                            CloningPage newContent = cpp.ApplyData(cp, page_data);
+                            ParseFile(route, newContent.NewName, asset_level, matched, newContent.Content, page_data);
+                            Directories.Current = Directories.View;
+                        }
+                    }
+                    else
+                    {
+                        ParseFile(route, dest, asset_level, matched, cp.Content, null, true);
                     }
                 }
                 else
@@ -92,7 +101,7 @@ namespace ChupooTemplateEngine
             }
         }
 
-        private void ParseFile(string route, string dest, string asset_level, Match matched, string content, JObject page_data = null)
+        private void ParseFile(string route, string dest, string asset_level, Match matched, string content, JObject page_data = null, bool single_launch = false)
         {
             content = ReplaceFormattedDataText(content, page_data, false);
 
@@ -166,11 +175,11 @@ namespace ChupooTemplateEngine
                     }
                 }
             }
-            content = ReplaceFormattedDataText(content, page_data);
 
+            content = ReplaceFormattedDataText(content, page_data, true, single_launch);
             view_content = ReplaceLinkUrlText(content, asset_level);
-            LayoutParsers.HtmlTemplate layoutParser = new LayoutParsers.HtmlTemplate();
-            layoutParser.Parse(route, Extension, asset_level, dest);
+
+            OnViewParsed(route, dest, asset_level);
         }
 
         protected string GetAssetLeveling(string route)
@@ -314,7 +323,7 @@ namespace ChupooTemplateEngine
             return view_content;
         }
 
-        public static string ReplaceFormattedDataText(string content, JObject data, bool remove_footage = true)
+        public static string ReplaceFormattedDataText(string content, JObject data, bool remove_footage = true, bool single_launch = false)
         {
             string pattern = @"\{\{([^\.][^\}]+)\}\}";
             MatchCollection matches = Regex.Matches(content, pattern);
@@ -323,12 +332,15 @@ namespace ChupooTemplateEngine
                 int newLength = 0;
                 foreach (Match match in matches)
                 {
+                    string var_name = match.Groups[1].Value;
+                    string new_value = "";
+
                     bool do_remove = false;
                     if (remove_footage)
                     {
                         do_remove = true;
                     }
-                    else if (data != null && data[match.Groups[1].Value] != null)
+                    else if (data != null && data[var_name] != null)
                     {
                         do_remove = true;
                     }
@@ -336,8 +348,6 @@ namespace ChupooTemplateEngine
                     {
                         if (data != null)
                         {
-                            string new_value = "";
-                            string var_name = match.Groups[1].Value;
                             if (!Regex.Match(var_name, @"^\$page\.").Success)
                             {
                                 bool use_server_var = false;
@@ -350,7 +360,9 @@ namespace ChupooTemplateEngine
                                         new_value = "<?= " + var_name + " ?>";
                                         use_server_var = true;
                                     }
-                                } else if (var_name[0] == '$') {
+                                }
+                                else if (var_name[0] == '$')
+                                {
                                     var_name = var_name.Substring(1);
                                 }
 
@@ -360,7 +372,6 @@ namespace ChupooTemplateEngine
                                     if (arrays.Length > 0)
                                     {
                                         JToken current_data = data;
-                                        new_value = "";
                                         foreach (string item in arrays)
                                         {
                                             if (current_data[item] == null)
@@ -371,18 +382,26 @@ namespace ChupooTemplateEngine
                                     }
                                     else
                                     {
-                                        new_value = data[match.Groups[1].Value] + "";
+                                        new_value = data[var_name] + "";
                                     }
                                 }
-
                                 content = SubsituteString(content, match.Index + newLength, match.Length, new_value);
                                 newLength += new_value.Length - match.Length;
                             }
                         }
                         else
                         {
-                            content = SubsituteString(content, match.Index + newLength, match.Length, "");
-                            newLength += match.Length;
+                            if (!single_launch)
+                            {
+                                content = SubsituteString(content, match.Index + newLength, match.Length, "");
+                                newLength += match.Length;
+                            }
+                            else
+                            {
+                                new_value = "<?= " + var_name + " ?>";
+                                content = SubsituteString(content, match.Index + newLength, match.Length, new_value);
+                                newLength += new_value.Length - match.Length;
+                            }
                         }
                     }
                 }

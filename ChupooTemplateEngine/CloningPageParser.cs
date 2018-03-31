@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static ChupooTemplateEngine.Command;
 
 namespace ChupooTemplateEngine
 {
@@ -17,9 +18,12 @@ namespace ChupooTemplateEngine
         private CloningPage cloningPage;
         private static int index;
 
+        public bool SingleLaunch { get; internal set; }
+
         public CloningPageParser()
         {
             index = 0;
+            SingleLaunch = false;
         }
 
         private void ReadAttributes(string text)
@@ -89,33 +93,40 @@ namespace ChupooTemplateEngine
                 {
                     is_match = true;
                     ReadAttributes(matched.Groups[1].Value);
-                    string file_name = attributes["json"] + ".json";
-                    string file_path = Directories.ViewDataJson + file_name;
 
-                    if (File.Exists(file_path))
+                    SingleLaunch = CurrentCommand == CommandType.LAUNCH && ViewParser.Extension == ".php" &&
+                        attributes["single-launch"] != null && attributes["single-launch"].ToString() == "true";
+
+                    if (!SingleLaunch)
                     {
-                        MessageController.Show("Loading JSON file " + file_name + " ...");
-                        string json_text = File.ReadAllText(file_path);
-                        JArray data = (JArray)JsonConvert.DeserializeObject(json_text);
-                        foreach (JToken datum in (JToken)data)
+                        string file_name = attributes["json"] + ".json";
+                        string file_path = Directories.ViewDataJson + file_name;
+
+                        if (File.Exists(file_path))
                         {
-                            cloningPage.Data.Add(datum);
+                            MessageController.Show("Loading JSON file " + file_name + " ...");
+                            string json_text = File.ReadAllText(file_path);
+                            JArray data = (JArray)JsonConvert.DeserializeObject(json_text);
+                            foreach (JToken datum in (JToken)data)
+                            {
+                                cloningPage.Data.Add(datum);
+                            }
                         }
-                    }
-                    else if (attributes["for"] != null)
-                    {
-                        string[] for_data = attributes["for"].ToString().Split(',');
-                        int a = int.Parse(for_data[0]);
-                        int b = int.Parse(for_data[1]);
-                        int c = int.Parse(for_data[2]);
-                        for (int i = a; i <= b; i += c)
+                        else if (attributes["for"] != null)
                         {
-                            cloningPage.Data.Add(new JObject(new JProperty("index", i)));
+                            string[] for_data = attributes["for"].ToString().Split(',');
+                            int a = int.Parse(for_data[0]);
+                            int b = int.Parse(for_data[1]);
+                            int c = int.Parse(for_data[2]);
+                            for (int i = a; i <= b; i += c)
+                            {
+                                cloningPage.Data.Add(new JObject(new JProperty("index", i)));
+                            }
                         }
-                    }
-                    else
-                    {
-                        MessageController.Show("Error: JSON file is not found > " + file_name);
+                        else
+                        {
+                            MessageController.Show("Error: JSON file is not found > " + file_name);
+                        }
                     }
                     content = Parser.SubsituteString(content, matched.Index, matched.Length, "");
                 }
@@ -123,6 +134,7 @@ namespace ChupooTemplateEngine
 
             cloningPage.Name = route;
             cloningPage.Content = content;
+            cloningPage.IsCloningPage = is_match;
             return cloningPage;
         }
 

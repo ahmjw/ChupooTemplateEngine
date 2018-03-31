@@ -16,5 +16,6 @@ namespace ChupooTemplateEngine
         public List<JToken> Data { set; get; }
         public string NewName { get; internal set; }
         public string Part { get; internal set; }
+        public bool IsCloningPage { get; internal set; }
     }
 }

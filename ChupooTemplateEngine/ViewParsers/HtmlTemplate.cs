@@ -12,5 +12,10 @@ namespace ChupooTemplateEngine.ViewParsers
 {
     class HtmlTemplate : ViewParser
     {
+        protected override void OnViewParsed(string route, string dest, string asset_level)
+        {
+            LayoutParsers.HtmlTemplate layoutParser = new LayoutParsers.HtmlTemplate();
+            layoutParser.Parse(route, Extension, asset_level, dest);
+        }
     }
 }

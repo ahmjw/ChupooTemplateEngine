@@ -37,5 +37,11 @@ namespace ChupooTemplateEngine.ViewParsers
                 File.Copy(src, dst);
             }
         }
+
+        protected override void OnViewParsed(string route, string dest, string asset_level)
+        {
+            LayoutParsers.Wordpress layoutParser = new LayoutParsers.Wordpress();
+            layoutParser.Parse(route, Extension, asset_level, dest);
+        }
     }
 }
