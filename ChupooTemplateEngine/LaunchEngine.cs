@@ -49,6 +49,10 @@ namespace ChupooTemplateEngine
                     }
                 }
             }
+            if (launchType == LaunchTypeEnum.WORDPRESS)
+            {
+                ((Wordpress)viewParser).CopyResources();
+            }
             viewParser.LoopViews(Directories.View);
 
             LaunchAssets(Directories.Asset);
@@ -103,9 +107,11 @@ namespace ChupooTemplateEngine
             {
                 case LaunchTypeEnum.HTML_TEMPLATE:
                     viewParser = new HtmlTemplate();
+                    ViewParser.Extension = ".html";
                     break;
                 case LaunchTypeEnum.WORDPRESS:
                     viewParser = new Wordpress();
+                    ViewParser.Extension = ".php";
                     break;
             }
             return viewParser;

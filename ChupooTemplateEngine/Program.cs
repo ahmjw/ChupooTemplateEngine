@@ -293,6 +293,7 @@ namespace ChupooTemplateEngine
                 Directories.Current = Directories.View;
                 Parser.ClearAll();
                 Asset.ClearAssets();
+                ViewParser.Extension = ".html";
                 ViewParser.RenderDirectoryRecursively(Directories.View, "");
                 current_route = "index";
                 Directories.Current = null;
@@ -356,6 +357,7 @@ namespace ChupooTemplateEngine
                 string view_name = matched.Groups[1].Value;
                 Parser.ClearAll();
                 HtmlTemplate viewParser = new HtmlTemplate();
+                ViewParser.Extension = ".html";
                 viewParser.Parse(view_name, view_name);
                 current_route = view_name;
                 ran = true;
@@ -367,6 +369,7 @@ namespace ChupooTemplateEngine
                 string view_name = matched.Groups[1].Value;
                 Parser.ClearAll();
                 HtmlTemplate viewParser = new HtmlTemplate();
+                ViewParser.Extension = ".html";
                 viewParser.RenderDirectory(view_name);
                 current_route = view_name;
                 ran = true;
@@ -377,6 +380,7 @@ namespace ChupooTemplateEngine
                 CurrentCommand = CommandType.RENDER_TEMPORARILY;
                 string view_name = matched.Groups[1].Value;
                 Parser.ClearAll();
+                ViewParser.Extension = ".html";
                 HtmlTemplate viewParser = new HtmlTemplate();
                 viewParser.Parse(view_name, ".temp");
                 current_route = ".temp";
@@ -387,6 +391,7 @@ namespace ChupooTemplateEngine
             {
                 CurrentCommand = CommandType.RENDER_BACKUP;
                 string view_name = matched.Groups[1].Value;
+                ViewParser.Extension = ".html";
                 RenderBackup(view_name);
                 ran = true;
             }

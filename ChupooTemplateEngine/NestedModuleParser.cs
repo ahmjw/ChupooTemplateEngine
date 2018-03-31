@@ -40,13 +40,5 @@ namespace ChupooTemplateEngine
             }
             return content;
         }
-
-        public override void Parse(string route, string dest)
-        {
-        }
-
-        public override void LoopViews(string path)
-        {
-        }
     }
 }
