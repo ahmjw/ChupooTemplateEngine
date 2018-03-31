@@ -28,7 +28,8 @@ namespace ChupooTemplateEngine
             MessageController.Show("Welcome to Chupoo Template Engine's console.");
             MessageController.Show("You can render your web design data to HTML linked-page here.");
             Directories.Resources = AppDomain.CurrentDomain.BaseDirectory + @"resources";
-            Directories.HtmlLib = AppDomain.CurrentDomain.BaseDirectory + @"libs\html\";
+            Directories.DevLib = AppDomain.CurrentDomain.BaseDirectory + @"dev-lib\";
+            Directories.LaunchLib = AppDomain.CurrentDomain.BaseDirectory + @"launch-lib\";
             Directories.GlobalModule = AppDomain.CurrentDomain.BaseDirectory + @"modules\";
             AppProperty.ServerRoot = @"D:\2017\IT LAB\APACHE\apache";
 

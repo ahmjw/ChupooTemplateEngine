@@ -59,6 +59,7 @@
     <Compile Include="Directories.cs" />
     <Compile Include="Http.cs" />
     <Compile Include="LaunchEngine.cs" />
+    <Compile Include="LaunchingConfig.cs" />
     <Compile Include="Layout.cs" />
     <Compile Include="LayoutParser.cs" />
     <Compile Include="LayoutParsers\HtmlTemplate.cs" />

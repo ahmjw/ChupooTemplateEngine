@@ -26,11 +26,29 @@ namespace ChupooTemplateEngine
         {
             Parser.ClearAll();
             LaunchType = launchType;
+            // Preparation
             Asset.ClearAssets();
+            MessageController.Show("Creating necessary directories ...");
             Directory.CreateDirectory(Directories.PublicAsset);
             Directory.CreateDirectory(Directories.PublicAsset + "\\local");
+
             Directories.Current = Directories.View;
             ViewParser viewParser = GetViewParser();
+            if (launchType == LaunchTypeEnum.WORDPRESS)
+            {
+                MessageController.Show("Reading configuration file ...");
+                LaunchingConfig lc = new LaunchingConfig();
+                lc.Load("wordpress");
+                if (lc.Data.Contains("lib"))
+                {
+                    string lib_dir = Directories.LaunchLib + lc.Data["lib"];
+                    if (Directory.Exists(lib_dir))
+                    {
+                        MessageController.Show("Copying library ...");
+                        Program.CopyDirectory(lib_dir, Directories.Public);
+                    }
+                }
+            }
             viewParser.LoopViews(Directories.View);
 
             LaunchAssets(Directories.Asset);

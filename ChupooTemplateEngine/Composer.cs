@@ -64,7 +64,7 @@ namespace ChupooTemplateEngine
             Process process = new Process();
             process.StartInfo.FileName = "cmd.exe";
             //process.StartInfo.Arguments = "/c set PATH=%PATH%;" + AppProperty.ServerRoot + @"\php&composer clearcache&composer require " + package_name + @" -d apache\htdocs";
-            process.StartInfo.Arguments = "/c set PATH=%PATH%;" + AppProperty.ServerRoot + @"\php&composer require " + name + @" -d libs\composer";
+            process.StartInfo.Arguments = "/c set PATH=%PATH%;" + AppProperty.ServerRoot + @"\php&composer require " + name + @" -d launch-lib\composer";
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardError = true;

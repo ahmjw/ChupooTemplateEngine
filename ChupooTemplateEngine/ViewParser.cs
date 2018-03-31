@@ -190,7 +190,6 @@ namespace ChupooTemplateEngine
                                     if (LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS &&
                                         var_name[0] == '$')
                                     {
-                                        Console.WriteLine(var_name);
                                         new_value = "<?= " + var_name + " ?>";
                                         use_server_var = true;
                                     }
