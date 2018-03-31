@@ -361,13 +361,14 @@ namespace ChupooTemplateEngine
                                         use_server_var = true;
                                     }
                                 }
-                                else if (var_name[0] == '$')
-                                {
-                                    var_name = var_name.Substring(1);
-                                }
 
                                 if (!use_server_var)
                                 {
+                                    if (var_name[0] == '$')
+                                    {
+                                        var_name = var_name.Substring(1);
+                                    }
+
                                     string[] arrays = var_name.Split('.');
                                     if (arrays.Length > 0)
                                     {
