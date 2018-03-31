@@ -103,7 +103,7 @@ namespace ChupooTemplateEngine
 
         private void ParseFile(string route, string dest, string asset_level, Match matched, string content, JObject page_data = null, bool single_launch = false)
         {
-            content = ReplaceFormattedDataText(content, page_data, false);
+            content = ReplaceFormattedDataText(content, page_data, false, single_launch);
 
             NestedModuleParser np = new NestedModuleParser();
             content = np.ParseText("", route, content);
@@ -137,9 +137,9 @@ namespace ChupooTemplateEngine
 
             string c_dir = Directories.View + "@" + route;
             if (Directory.Exists(c_dir))
-                content = LoadPartialView(content, page_data, "@" + route);
+                content = LoadPartialView(content, page_data, single_launch, "@" + route);
             else
-                content = LoadPartialView(content, page_data);
+                content = LoadPartialView(content, page_data, single_launch);
 
             content = RenderPartialCss(c_dir, content);
             RenderPartialAssets(route, Directories.View, content);
@@ -486,12 +486,13 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        protected string RenderViewComponent(string layout_name, string layout_file, string parent_route, JObject page_data)
+        protected string RenderViewComponent(string layout_name, string layout_file, string parent_route, JObject page_data, bool single_launch)
         {
             FileInfo finfo = new FileInfo(layout_file);
             string content = File.ReadAllText(layout_file);
 
-            content = ReplaceFormattedDataText(content, page_data, false);
+            bool remove_footage = CurrentCommand == CommandType.LAUNCH;
+            content = ReplaceFormattedDataText(content, page_data, remove_footage, single_launch);
 
             NestedModuleParser np = new NestedModuleParser();
             content = np.ParseText(parent_route, layout_name, content);
@@ -504,7 +505,7 @@ namespace ChupooTemplateEngine
 
             string c_name = finfo.DirectoryName.Replace(Directories.Project, "").Replace('\\', '/') + "/";
             content = ReplaceAssetUrlText(content, "./", c_name);
-            content = LoadPartialView(content, page_data, parent_route);
+            content = LoadPartialView(content, page_data, single_launch, parent_route);
             RenderPartialAssets(layout_name, Directories.View, content, true, parent_route);
             content = RenderPartialCss(finfo.DirectoryName, content);
             content = SeparateViewStyle(content);
@@ -512,7 +513,7 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        protected string LoadPartialView(string content, JObject page_data, string parent_route = null)
+        protected string LoadPartialView(string content, JObject page_data, bool single_launch, string parent_route = null)
         {
             string pattern = @"<c\.part\[(.+)?\](.*?)(?:\s*\/)?>(?:<\/c\.part>)?";
             MatchCollection matches = Regex.Matches(content, pattern);
@@ -536,7 +537,7 @@ namespace ChupooTemplateEngine
 
                     if (File.Exists(layout_file))
                     {
-                        string part_content = RenderViewComponent(_layout_name, layout_file, parent_route, page_data);
+                        string part_content = RenderViewComponent(_layout_name, layout_file, parent_route, page_data, single_launch);
                         content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
                         newLength += part_content.Length - match.Length;
                     }
@@ -553,7 +554,7 @@ namespace ChupooTemplateEngine
                             layout_file = v_dir + @"\main.html";
                             if (File.Exists(layout_file))
                             {
-                                string part_content = RenderViewComponent(_layout_name, layout_file, parent_route, page_data);
+                                string part_content = RenderViewComponent(_layout_name, layout_file, parent_route, page_data, single_launch);
                                 content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
                                 newLength += part_content.Length - match.Length;
                             }
