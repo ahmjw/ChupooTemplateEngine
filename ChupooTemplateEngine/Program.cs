@@ -28,7 +28,7 @@ namespace ChupooTemplateEngine
             MessageController.Show("Welcome to Chupoo Template Engine's console.");
             MessageController.Show("You can render your web design data to HTML linked-page here.");
             Directories.Resources = AppDomain.CurrentDomain.BaseDirectory + @"resources";
-            Directories.Lib = AppDomain.CurrentDomain.BaseDirectory + @"libs\";
+            Directories.ClientLib = AppDomain.CurrentDomain.BaseDirectory + @"libs\client\";
             Directories.GlobalModule = AppDomain.CurrentDomain.BaseDirectory + @"modules\";
 
             if (Properties.Settings.Default.current_project_name != null && Properties.Settings.Default.current_project_name != "")

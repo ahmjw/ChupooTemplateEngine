@@ -81,7 +81,7 @@ namespace ChupooTemplateEngine
                     }
 
                     ReadAttributes(match.Groups[2].Value);
-                    string lib_dir = Directories.Lib + lib_name.Replace("/", "\\");
+                    string lib_dir = Directories.ClientLib + lib_name.Replace("/", "\\");
                     string lib_file = lib_dir + "\\main.html";
                     if (File.Exists(lib_file))
                     {
@@ -96,7 +96,7 @@ namespace ChupooTemplateEngine
                         part_content = ReplaceAttributes(part_content);
                         part_content = Parse(lib_name, part_content);
 
-                        AssetParser ap = new AssetParser("libs", Directories.Lib);
+                        AssetParser ap = new AssetParser("libs", Directories.ClientLib);
                         ap.Parse(lib_name, part_content);
 
                         content = Parser.SubsituteString(content, match.Index + newLength, match.Length, "");

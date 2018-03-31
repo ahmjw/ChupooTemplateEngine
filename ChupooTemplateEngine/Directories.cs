@@ -10,7 +10,7 @@ namespace ChupooTemplateEngine
     {
         internal static string Layout;
         internal static string View;
-        internal static string Lib;
+        internal static string ClientLib;
         internal static string Public;
         internal static string ViewDataJson;
         internal static string Asset;
