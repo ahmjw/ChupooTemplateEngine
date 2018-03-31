@@ -17,10 +17,13 @@ namespace ChupooTemplateEngine
         private string v_dir;
         private string dir_lv;
 
+        public bool IsFile { get; internal set; }
+
         public AssetParser(string dir_lv, string v_dir)
         {
             this.dir_lv = dir_lv;
             this.v_dir = v_dir;
+            IsFile = false;
         }
 
         private void ParseCss(string dir, string src_path, string dst_path)
@@ -164,6 +167,14 @@ namespace ChupooTemplateEngine
                     {
                         if (CurrentCommand != CommandType.LAUNCH)
                         {
+                            if (IsFile)
+                            {
+                                int pos = name.LastIndexOf('/');
+                                if (pos > 0)
+                                {
+                                    name = name.Substring(0, pos);
+                                }
+                            }
                             new_value += asset_level + "/" + name + "/" + match.Groups[1].Value.Substring(1);
                         }
                         else

@@ -34,7 +34,7 @@ namespace ChupooTemplateEngine
             }
         }
 
-        private string RenderNestedContent(string lib_name, string content)
+        private string RenderNestedContent(string lib_name, bool is_file, string content)
         {
             string pattern = @"<c.module\[(.*?)\]([\w\W]+?)(?:\s*\/)?>([\w\W]+?)</c.module>";
             MatchCollection matches = Regex.Matches(content, pattern);
@@ -56,6 +56,7 @@ namespace ChupooTemplateEngine
                     part_content = lp.Parse(lib_name, part_content);
 
                     AssetParser ap = new AssetParser("modules", Directories.Module);
+                    ap.IsFile = is_file;
                     part_content = ap.Parse(lib_name, part_content);
 
                     content = Parser.SubsituteString(content, match.Groups[3].Index + newLength, match.Groups[3].Length, part_content);
@@ -72,6 +73,7 @@ namespace ChupooTemplateEngine
             string lib_dir = Directories.GlobalModule + lib_name.Replace("/", "\\");
             string lib_file;
             bool is_exists = false;
+            bool is_file = true;
 
             lib_file = lib_dir + ".html";
             is_exists = File.Exists(lib_file);
@@ -80,6 +82,7 @@ namespace ChupooTemplateEngine
             {
                 lib_file = lib_dir + "\\main.html";
                 is_exists = File.Exists(lib_file);
+                is_file = false;
             }
 
             if (!is_exists)
@@ -87,6 +90,7 @@ namespace ChupooTemplateEngine
                 lib_dir = Directories.Module + lib_name.Replace("/", "\\");
                 lib_file = lib_dir + ".html";
                 is_exists = File.Exists(lib_file);
+                is_file = true;
             }
 
             if (!is_exists)
@@ -94,12 +98,13 @@ namespace ChupooTemplateEngine
                 lib_dir = Directories.Module + lib_name.Replace("/", "\\");
                 lib_file = lib_dir + "\\main.html";
                 is_exists = File.Exists(lib_file);
+                is_file = false;
             }
 
             if (is_exists)
-            { 
+            {
                 part_content = File.ReadAllText(lib_file);
-                part_content = RenderNestedContent(lib_name, part_content);
+                part_content = RenderNestedContent(lib_name, is_file, part_content);
 
                 ShowHidingParser shp = new ShowHidingParser();
                 part_content = shp.Parse(part_content, this.attributes);
@@ -123,8 +128,7 @@ namespace ChupooTemplateEngine
                 part_content = lp.Parse(lib_name, part_content);
 
                 AssetParser ap = new AssetParser("modules", Directories.Module);
-                part_content = ap.Parse(lib_name, part_content);
-
+                ap.IsFile = is_file;
                 part_content = ap.Parse(lib_name, part_content);
             }
             else
@@ -151,6 +155,7 @@ namespace ChupooTemplateEngine
                     string lib_dir = Directories.GlobalModule + lib_name.Replace("/", "\\");
                     string lib_file;
                     bool is_exists = false;
+                    bool is_file = true;
 
                     lib_file = lib_dir + ".html";
                     is_exists = File.Exists(lib_file);
@@ -159,6 +164,7 @@ namespace ChupooTemplateEngine
                     {
                         lib_file = lib_dir + "\\main.html";
                         is_exists = File.Exists(lib_file);
+                        is_file = false;
                     }
 
                     if (!is_exists)
@@ -166,6 +172,7 @@ namespace ChupooTemplateEngine
                         lib_dir = Directories.Module + lib_name.Replace("/", "\\");
                         lib_file = lib_dir + ".html";
                         is_exists = File.Exists(lib_file);
+                        is_file = true;
                     }
 
                     if (!is_exists)
@@ -173,12 +180,13 @@ namespace ChupooTemplateEngine
                         lib_dir = Directories.Module + lib_name.Replace("/", "\\");
                         lib_file = lib_dir + "\\main.html";
                         is_exists = File.Exists(lib_file);
+                        is_file = false;
                     }
 
                     if (is_exists)
                     {
                         string part_content = File.ReadAllText(lib_file);
-                        part_content = RenderNestedContent(lib_name, part_content);
+                        part_content = RenderNestedContent(lib_name, is_file, part_content);
 
                         ShowHidingParser shp = new ShowHidingParser();
                         part_content = shp.Parse(part_content, attributes);
@@ -202,6 +210,8 @@ namespace ChupooTemplateEngine
                         part_content = lp.Parse(lib_name, part_content);
 
                         AssetParser ap = new AssetParser("modules", Directories.Module);
+                        ap.IsFile = is_file;
+                        //Console.WriteLine(lib_name + " " + is_file);
                         part_content = ap.Parse(lib_name, part_content);
 
                         content = Parser.SubsituteString(content, match.Index + newLength, match.Length, part_content);
