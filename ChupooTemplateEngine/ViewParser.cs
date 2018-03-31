@@ -185,15 +185,17 @@ namespace ChupooTemplateEngine
                             {
                                 bool use_server_var = false;
 
-                                if (CurrentCommand == CommandType.LAUNCH && var_name[0] == '$')
+                                if (CurrentCommand == CommandType.LAUNCH)
                                 {
-                                    Console.WriteLine(var_name);
-                                    if (LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                                    if (LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS &&
+                                        var_name[0] == '$')
                                     {
+                                        Console.WriteLine(var_name);
                                         new_value = "<?= " + var_name + " ?>";
                                         use_server_var = true;
-                                        var_name = var_name.Substring(1);
                                     }
+                                } else {
+                                    var_name = var_name.Substring(1);
                                 }
 
                                 if (!use_server_var)
