@@ -79,8 +79,18 @@ namespace ChupooTemplateEngine.LayoutParsers
                     p_file = Directories.Public + write_as + ext;
                     dest = write_as;
                 }
-                File.WriteAllText(p_file, layout_content);
-                MessageController.Show("OK: " + dest + ext);
+                try
+                {
+                    File.WriteAllText(p_file, layout_content);
+                }
+                catch (Exception ex)
+                {
+                    MessageController.Show("Error: " + ex.Message);
+                }
+                finally
+                {
+                    MessageController.Show("OK: " + dest + ext);
+                }
             }
             else
             {

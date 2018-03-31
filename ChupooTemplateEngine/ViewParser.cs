@@ -179,27 +179,44 @@ namespace ChupooTemplateEngine
                     {
                         if (data != null)
                         {
-                            string new_value;
+                            string new_value = "";
                             string var_name = match.Groups[1].Value;
                             if (!Regex.Match(var_name, @"^\$page\.").Success)
                             {
-                                string[] arrays = var_name.Split('.');
-                                if (arrays.Length > 0)
+                                bool use_server_var = false;
+
+                                if (CurrentCommand == CommandType.LAUNCH && var_name[0] == '$')
                                 {
-                                    JToken current_data = data;
-                                    new_value = "";
-                                    foreach (string item in arrays)
+                                    Console.WriteLine(var_name);
+                                    if (LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
                                     {
-                                        if (current_data[item] == null)
-                                            break;
-                                        new_value = current_data[item] + "";
-                                        current_data = current_data[item];
+                                        new_value = "<?= " + var_name + " ?>";
+                                        use_server_var = true;
+                                        var_name = var_name.Substring(1);
                                     }
                                 }
-                                else
+
+                                if (!use_server_var)
                                 {
-                                    new_value = data[match.Groups[1].Value] + "";
+                                    string[] arrays = var_name.Split('.');
+                                    if (arrays.Length > 0)
+                                    {
+                                        JToken current_data = data;
+                                        new_value = "";
+                                        foreach (string item in arrays)
+                                        {
+                                            if (current_data[item] == null)
+                                                break;
+                                            new_value = current_data[item] + "";
+                                            current_data = current_data[item];
+                                        }
+                                    }
+                                    else
+                                    {
+                                        new_value = data[match.Groups[1].Value] + "";
+                                    }
                                 }
+
                                 content = SubsituteString(content, match.Index + newLength, match.Length, new_value);
                                 newLength += new_value.Length - match.Length;
                             }
@@ -269,13 +286,20 @@ namespace ChupooTemplateEngine
                     }
 
                     // INSIDE VIEW'S PART
-                    FileInfo finfo = new FileInfo(new_value);
-                    if (finfo.Extension == ".js")
-                        RegisterUniversalJsFile(new_value);
-                    else if (finfo.Extension == ".css")
-                        RegisterUniversalCssFile(new_value);
-                    else if (!LaunchEngine.IsCodeOnly && CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
-                        new_value = "<?= get_template_directory_uri() ?>/" + new_value;
+                    try
+                    {
+                        FileInfo finfo = new FileInfo(new_value);
+                        if (finfo.Extension == ".js")
+                            RegisterUniversalJsFile(new_value);
+                        else if (finfo.Extension == ".css")
+                            RegisterUniversalCssFile(new_value);
+                        else if (!LaunchEngine.IsCodeOnly && CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                            new_value = "<?= get_template_directory_uri() ?>/" + new_value;
+                    }
+                    catch(Exception ex)
+                    {
+                        MessageController.Show("Error:" + ex.Message);
+                    }
 
                     content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
                     newLength += new_value.Length - match.Groups[1].Length;

@@ -173,13 +173,20 @@ namespace ChupooTemplateEngine
                         }
                     }
 
-                    FileInfo finfo = new FileInfo(new_value);
-                    if (finfo.Extension == ".js")
-                        Parser.RegisterUniversalJsFile(new_value);
-                    else if (finfo.Extension == ".css")
-                        Parser.RegisterUniversalCssFile(new_value);
-                    else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
-                        new_value = "<?= get_template_directory_uri() ?>/" + new_value;
+                    try
+                    {
+                        FileInfo finfo = new FileInfo(new_value);
+                        if (finfo.Extension == ".js")
+                            Parser.RegisterUniversalJsFile(new_value);
+                        else if (finfo.Extension == ".css")
+                            Parser.RegisterUniversalCssFile(new_value);
+                        else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                            new_value = "<?= get_template_directory_uri() ?>/" + new_value;
+                    }
+                    catch(Exception ex)
+                    {
+                        MessageController.Show("Error: " + ex.Message);
+                    }
 
                     if (dir_lv == "libs")
                     {                        
