@@ -120,6 +120,16 @@ namespace ChupooTemplateEngine
             return d_name;
         }
 
+        private string GetParentName(string name)
+        {
+            int pos = name.LastIndexOf('/');
+            if (pos > 0)
+            {
+                name = name.Substring(0, pos);
+            }
+            return name;
+        }
+
         private string ReplaceAssetUrlText(string asset_level, string name, string content)
         {
             string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(\.[^\.].*?)"".*?>";
@@ -169,11 +179,7 @@ namespace ChupooTemplateEngine
                         {
                             if (IsFile)
                             {
-                                int pos = name.LastIndexOf('/');
-                                if (pos > 0)
-                                {
-                                    name = name.Substring(0, pos);
-                                }
+                                name = GetParentName(name);
                             }
                             new_value += asset_level + "/" + name + "/" + match.Groups[1].Value.Substring(1);
                         }
@@ -216,6 +222,8 @@ namespace ChupooTemplateEngine
 
         private string LookupAssetFile(string dir_lv, string name, string url)
         {
+            if(IsFile)
+                name = GetParentName(name);
             string new_url = name + "/" + url;
             string src_dir = dir_lv == "libs" ? Directories.Lib : Directories.Module;
             string filePath = src_dir + name + "\\" + url.Replace("/", "\\");
