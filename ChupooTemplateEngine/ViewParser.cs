@@ -14,7 +14,35 @@ namespace ChupooTemplateEngine
     abstract class ViewParser : Parser
     {
         public abstract void Parse(string route, string dest);
-        public abstract void LoopViews(string path);
+
+        public void LoopViews(string path)
+        {
+            string[] dirs = Directory.GetDirectories(path);
+            foreach (string dir in dirs)
+            {
+                DirectoryInfo dinfo = new DirectoryInfo(dir);
+                if (dinfo.Name[0] != '@') continue;
+                string file = dir + "\\main.html";
+                if (File.Exists(file))
+                {
+                    string path_stage = file.Replace(Directories.Current, "").Substring(1).Replace("\\main.html", "");
+                    Parse(path_stage, path_stage);
+                }
+                Directories.Current = Directories.View;
+                ClearAll();
+            }
+
+            string[] files = Directory.GetFiles(path);
+            foreach (string file in files)
+            {
+                FileInfo finfo = new FileInfo(file);
+                string path_stage = finfo.Name.Replace(finfo.Extension, "");
+                Parse(path_stage, path_stage);
+
+                Directories.Current = Directories.View;
+                ClearAll();
+            }
+        }
 
         protected string GetAssetLeveling(string route)
         {
@@ -193,7 +221,7 @@ namespace ChupooTemplateEngine
                                         new_value = "<?= " + var_name + " ?>";
                                         use_server_var = true;
                                     }
-                                } else {
+                                } else if (var_name[0] == '$') {
                                     var_name = var_name.Substring(1);
                                 }
 
