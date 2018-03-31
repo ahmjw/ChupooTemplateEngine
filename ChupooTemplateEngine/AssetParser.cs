@@ -225,7 +225,7 @@ namespace ChupooTemplateEngine
             if(IsFile)
                 name = GetParentName(name);
             string new_url = name + "/" + url;
-            string src_dir = dir_lv == "libs" ? Directories.ClientLib : Directories.Module;
+            string src_dir = dir_lv == "libs" ? Directories.HtmlLib : Directories.Module;
             string filePath = src_dir + name + "\\" + url.Replace("/", "\\");
             if (File.Exists(filePath))
             {

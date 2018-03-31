@@ -28,8 +28,9 @@ namespace ChupooTemplateEngine
             MessageController.Show("Welcome to Chupoo Template Engine's console.");
             MessageController.Show("You can render your web design data to HTML linked-page here.");
             Directories.Resources = AppDomain.CurrentDomain.BaseDirectory + @"resources";
-            Directories.ClientLib = AppDomain.CurrentDomain.BaseDirectory + @"libs\client\";
+            Directories.HtmlLib = AppDomain.CurrentDomain.BaseDirectory + @"libs\html\";
             Directories.GlobalModule = AppDomain.CurrentDomain.BaseDirectory + @"modules\";
+            AppProperty.ServerRoot = @"D:\2017\IT LAB\APACHE\apache";
 
             if (Properties.Settings.Default.current_project_name != null && Properties.Settings.Default.current_project_name != "")
             {
@@ -395,9 +396,23 @@ namespace ChupooTemplateEngine
                 ShowHelp();
                 ran = true;
             }
+            matched = Regex.Match(command, @"^composer\sinstall\s(.+?)$");
+            if (!ran && matched.Success)
+            {
+                CurrentCommand = CommandType.COMPOSER_INSTALL;
+                Composer composer = new Composer();
+                composer.OnResponse += Composer_OnResponse;
+                composer.Install(matched.Groups[1].Value);
+                ran = true;
+            }
             if (!ran)
                 MessageController.Show("Error: Invalid command");
             Run();
+        }
+
+        private static void Composer_OnResponse(object sender, SimpleEventArgs e)
+        {
+            Console.WriteLine(e.Argument);
         }
 
         private static void ShowHelp()

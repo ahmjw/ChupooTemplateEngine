@@ -20,7 +20,8 @@
             RENDER_BACKUP,
             EXPLORE,
             EXPLORE_PROJECT,
-            HELP
+            HELP,
+            COMPOSER_INSTALL
         }
     }
 }

@@ -48,12 +48,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppProperty.cs" />
     <Compile Include="Asset.cs" />
     <Compile Include="AssetParser.cs" />
     <Compile Include="CloningPage.cs" />
     <Compile Include="CloningPageParser.cs" />
     <Compile Include="CloningParser.cs" />
     <Compile Include="Command.cs" />
+    <Compile Include="Composer.cs" />
     <Compile Include="Directories.cs" />
     <Compile Include="Http.cs" />
     <Compile Include="LaunchEngine.cs" />
@@ -76,6 +78,7 @@
     <Compile Include="ResourceParser.cs" />
     <Compile Include="Route.cs" />
     <Compile Include="ShowHidingParser.cs" />
+    <Compile Include="SimpleEventHandler.cs" />
     <Compile Include="TextTagParser.cs" />
     <Compile Include="ViewParser.cs" />
     <Compile Include="ViewParsers\HtmlTemplate.cs" />
