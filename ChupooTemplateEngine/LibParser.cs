@@ -43,7 +43,7 @@ namespace ChupooTemplateEngine
                     LibParser lp = new LibParser();
                     part_content = lp.Parse(lib_name, part_content);
 
-                    AssetParser ap = new AssetParser("modules", Directories.Module);
+                    AssetParser ap = new AssetParser(AssetParser.DirectoryLocation.MODULE, Directories.Module);
                     part_content = ap.Parse(lib_name, part_content);
 
                     content = Parser.SubsituteString(content, match.Groups[3].Index + newLength, match.Groups[3].Length, part_content);
@@ -96,7 +96,7 @@ namespace ChupooTemplateEngine
                         part_content = ReplaceAttributes(part_content);
                         part_content = Parse(lib_name, part_content);
 
-                        AssetParser ap = new AssetParser("libs", Directories.DevLib);
+                        AssetParser ap = new AssetParser(AssetParser.DirectoryLocation.LIBRARY, Directories.DevLib);
                         ap.Parse(lib_name, part_content);
 
                         content = Parser.SubsituteString(content, match.Index + newLength, match.Length, "");

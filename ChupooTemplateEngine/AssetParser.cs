@@ -15,11 +15,17 @@ namespace ChupooTemplateEngine
         private string[] vid_exts = { ".mp4", ".avi", ".mov", ".flv", ".wmv", ".3gp", ".mpg" };
         private string[] aud_exts = { ".mp3", ".amr", ".ogg", ".wav", ".wma" };
         private string v_dir;
-        private string dir_lv;
+        private DirectoryLocation dir_lv;
+
+        public enum DirectoryLocation
+        {
+            LIBRARY,
+            MODULE
+        }
 
         public bool IsFile { get; internal set; }
 
-        public AssetParser(string dir_lv, string v_dir)
+        public AssetParser(DirectoryLocation dir_lv, string v_dir)
         {
             this.dir_lv = dir_lv;
             this.v_dir = v_dir;
@@ -147,16 +153,15 @@ namespace ChupooTemplateEngine
                 }
                 else
                 {
-                    if (dir_lv == "libs")
+                    if (dir_lv == DirectoryLocation.LIBRARY)
                     {
-                        asset_level = asset_level.Substring(2) + "../../..";
+                        asset_level = asset_level.Substring(2) + "../../../dev-lib";
                     }
                     else
                     {
-                        asset_level = asset_level.Substring(2) + "../dev";
+                        asset_level = asset_level.Substring(2) + "../dev/modules";
                     }
                 }
-                asset_level += "/" + dir_lv;
 
                 foreach (Match match in matches)
                 {
@@ -205,27 +210,19 @@ namespace ChupooTemplateEngine
                         MessageController.Show("Error: " + ex.Message);
                     }
 
-                    if (dir_lv == "libs")
-                    {                        
-                        content = Parser.SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
-                        newLength += new_value.Length - match.Groups[1].Length;
-                    }
-                    else
-                    {
-                        content = Parser.SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
-                        newLength += new_value.Length - match.Groups[1].Length;
-                    }
+                    content = Parser.SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
+                    newLength += new_value.Length - match.Groups[1].Length;
                 }
             }
             return content;
         }
 
-        private string LookupAssetFile(string dir_lv, string name, string url)
+        private string LookupAssetFile(DirectoryLocation dir_lv, string name, string url)
         {
             if(IsFile)
                 name = GetParentName(name);
             string new_url = name + "/" + url;
-            string src_dir = dir_lv == "libs" ? Directories.DevLib : Directories.Module;
+            string src_dir = dir_lv == DirectoryLocation.LIBRARY ? Directories.DevLib : Directories.Module;
             string filePath = src_dir + name + "\\" + url.Replace("/", "\\");
             if (File.Exists(filePath))
             {

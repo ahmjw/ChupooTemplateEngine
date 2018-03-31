@@ -123,7 +123,7 @@ namespace ChupooTemplateEngine
             ShowHidingParser shp = new ShowHidingParser();
             content = shp.Parse(content, page_data);
 
-            AssetParser ap = new AssetParser("modules", Directories.View);
+            AssetParser ap = new AssetParser(AssetParser.DirectoryLocation.MODULE, Directories.View);
             content = ap.Parse(route, content);
 
             matched = Regex.Match(content, @"<c\.config\slayout=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");

@@ -55,7 +55,7 @@ namespace ChupooTemplateEngine
                     LibParser lp = new LibParser();
                     part_content = lp.Parse(lib_name, part_content);
 
-                    AssetParser ap = new AssetParser("modules", Directories.Module);
+                    AssetParser ap = new AssetParser(AssetParser.DirectoryLocation.MODULE, Directories.Module);
                     ap.IsFile = is_file;
                     part_content = ap.Parse(lib_name, part_content);
 
@@ -127,7 +127,7 @@ namespace ChupooTemplateEngine
                 LibParser lp = new LibParser();
                 part_content = lp.Parse(lib_name, part_content);
 
-                AssetParser ap = new AssetParser("modules", Directories.Module);
+                AssetParser ap = new AssetParser(AssetParser.DirectoryLocation.MODULE, Directories.Module);
                 ap.IsFile = is_file;
                 part_content = ap.Parse(lib_name, part_content);
             }
@@ -209,7 +209,7 @@ namespace ChupooTemplateEngine
                         LibParser lp = new LibParser();
                         part_content = lp.Parse(lib_name, part_content);
 
-                        AssetParser ap = new AssetParser("modules", Directories.Module);
+                        AssetParser ap = new AssetParser(AssetParser.DirectoryLocation.MODULE, Directories.Module);
                         ap.IsFile = is_file;
                         //Console.WriteLine(lib_name + " " + is_file);
                         part_content = ap.Parse(lib_name, part_content);
