@@ -18,7 +18,7 @@ namespace ChupooTemplateEngine
         private CloningPage cloningPage;
         private static int index;
 
-        public bool SingleLaunch { get; internal set; }
+        public static bool SingleLaunch { get; internal set; }
 
         public CloningPageParser()
         {

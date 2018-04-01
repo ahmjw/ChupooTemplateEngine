@@ -74,6 +74,7 @@ namespace ChupooTemplateEngine
 
                     CollectVariableAsset(v_route, v_content, page_data);
                 }
+                CloningPageParser.SingleLaunch = false;
             }
 
             // Copies all variable assets
@@ -106,11 +107,13 @@ namespace ChupooTemplateEngine
                 }
             }
             RouteHasVariableAssets.Clear();
+            VariableAssets.Clear();
+            CloningPageParser.SingleLaunch = false;
         }
 
         private void CollectVariableAsset(string route, string content, JObject page_data)
         {
-            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(\.[^\.].*?)"".*?>";
+            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(.+?)"".*?>";
             MatchCollection mc = Regex.Matches(content, pattern);
             List<string> items = new List<string>();
 
@@ -171,7 +174,7 @@ namespace ChupooTemplateEngine
                 CloningPage cp = cpp.Parse(route, view_content);
                 if (cp.IsCloningPage)
                 {
-                    if (!cpp.SingleLaunch)
+                    if (!CloningPageParser.SingleLaunch)
                     {
                         foreach (JToken datum in cp.Data)
                         {
@@ -191,6 +194,7 @@ namespace ChupooTemplateEngine
                 {
                     ParseGenerally(route, dest, asset_level, matched, view_content);
                 }
+                CloningPageParser.SingleLaunch = false;
             }
             else
             {
@@ -536,7 +540,7 @@ namespace ChupooTemplateEngine
         {
             if (is_scanning_content) return content;
 
-            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(\.[^\.].*?)"".*?>";
+            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(.+?)"".*?>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -556,22 +560,33 @@ namespace ChupooTemplateEngine
 
                 foreach (Match match in matches)
                 {
+                    if (Regex.Match(match.Groups[1].Value, @"^https?:\/\/").Success) continue;
+                    if (CurrentCommand != CommandType.LAUNCH)
+                    {
+                        if (match.Groups[1].Value.Substring(0, 3) == "../") continue;
+                    }
+                    else
+                    {
+                        if (match.Groups[1].Value.Substring(0, 2) == "./"
+                            || match.Groups[1].Value.Substring(0, 2) == "<?") continue;
+                    }
+
                     string new_value;
                     string ext;
 
                     if (match.Groups[1].Value.Substring(0, 2) == "./")
                     {
                         if (CurrentCommand != CommandType.LAUNCH)
-                            new_value = asset_level + match.Groups[1].Value.Substring(1);
+                            new_value = asset_level + match.Groups[1];
                         else
                         {
-                            if (match.Groups[1].Length >= 6 && match.Groups[1].Value.Substring(2, 6) == "assets")
+                            if (match.Groups[1].Length >= 6 && match.Groups[1].Value.Substring(0, 6) == "assets")
                             {
-                                new_value = asset_level + match.Groups[1].Value.Substring(2);
+                                new_value = asset_level + match.Groups[1].Value;
                             }
                             else
                             {
-                                string view_asset = asset_level + match.Groups[1].Value.Substring(2);
+                                string view_asset = asset_level + match.Groups[1].Value;
                                 new_value = LaunchViewAssets(view_asset);
                             }
                         }
@@ -582,7 +597,7 @@ namespace ChupooTemplateEngine
                     {
                         if (CurrentCommand != CommandType.LAUNCH)
                         {
-                            new_value = asset_level + "/" + component_name + match.Groups[1].Value.Substring(1);
+                            new_value = asset_level + "/" + component_name + match.Groups[1].Value;
                             FileInfo finfo = new FileInfo(new_value);
                             ext = finfo.Extension;
                         }
@@ -596,11 +611,11 @@ namespace ChupooTemplateEngine
                                 string f_name = Regex.Replace(url, @"^.+\/([^\/]+)(\.[a-zA-Z0-9_]+)$", "$1$2");
                                 AssetParser ap = new AssetParser();
                                 ext = f_name.Substring(f_name.LastIndexOf('.'));
-                                new_value = "assets/local/" + ap.GetAssetDirectoryName(ext) + "/" + f_name;
+                                new_value = "./assets/local/" + ap.GetAssetDirectoryName(ext) + "/" + f_name;
                             }
                             else
                             {
-                                string view_asset = asset_level + component_name + url.Substring(1);
+                                string view_asset = asset_level + component_name + url;
                                 new_value = LaunchViewAssets(view_asset);
                                 FileInfo finfo = new FileInfo(new_value);
                                 ext = finfo.Extension;
@@ -616,9 +631,9 @@ namespace ChupooTemplateEngine
                         else if (ext == ".css")
                             RegisterUniversalCssFile(new_value);
                         else if (!LaunchEngine.IsCodeOnly && CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
-                            new_value = "<?= get_template_directory_uri() ?>/" + new_value;
+                            new_value = "<?= get_template_directory_uri() ?>/" + new_value.Substring(2);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         MessageController.Show("Error:" + ex.Message);
                     }

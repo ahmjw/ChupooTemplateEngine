@@ -168,7 +168,7 @@ namespace ChupooTemplateEngine
 
         private string ReplaceAssetUrlText(string asset_level, string name, string content)
         {
-            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(\.[^\.].*?)"".*?>";
+            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(.+?)"".*?>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -195,34 +195,30 @@ namespace ChupooTemplateEngine
 
                 foreach (Match match in matches)
                 {
-                    string new_value = "";
-                    if (match.Groups[1].Value.Substring(0, 2) == "./")
+                    if (Regex.Match(match.Groups[1].Value, @"^https?:\/\/").Success) continue;
+                    if (CurrentCommand != CommandType.LAUNCH)
                     {
-                        if (CurrentCommand != CommandType.LAUNCH)
-                        {
-                            new_value += "../dev" + match.Groups[1].Value.Substring(1);
-                        }
-                        else
-                        {
-                            // LAUNCH
-                            new_value += match.Groups[1].Value.Substring(2);
-                        }
+                        if (match.Groups[1].Value.Substring(0, 3) == "../") continue;
                     }
                     else
                     {
-                        if (CurrentCommand != CommandType.LAUNCH)
+                        if (match.Groups[1].Value.Substring(0, 2) == "./"
+                            || match.Groups[1].Value.Substring(0, 2) == "<?") continue;
+                    }
+
+                    string new_value = "";
+
+                    if (CurrentCommand != CommandType.LAUNCH)
+                    {
+                        if (IsFile)
                         {
-                            if (IsFile)
-                            {
-                                name = GetParentName(name);
-                            }
-                            new_value += asset_level + "/" + name + "/" + match.Groups[1].Value.Substring(1);
+                            name = GetParentName(name);
                         }
-                        else
-                        {
-                            // LAUNCH
-                            new_value = LookupAssetFile(dir_lv, name, match.Groups[1].Value.Substring(1));
-                        }
+                        new_value += asset_level + "/" + name + "/" + match.Groups[1].Value;
+                    }
+                    else
+                    {
+                        new_value = LookupAssetFile(dir_lv, name, match.Groups[1].Value);
                     }
 
                     try
@@ -233,15 +229,18 @@ namespace ChupooTemplateEngine
                         else if (finfo.Extension == ".css")
                             Parser.RegisterUniversalCssFile(new_value);
                         else if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
-                            new_value = "<?= get_template_directory_uri() ?>/" + new_value;
+                            new_value = "<?= get_template_directory_uri() ?>/" + new_value.Substring(2);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         MessageController.Show("Error: " + ex.Message);
                     }
 
-                    content = Parser.SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
-                    newLength += new_value.Length - match.Groups[1].Length;
+                    if (new_value != "")
+                    {
+                        content = Parser.SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
+                        newLength += new_value.Length - match.Groups[1].Length;
+                    }
                 }
             }
             return content;
@@ -249,7 +248,7 @@ namespace ChupooTemplateEngine
 
         private string LookupAssetFile(DirectoryLocation dir_lv, string name, string url)
         {
-            if(IsFile)
+            if (IsFile)
                 name = GetParentName(name);
             string new_url = name + "/" + url;
             string src_dir = dir_lv == DirectoryLocation.LIBRARY ? Directories.DevLib : Directories.Module;
@@ -267,7 +266,7 @@ namespace ChupooTemplateEngine
                         MessageController.Show("  HTML> " + new_url);
                         File.Copy(filePath, destPath);
                     }
-                    new_url = "assets/local/" + d_name + "/" + fname;
+                    new_url = "./assets/local/" + d_name + "/" + fname;
                 }
             }
             return new_url;
@@ -304,7 +303,7 @@ namespace ChupooTemplateEngine
                         MessageController.Show("  File> " + _m_name);
                         ParseCss(v_dir + name, path, a_dir + m_name);
                     }
-                    asset_url = "assets/local/styles/" + m_name;
+                    asset_url = "./assets/local/styles/" + m_name;
 
                 }
                 Parser.RegisterUniversalCssFile(asset_url);
@@ -334,7 +333,7 @@ namespace ChupooTemplateEngine
                         MessageController.Show("  File> " + _m_name);
                         File.Copy(path, a_dir + m_name);
                     }
-                    asset_url = "assets/local/scripts/" + m_name;
+                    asset_url = "./assets/local/scripts/" + m_name;
 
                 }
                 Parser.RegisterUniversalJsFile(asset_url);

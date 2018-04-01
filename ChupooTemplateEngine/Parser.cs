@@ -135,7 +135,7 @@ namespace ChupooTemplateEngine
                         MessageController.Show("  File> " + _m_name);
                         ParseCss(v_dir + route.Trim('\\'), path, a_dir + m_name);
                     }
-                    asset_url = "assets/local/styles/" + m_name;
+                    asset_url = "./assets/local/styles/" + m_name;
                 }
 
                 RegisterUniversalCssFile(asset_url);
@@ -179,7 +179,7 @@ namespace ChupooTemplateEngine
                         MessageController.Show("  File> " + _m_name);
                         File.Copy(path, a_dir + m_name);
                     }
-                    asset_url = "assets/local/scripts/" + m_name;
+                    asset_url = "./assets/local/scripts/" + m_name;
                 }
 
                 RegisterUniversalJsFile(asset_url);
@@ -247,7 +247,7 @@ namespace ChupooTemplateEngine
 
         protected string ReplaceLinkUrlText(string content, string asset_level)
         {
-            string pattern = @"<a.*?href=""\./(.*?)"".*?>";
+            string pattern = @"<a.*?href=""(.+?)"".*?>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
             {
@@ -255,7 +255,15 @@ namespace ChupooTemplateEngine
                 asset_level = asset_level.Substring(2);
                 foreach (Match match in matches)
                 {
-                    string url_target = match.Groups[1].Value;
+                    string url_target;
+                    if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                    {
+                        url_target = "<?= get_site_url() ?>/" + match.Groups[1].Value;
+                    }
+                    else
+                    {
+                        url_target = match.Groups[1].Value.Replace("/", "-").Replace("\\", "-");
+                    }
                     //string url_target = public_routes != null && public_routes.Count > 0 && public_routes[match.Groups[1].Value] != null ? public_routes[match.Groups[1].Value] + "" : "index";
                     string new_value = asset_level + url_target;
                     content = SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
@@ -300,7 +308,7 @@ namespace ChupooTemplateEngine
                     File.Copy(src_path, dst_path);
                 }
 
-                dst_file_name = "assets/local/" + dst_file_name;
+                dst_file_name = "./assets/local/" + dst_file_name;
                 return dst_file_name;
             }
             else
