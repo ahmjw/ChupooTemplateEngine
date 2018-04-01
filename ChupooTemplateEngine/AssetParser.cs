@@ -59,6 +59,9 @@ namespace ChupooTemplateEngine
                         File.Copy(src_path, i_dst_path);
                     }
                 }
+                else
+                {
+                }
                 string new_value = "../" + i_dst_file_name;
                 content = Parser.SubsituteString(content, match.Groups[1].Index + newLength, match.Groups[1].Length, new_value);
                 newLength += new_value.Length - match.Groups[1].Length;
@@ -293,6 +296,7 @@ namespace ChupooTemplateEngine
                     string m_name = _m_name.Replace("/main.css", ".css");
                     m_name = m_name.Replace("/", "-");
                     m_name = m_name.Replace("-@", "-");
+                    
                     string a_dir = Directories.PublicAsset + "local\\styles\\";
                     if (!Directory.Exists(a_dir))
                     {

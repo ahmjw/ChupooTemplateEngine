@@ -251,7 +251,7 @@ namespace ChupooTemplateEngine
                         else
                         {
                             string view_asset = asset_level + match.Groups[1].Value;
-                            new_value += LaunchViewAssets(view_asset);
+                            new_value += LaunchViewAssets(component_name + "/" + view_asset);
                         }
                     }
 
@@ -283,6 +283,7 @@ namespace ChupooTemplateEngine
 
             content = RenderPartialLayout(content);
             content = ReplaceAssetUrlText(content, "./", name);
+            content = ReplaceLinkUrlText(content, "./");
             RenderPartialAssets(name, Directories.Layout, content, true, parent_route);
             content = SeparateLayoutStyle(content);
             content = SeparateLayoutScript(content);

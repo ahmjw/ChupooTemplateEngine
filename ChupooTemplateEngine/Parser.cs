@@ -125,6 +125,7 @@ namespace ChupooTemplateEngine
                     string m_name = _m_name.Replace("/main.css", ".css");
                     m_name = m_name.Replace("/", "-");
                     m_name = m_name.Replace("-@", "-");
+                    
                     string a_dir = Directories.PublicAsset + "local\\styles\\";
                     if (!Directory.Exists(a_dir))
                     {
@@ -209,6 +210,7 @@ namespace ChupooTemplateEngine
                 {
                     src_path = Directories.Asset + match.Groups[1].Value.Substring(9).Replace("/", "\\");
                 }
+                
                 string i_dst_file_name = c_name;
 
                 if (File.Exists(src_path))
@@ -226,6 +228,9 @@ namespace ChupooTemplateEngine
                             MessageController.Show("  CSS> " + d_name);
                             File.Copy(src_path, i_dst_path);
                         }
+                        else
+                        {
+                        }
                         if (CurrentCommand != CommandType.LAUNCH)
                         {
                             i_dst_file_name = d_name;
@@ -236,6 +241,9 @@ namespace ChupooTemplateEngine
                         i_dst_path = Directories.Public + "\\" + match.Groups[1].Value.Substring(9).Replace("/", "\\");
                         i_dst_file_name = "../../" + d_name;
                     }
+                }
+                else
+                {
                 }
                 string new_value = "../" + i_dst_file_name.Replace("\\", "/");
                 
@@ -258,6 +266,7 @@ namespace ChupooTemplateEngine
                     string url_target;
                     if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
                     {
+                        if (match.Groups[1].Value.Substring(0, 3) == "<?=") continue;
                         url_target = "<?= get_site_url() ?>/" + match.Groups[1].Value;
                     }
                     else
@@ -288,11 +297,12 @@ namespace ChupooTemplateEngine
 
         protected string LaunchViewAssets(string asset)
         {
+            string ext = asset.Substring(asset.LastIndexOf('.'));
             if (Directories.Current == Directories.View)
                 asset = asset.Replace("//", "/");
             else
             {
-                asset = "layouts/" + asset.Replace("//", "/");
+                asset = "dev/layouts/" + asset.Replace("//", "/");
             }
 
             string src_path = Directories.Project + asset.Replace("/", "\\");
@@ -301,6 +311,12 @@ namespace ChupooTemplateEngine
             {
                 string dst_file_name = RenameAsset(asset);
                 string dst_path = Directories.PublicAsset + "local\\" + dst_file_name.Replace("/", "\\");
+
+                if (ext == ".css")
+                {
+                    FileInfo info = new FileInfo(src_path);
+                    ParseCss(info.DirectoryName, src_path, dst_path);
+                }
 
                 if (!LaunchEngine.IsCodeOnly && !File.Exists(dst_path))
                 {
@@ -313,7 +329,6 @@ namespace ChupooTemplateEngine
             }
             else
             {
-                //Console.WriteLine("\t[-] " + asset);
             }
             return asset;
         }
