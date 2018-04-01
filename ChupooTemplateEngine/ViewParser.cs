@@ -184,8 +184,7 @@ namespace ChupooTemplateEngine
                     }
                     else
                     {
-                        //LookupVariableAsset(route, dest, asset_level, cp, matched);
-                        ParseGenerally(route, dest, asset_level, matched, view_content, null, true);
+                        ParseGenerally(route, dest, asset_level, matched, cp.Content, null, true);
                     }
                 }
                 else
