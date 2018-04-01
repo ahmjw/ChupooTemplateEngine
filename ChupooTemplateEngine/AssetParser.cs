@@ -25,6 +25,10 @@ namespace ChupooTemplateEngine
 
         public bool IsFile { get; internal set; }
 
+        public AssetParser()
+        {
+        }
+
         public AssetParser(DirectoryLocation dir_lv, string v_dir)
         {
             this.dir_lv = dir_lv;
@@ -62,7 +66,7 @@ namespace ChupooTemplateEngine
             File.WriteAllText(dst_path, content);
         }
 
-        private string RenameAsset(string asset)
+        public string RenameAsset(string asset)
         {
             Match match = Regex.Match(asset, @"(_.*)?/([a-zA-Z0-9-_\.]+)(\.[a-zA-Z0-9-_]+)$");
             if (match.Success)
@@ -79,7 +83,33 @@ namespace ChupooTemplateEngine
             return asset;
         }
 
-        private string LookupDirectoryName(string extension)
+        public string GetAssetDirectoryName(string extension)
+        {
+            string d_name = "";
+            if (pic_exts.Any(extension.ToLower().Equals))
+            {
+                d_name = "images";
+            }
+            else if (aud_exts.Any(extension.ToLower().Equals))
+            {
+                d_name = "audios";
+            }
+            else if (vid_exts.Any(extension.ToLower().Equals))
+            {
+                d_name = "videos";
+            }
+            else if (extension == ".js")
+            {
+                d_name = "scripts";
+            }
+            else if (extension == ".css")
+            {
+                d_name = "styles";
+            }
+            return d_name;
+        }
+
+        public string LookupDirectoryName(string extension)
         {
             string d_name = "";
             string d_root = Directories.PublicAsset + "local\\";
@@ -245,6 +275,8 @@ namespace ChupooTemplateEngine
 
         public string Parse(string name, string content)
         {
+            if (ViewParser.is_scanning_content) return content;
+
             string _route = name;
             content = ReplaceAssetUrlText("./", name, content);
 

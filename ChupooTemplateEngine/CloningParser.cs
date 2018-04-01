@@ -42,7 +42,7 @@ namespace ChupooTemplateEngine
             return obj;
         }
 
-        internal string Parse(string content)
+        internal string Parse(string route, string content)
         {
             string pattern = @"<c.clone([\w\W]+?)>([\w\W]+?)</c.clone>";
             Match matched = Regex.Match(content, pattern);
@@ -50,7 +50,7 @@ namespace ChupooTemplateEngine
             {
                 // Combine data from attributes
                 ReadAttributes(matched.Groups[1].Value);
-                content = ViewParser.ReplaceFormattedDataText(content, HashTable2JObject(parent_attributes), false);
+                content = ViewParser.ReplaceFormattedDataText(route, content, HashTable2JObject(parent_attributes), false);
 
                 // Reload content
                 pattern = @"<c.clone([\w\W]+?)>([\w\W]+?)</c.clone>";
@@ -68,7 +68,7 @@ namespace ChupooTemplateEngine
                     string new_content = "";
                     foreach (JObject datum in (JToken)data)
                     {
-                        new_content += ViewParser.ReplaceFormattedDataText(matched.Groups[2].Value, datum);
+                        new_content += ViewParser.ReplaceFormattedDataText(route, matched.Groups[2].Value, datum);
                     }
 
                     content = Parser.SubsituteString(content, matched.Index, matched.Length, new_content);

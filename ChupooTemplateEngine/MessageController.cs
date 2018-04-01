@@ -12,7 +12,7 @@ namespace ChupooTemplateEngine
     {
         public static void Show(string message)
         {
-            //Console.WriteLine(message);
+            Console.WriteLine(message);
         }
 
         public static void Show(Hashtable data)

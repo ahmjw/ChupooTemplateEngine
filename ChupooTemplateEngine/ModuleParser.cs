@@ -47,7 +47,7 @@ namespace ChupooTemplateEngine
 
                     CloningParser cp = new CloningParser();
                     cp.SetParentAttributes(attributes);
-                    part_content = cp.Parse(part_content);
+                    part_content = cp.Parse(lib_name, part_content);
 
                     part_content = ReplaceAttributes(part_content);
                     part_content = Parse(part_content);
@@ -119,7 +119,7 @@ namespace ChupooTemplateEngine
 
                 CloningParser cp = new CloningParser();
                 cp.SetParentAttributes(this.attributes);
-                part_content = cp.Parse(part_content);
+                part_content = cp.Parse(lib_name, part_content);
 
                 part_content = ReplaceAttributes(part_content);
                 part_content = Parse(part_content);
@@ -193,7 +193,7 @@ namespace ChupooTemplateEngine
 
                         CloningParser cp = new CloningParser();
                         cp.SetParentAttributes(attributes);
-                        part_content = cp.Parse(part_content);
+                        part_content = cp.Parse(lib_name, part_content);
 
                         NestedModuleParser np = new NestedModuleParser();
                         part_content = np.ParseText("", lib_name, part_content);

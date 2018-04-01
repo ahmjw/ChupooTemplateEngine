@@ -86,7 +86,7 @@ namespace ChupooTemplateEngine
             }
 
             if (!is_match)
-            { 
+            {
                 pattern = @"<c\.clone-page([\w\W]+?)(?:\s*\/)?>(?:<\/c\.clone-page>)?";
                 matched = Regex.Match(content, pattern);
                 if (matched.Success)
@@ -97,36 +97,33 @@ namespace ChupooTemplateEngine
                     SingleLaunch = CurrentCommand == CommandType.LAUNCH && ViewParser.Extension == ".php" &&
                         attributes["single-launch"] != null && attributes["single-launch"].ToString() == "true";
 
-                    if (!SingleLaunch)
-                    {
-                        string file_name = attributes["json"] + ".json";
-                        string file_path = Directories.ViewDataJson + file_name;
+                    string file_name = attributes["json"] + ".json";
+                    string file_path = Directories.ViewDataJson + file_name;
 
-                        if (File.Exists(file_path))
+                    if (File.Exists(file_path))
+                    {
+                        MessageController.Show("Loading JSON file " + file_name + " ...");
+                        string json_text = File.ReadAllText(file_path);
+                        JArray data = (JArray)JsonConvert.DeserializeObject(json_text);
+                        foreach (JToken datum in (JToken)data)
                         {
-                            MessageController.Show("Loading JSON file " + file_name + " ...");
-                            string json_text = File.ReadAllText(file_path);
-                            JArray data = (JArray)JsonConvert.DeserializeObject(json_text);
-                            foreach (JToken datum in (JToken)data)
-                            {
-                                cloningPage.Data.Add(datum);
-                            }
+                            cloningPage.Data.Add(datum);
                         }
-                        else if (attributes["for"] != null)
+                    }
+                    else if (attributes["for"] != null)
+                    {
+                        string[] for_data = attributes["for"].ToString().Split(',');
+                        int a = int.Parse(for_data[0]);
+                        int b = int.Parse(for_data[1]);
+                        int c = int.Parse(for_data[2]);
+                        for (int i = a; i <= b; i += c)
                         {
-                            string[] for_data = attributes["for"].ToString().Split(',');
-                            int a = int.Parse(for_data[0]);
-                            int b = int.Parse(for_data[1]);
-                            int c = int.Parse(for_data[2]);
-                            for (int i = a; i <= b; i += c)
-                            {
-                                cloningPage.Data.Add(new JObject(new JProperty("index", i)));
-                            }
+                            cloningPage.Data.Add(new JObject(new JProperty("index", i)));
                         }
-                        else
-                        {
-                            MessageController.Show("Error: JSON file is not found > " + file_name);
-                        }
+                    }
+                    else
+                    {
+                        MessageController.Show("Error: JSON file is not found > " + file_name);
                     }
                     content = Parser.SubsituteString(content, matched.Index, matched.Length, "");
                 }
@@ -156,10 +153,10 @@ namespace ChupooTemplateEngine
             return content;
         }
 
-        internal CloningPage ApplyData(CloningPage _cloningPage, JObject data)
+        internal CloningPage ApplyData(string route, CloningPage _cloningPage, JObject data)
         {
             string name = attributes["as"] + "";
-            name = ViewParser.ReplaceFormattedDataText(name, data);
+            name = ViewParser.ReplaceFormattedDataText(route, name, data);
 
             CloningPage __cloningPage = new CloningPage();
             __cloningPage.Index = ++index;

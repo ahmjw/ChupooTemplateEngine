@@ -1,6 +1,7 @@
 ﻿using ChupooTemplateEngine.ViewParsers;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,9 +14,18 @@ namespace ChupooTemplateEngine
 {
     abstract class ViewParser : Parser
     {
+        public static bool is_scanning_content = false;
+
         public static string Extension { get; set; }
 
         abstract protected void OnViewParsed(string route, string dest, string asset_level);
+
+        public static List<string> RouteHasVariableAssets = new List<string>();
+        public static List<Hashtable> VariableAssets = new List<Hashtable>();
+
+        public ViewParser()
+        {
+        }
 
         public void LoopViews(string path)
         {
@@ -43,6 +53,93 @@ namespace ChupooTemplateEngine
 
                 Directories.Current = Directories.View;
                 ClearAll();
+            }
+
+            // Reparses route has variable inside asset
+            foreach (string v_route in RouteHasVariableAssets)
+            {
+                string v_path = Directories.View + v_route + "\\main.html";
+                string v_content = File.ReadAllText(v_path);
+
+                string p_route = v_route.Substring(0, v_route.IndexOf('/'));
+                string p_path = Directories.View + p_route + "\\main.html";
+                string p_content = File.ReadAllText(p_path);
+
+                CloningPageParser cpp = new CloningPageParser();
+                CloningPage cp = cpp.Parse(p_route, p_content);
+
+                foreach (JToken datum in cp.Data)
+                {
+                    JObject page_data = (JObject)datum;
+
+                    CollectVariableAsset(v_route, v_content, page_data);
+                }
+            }
+
+            // Copies all variable assets
+            AssetParser ap = new AssetParser();
+            if (VariableAssets.Count > 0)
+            {
+                foreach (Hashtable data in VariableAssets)
+                {
+                    foreach (DictionaryEntry de in data)
+                    {
+                        List<string> items = (List<string>)de.Value;
+                        foreach (string item in items)
+                        {
+                            string loc = de.Key + "\\" + item.Trim('.');
+                            loc = loc.Replace("/", "\\");
+
+                            string src_url = Directories.View + loc;
+                            if (File.Exists(src_url))
+                            {
+                                FileInfo fi = new FileInfo(loc);
+                                string dst_url = Directories.PublicAsset + "local\\" +
+                                    ap.LookupDirectoryName(fi.Extension) + "\\" + fi.Name;
+                                if (!File.Exists(dst_url))
+                                {
+                                    File.Copy(src_url, dst_url);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            RouteHasVariableAssets.Clear();
+        }
+
+        private void CollectVariableAsset(string route, string content, JObject page_data)
+        {
+            string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(\.[^\.].*?)"".*?>";
+            MatchCollection mc = Regex.Matches(content, pattern);
+            List<string> items = new List<string>();
+
+            foreach (Match m in mc)
+            {
+                pattern = @"\{\{\$([^\}]+)\}\}";
+                string url = m.Groups[1].Value;
+                MatchCollection mc0 = Regex.Matches(url, pattern);
+                if (mc0.Count > 0)
+                {
+                    int newLength = 0;
+                    foreach (Match m0 in mc0)
+                    {
+                        string var_name = m0.Groups[1].Value;
+                        if (page_data[var_name] != null)
+                        {
+                            string new_value = page_data[var_name] + "";
+                            url = SubsituteString(url, m0.Index + newLength, m0.Length, new_value);
+                            newLength += new_value.Length - m0.Length;
+                        }
+                    }
+                    items.Add(url);
+                }
+            }
+            if (items.Count > 0)
+            {
+                Hashtable data = new Hashtable();
+                data.Add(route, items);
+                VariableAssets.Add(data);
             }
         }
 
@@ -79,20 +176,21 @@ namespace ChupooTemplateEngine
                         foreach (JToken datum in cp.Data)
                         {
                             JObject page_data = (JObject)datum;
-                            view_content = ReplaceFormattedDataText(cp.Content, page_data);
-                            CloningPage newContent = cpp.ApplyData(cp, page_data);
-                            ParseFile(route, newContent.NewName, asset_level, matched, newContent.Content, page_data);
+                            view_content = ReplaceFormattedDataText(route, cp.Content, page_data);
+                            CloningPage newContent = cpp.ApplyData(route, cp, page_data);
+                            ParseGenerally(route, newContent.NewName, asset_level, matched, newContent.Content, page_data);
                             Directories.Current = Directories.View;
                         }
                     }
                     else
                     {
-                        ParseFile(route, dest, asset_level, matched, cp.Content, null, true);
+                        //LookupVariableAsset(route, dest, asset_level, cp, matched);
+                        ParseGenerally(route, dest, asset_level, matched, view_content, null, true);
                     }
                 }
                 else
                 {
-                    ParseFile(route, dest, asset_level, matched, view_content);
+                    ParseGenerally(route, dest, asset_level, matched, view_content);
                 }
             }
             else
@@ -101,9 +199,14 @@ namespace ChupooTemplateEngine
             }
         }
 
-        private void ParseFile(string route, string dest, string asset_level, Match matched, string content, JObject page_data = null, bool single_launch = false)
+        private void ParseGenerally(string route, string dest, string asset_level, Match matched, string content, JObject page_data = null, bool single_launch = false)
         {
-            content = ReplaceFormattedDataText(content, page_data, false, single_launch);
+            if (is_scanning_content)
+            {
+                //CollectVariableAsset(route, content, page_data);
+            }
+
+            content = ReplaceFormattedDataText(route, content, page_data, false, single_launch);
 
             NestedModuleParser np = new NestedModuleParser();
             content = np.ParseText("", route, content);
@@ -111,7 +214,7 @@ namespace ChupooTemplateEngine
             content = ReplaceAssetUrlText(content, "./", "dev/views/@" + route + "/");
 
             CloningParser cp = new CloningParser();
-            content = cp.Parse(content);
+            content = cp.Parse(route, content);
 
             LibParser lp = new LibParser();
             content = lp.Parse(route, content);
@@ -126,14 +229,18 @@ namespace ChupooTemplateEngine
             AssetParser ap = new AssetParser(AssetParser.DirectoryLocation.MODULE, Directories.View);
             content = ap.Parse(route, content);
 
-            matched = Regex.Match(content, @"<c\.config\slayout=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");
-            if (matched.Success)
+            if (!is_scanning_content)
             {
-                cfg_layout_name = matched.Groups[1].Value;
-                content = SubsituteString(content, matched.Index, matched.Length, "");
+                matched = Regex.Match(content, @"<c\.config\slayout=""(.+)?""(?:\s*\/)?>(?:<\/c\.config>)?");
+                if (matched.Success)
+                {
+                    cfg_layout_name = matched.Groups[1].Value;
+                    content = SubsituteString(content, matched.Index, matched.Length, "");
+                }
+                else
+                    cfg_layout_name = "page";
+
             }
-            else
-                cfg_layout_name = "page";
 
             string c_dir = Directories.View + "@" + route;
             if (Directory.Exists(c_dir))
@@ -176,7 +283,7 @@ namespace ChupooTemplateEngine
                 }
             }
 
-            content = ReplaceFormattedDataText(content, page_data, true, single_launch);
+            content = ReplaceFormattedDataText(route, content, page_data, true, single_launch);
             view_content = ReplaceLinkUrlText(content, asset_level);
 
             OnViewParsed(route, dest, asset_level);
@@ -305,6 +412,8 @@ namespace ChupooTemplateEngine
 
         protected string RenderPartialCss(string dir, string view_content)
         {
+            if (is_scanning_content) return view_content;
+
             Match matched = Regex.Match(view_content, @"<c\.css\shref=""(.*)?""(?:\s*\/)?>(?:<\/c\.css>)?");
             if (matched.Success)
             {
@@ -323,8 +432,10 @@ namespace ChupooTemplateEngine
             return view_content;
         }
 
-        public static string ReplaceFormattedDataText(string content, JObject data, bool remove_footage = true, bool single_launch = false)
+        public static string ReplaceFormattedDataText(string route, string content, JObject data, bool remove_footage = true, bool single_launch = false)
         {
+            if (is_scanning_content) return content;
+
             string pattern = @"\{\{([^\.][^\}]+)\}\}";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
@@ -346,49 +457,49 @@ namespace ChupooTemplateEngine
                     }
                     if (do_remove)
                     {
+                        if (Regex.Match(var_name, @"^\$page\.").Success)
+                            continue;
+
                         if (data != null)
                         {
-                            if (!Regex.Match(var_name, @"^\$page\.").Success)
+                            bool use_server_var = false;
+
+                            if (CurrentCommand == CommandType.LAUNCH)
                             {
-                                bool use_server_var = false;
-
-                                if (CurrentCommand == CommandType.LAUNCH)
+                                if (LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS &&
+                                    var_name[0] == '$')
                                 {
-                                    if (LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS &&
-                                        var_name[0] == '$')
-                                    {
-                                        new_value = "<?= " + var_name + " ?>";
-                                        use_server_var = true;
-                                    }
+                                    new_value = "<?= " + var_name + " ?>";
+                                    use_server_var = true;
                                 }
-
-                                if (!use_server_var)
-                                {
-                                    if (var_name[0] == '$')
-                                    {
-                                        var_name = var_name.Substring(1);
-                                    }
-
-                                    string[] arrays = var_name.Split('.');
-                                    if (arrays.Length > 0)
-                                    {
-                                        JToken current_data = data;
-                                        foreach (string item in arrays)
-                                        {
-                                            if (current_data[item] == null)
-                                                break;
-                                            new_value = current_data[item] + "";
-                                            current_data = current_data[item];
-                                        }
-                                    }
-                                    else
-                                    {
-                                        new_value = data[var_name] + "";
-                                    }
-                                }
-                                content = SubsituteString(content, match.Index + newLength, match.Length, new_value);
-                                newLength += new_value.Length - match.Length;
                             }
+
+                            if (!use_server_var)
+                            {
+                                if (var_name[0] == '$')
+                                {
+                                    var_name = var_name.Substring(1);
+                                }
+
+                                string[] arrays = var_name.Split('.');
+                                if (arrays.Length > 0)
+                                {
+                                    JToken current_data = data;
+                                    foreach (string item in arrays)
+                                    {
+                                        if (current_data[item] == null)
+                                            break;
+                                        new_value = current_data[item] + "";
+                                        current_data = current_data[item];
+                                    }
+                                }
+                                else
+                                {
+                                    new_value = data[var_name] + "";
+                                }
+                            }
+                            content = SubsituteString(content, match.Index + newLength, match.Length, new_value);
+                            newLength += new_value.Length - match.Length;
                         }
                         else
                         {
@@ -399,6 +510,15 @@ namespace ChupooTemplateEngine
                             }
                             else
                             {
+                                //Hashtable v_data = new Hashtable();
+                                //v_data["route"] = route;
+                                //v_data["string"] = match.Value;
+                                //v_data["replacement"] = "<?= " + var_name + " ?>";
+                                if (route[0] == '@' && !RouteHasVariableAssets.Contains(route))
+                                {
+                                    RouteHasVariableAssets.Add(route);
+                                }
+
                                 new_value = "<?= " + var_name + " ?>";
                                 content = SubsituteString(content, match.Index + newLength, match.Length, new_value);
                                 newLength += new_value.Length - match.Length;
@@ -412,6 +532,8 @@ namespace ChupooTemplateEngine
 
         protected string ReplaceAssetUrlText(string content, string asset_level, string component_name = null)
         {
+            if (is_scanning_content) return content;
+
             string pattern = @"<(?:link|script|img|source).*?(?:href|src|poster)=""(\.[^\.].*?)"".*?>";
             MatchCollection matches = Regex.Matches(content, pattern);
             if (matches.Count > 0)
@@ -432,44 +554,64 @@ namespace ChupooTemplateEngine
 
                 foreach (Match match in matches)
                 {
-                    string new_value = "";
+                    string new_value;
+                    string ext;
+
                     if (match.Groups[1].Value.Substring(0, 2) == "./")
                     {
                         if (CurrentCommand != CommandType.LAUNCH)
-                            new_value += asset_level + match.Groups[1].Value.Substring(1);
+                            new_value = asset_level + match.Groups[1].Value.Substring(1);
                         else
                         {
                             if (match.Groups[1].Length >= 6 && match.Groups[1].Value.Substring(2, 6) == "assets")
                             {
-                                new_value += asset_level + match.Groups[1].Value.Substring(2);
+                                new_value = asset_level + match.Groups[1].Value.Substring(2);
                             }
                             else
                             {
                                 string view_asset = asset_level + match.Groups[1].Value.Substring(2);
-                                new_value += LaunchViewAssets(view_asset);
+                                new_value = LaunchViewAssets(view_asset);
                             }
                         }
+                        FileInfo finfo = new FileInfo(new_value);
+                        ext = finfo.Extension;
                     }
                     else
                     {
                         if (CurrentCommand != CommandType.LAUNCH)
                         {
-                            new_value += asset_level + "/" + component_name + match.Groups[1].Value.Substring(1);
+                            new_value = asset_level + "/" + component_name + match.Groups[1].Value.Substring(1);
+                            FileInfo finfo = new FileInfo(new_value);
+                            ext = finfo.Extension;
                         }
                         else
                         {
-                            string view_asset = asset_level + component_name + match.Groups[1].Value.Substring(1);
-                            new_value += LaunchViewAssets(view_asset);
+                            // Is a variable asset?
+                            string url = match.Groups[1].Value;
+                            Match mc0 = Regex.Match(url, @"<.*?>");
+                            if (mc0.Success)
+                            {
+                                string f_name = Regex.Replace(url, @"^.+\/([^\/]+)(\.[a-zA-Z0-9_]+)$", "$1$2");
+                                AssetParser ap = new AssetParser();
+                                ext = f_name.Substring(f_name.LastIndexOf('.'));
+                                new_value = "assets/local/" + ap.GetAssetDirectoryName(ext) + "/" + f_name;
+                            }
+                            else
+                            {
+                                string view_asset = asset_level + component_name + url.Substring(1);
+                                new_value = LaunchViewAssets(view_asset);
+                                FileInfo finfo = new FileInfo(new_value);
+                                ext = finfo.Extension;
+                            }
                         }
                     }
 
                     // INSIDE VIEW'S PART
                     try
                     {
-                        FileInfo finfo = new FileInfo(new_value);
-                        if (finfo.Extension == ".js")
+                        if (ext == ".js")
                             RegisterUniversalJsFile(new_value);
-                        else if (finfo.Extension == ".css")
+                        else if (ext == ".css")
                             RegisterUniversalCssFile(new_value);
                         else if (!LaunchEngine.IsCodeOnly && CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
                             new_value = "<?= get_template_directory_uri() ?>/" + new_value;
@@ -490,9 +632,13 @@ namespace ChupooTemplateEngine
         {
             FileInfo finfo = new FileInfo(layout_file);
             string content = File.ReadAllText(layout_file);
+            if (is_scanning_content)
+            {
+                //CollectVariableAsset(parent_route + "/" + layout_name, content, page_data);
+            }
 
             bool remove_footage = CurrentCommand == CommandType.LAUNCH;
-            content = ReplaceFormattedDataText(content, page_data, remove_footage, single_launch);
+            content = ReplaceFormattedDataText(parent_route + "/" + layout_name, content, page_data, remove_footage, single_launch);
 
             NestedModuleParser np = new NestedModuleParser();
             content = np.ParseText(parent_route, layout_name, content);

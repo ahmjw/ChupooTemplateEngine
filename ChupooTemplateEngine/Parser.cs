@@ -303,6 +303,10 @@ namespace ChupooTemplateEngine
                 dst_file_name = "assets/local/" + dst_file_name;
                 return dst_file_name;
             }
+            else
+            {
+                //Console.WriteLine("\t[-] " + asset);
+            }
             return asset;
         }
 
