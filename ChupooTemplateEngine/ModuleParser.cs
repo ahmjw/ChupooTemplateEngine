@@ -103,7 +103,7 @@ namespace ChupooTemplateEngine
 
             if (is_exists)
             {
-                part_content = File.ReadAllText(lib_file);
+                part_content = FileIo.GetHtmlContent(lib_file);
                 part_content = RenderNestedContent(lib_name, is_file, part_content);
 
                 ShowHidingParser shp = new ShowHidingParser();
@@ -185,7 +185,7 @@ namespace ChupooTemplateEngine
 
                     if (is_exists)
                     {
-                        string part_content = File.ReadAllText(lib_file);
+                        string part_content = FileIo.GetHtmlContent(lib_file);
                         part_content = RenderNestedContent(lib_name, is_file, part_content);
 
                         ShowHidingParser shp = new ShowHidingParser();

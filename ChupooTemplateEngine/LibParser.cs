@@ -85,7 +85,7 @@ namespace ChupooTemplateEngine
                     string lib_file = lib_dir + "\\main.html";
                     if (File.Exists(lib_file))
                     {
-                        string part_content = File.ReadAllText(lib_file);
+                        string part_content = FileIo.GetHtmlContent(lib_file);
                         part_content = RenderNestedContent(lib_name, part_content);
 
                         if (match.Groups[3].Value != "")

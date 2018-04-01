@@ -46,7 +46,7 @@ namespace ChupooTemplateEngine
             }
 
             Directories.Current = Directories.Layout;
-            layout_content = File.ReadAllText(path);
+            layout_content = FileIo.GetHtmlContent(path);
 
             LibParser lp = new LibParser();
             layout_content = lp.Parse(dest, layout_content);
@@ -103,7 +103,7 @@ namespace ChupooTemplateEngine
 
                     if (File.Exists(layout_file))
                     {
-                        string part_content = File.ReadAllText(layout_file);
+                        string part_content = FileIo.GetHtmlContent(layout_file);
                         LibParser lp = new LibParser();
                         part_content = lp.Parse(layout_name, part_content);
 
@@ -118,7 +118,7 @@ namespace ChupooTemplateEngine
                         layout_file = Directories.Layout + layout_name.Substring(1) + @"\main.html";
                         if (File.Exists(layout_file))
                         {
-                            string part_content = File.ReadAllText(layout_file);
+                            string part_content = FileIo.GetHtmlContent(layout_file);
                             part_content = RenderLayoutComponent(layout_name.Substring(1), part_content);
                             content = SubsituteString(content, match.Index + newLength, match.Length, part_content);
                             newLength += part_content.Length - match.Length;

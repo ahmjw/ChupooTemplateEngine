@@ -59,11 +59,11 @@ namespace ChupooTemplateEngine
             foreach (string v_route in RouteHasVariableAssets)
             {
                 string v_path = Directories.View + v_route + "\\main.html";
-                string v_content = File.ReadAllText(v_path);
+                string v_content = FileIo.GetHtmlContent(v_path);
 
                 string p_route = v_route.Substring(0, v_route.IndexOf('/'));
                 string p_path = Directories.View + p_route + "\\main.html";
-                string p_content = File.ReadAllText(p_path);
+                string p_content = FileIo.GetHtmlContent(p_path);
 
                 CloningPageParser cpp = new CloningPageParser();
                 CloningPage cp = cpp.Parse(p_route, p_content);
@@ -164,7 +164,7 @@ namespace ChupooTemplateEngine
             }
             else if (File.Exists(path))
             {
-                view_content = File.ReadAllText(path);
+                view_content = FileIo.GetHtmlContent(path);
 
                 // Cloning page
                 CloningPageParser cpp = new CloningPageParser();
@@ -204,6 +204,9 @@ namespace ChupooTemplateEngine
             {
                 //CollectVariableAsset(route, content, page_data);
             }
+
+            // Delete comment
+            content = Regex.Replace(content, "<!--.*?-->", "");
 
             content = ReplaceFormattedDataText(route, content, page_data, false, single_launch);
 
@@ -257,7 +260,7 @@ namespace ChupooTemplateEngine
                 if (File.Exists(data_path))
                 {
                     MessageController.Show("Rendering " + route + ".html JSON data ...");
-                    string json_str = File.ReadAllText(data_path);
+                    string json_str = FileIo.GetHtmlContent(data_path);
                     page_data = JObject.Parse(json_str);
                 }
                 else
@@ -629,8 +632,8 @@ namespace ChupooTemplateEngine
 
         protected string RenderViewComponent(string layout_name, string layout_file, string parent_route, JObject page_data, bool single_launch)
         {
-            FileInfo finfo = new FileInfo(layout_file);
-            string content = File.ReadAllText(layout_file);
+            string content = FileIo.GetHtmlContent(layout_file);
+
             if (is_scanning_content)
             {
                 //CollectVariableAsset(parent_route + "/" + layout_name, content, page_data);
@@ -648,6 +651,7 @@ namespace ChupooTemplateEngine
             ModuleParser mp = new ModuleParser();
             content = mp.Parse(content);
 
+            FileInfo finfo = new FileInfo(layout_file);
             string c_name = finfo.DirectoryName.Replace(Directories.Project, "").Replace('\\', '/') + "/";
             content = ReplaceAssetUrlText(content, "./", c_name);
             content = LoadPartialView(content, page_data, single_launch, parent_route);

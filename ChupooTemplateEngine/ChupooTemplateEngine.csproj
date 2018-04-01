@@ -57,6 +57,7 @@
     <Compile Include="Command.cs" />
     <Compile Include="Composer.cs" />
     <Compile Include="Directories.cs" />
+    <Compile Include="FileIo.cs" />
     <Compile Include="Http.cs" />
     <Compile Include="LaunchEngine.cs" />
     <Compile Include="LaunchingConfig.cs" />

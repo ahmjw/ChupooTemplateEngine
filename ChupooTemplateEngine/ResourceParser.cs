@@ -17,7 +17,7 @@ namespace ChupooTemplateEngine
             {
                 return "";
             }
-            string content = File.ReadAllText(maskPath);
+            string content = FileIo.GetHtmlContent(maskPath);
             if (data != null)
             {
                 MatchCollection mc = Regex.Matches(content, @"\{\:([^\}]+)\}");
