@@ -309,6 +309,17 @@ namespace ChupooTemplateEngine
                 current_route = "index";
                 ran = true;
             }
+            matched = Regex.Match(command, @"^launch\s-r\s(.+?)\swp$");
+            if (!ran && matched.Success)
+            {
+                CurrentCommand = CommandType.LAUNCH;
+                LaunchEngine.IsCodeOnly = true;
+                LaunchEngine le = new LaunchEngine();
+                string route = matched.Groups[1].Value;
+                le.Run(route, LaunchEngine.LaunchTypeEnum.WORDPRESS);
+                current_route = "index";
+                ran = true;
+            }
             matched = Regex.Match(command, @"^launch\s-r\s(.+?)$");
             if (!ran && matched.Success)
             {
