@@ -88,8 +88,15 @@ namespace ChupooTemplateEngine
                     p_file = Directories.Public + write_as + ext;
                     dest = write_as;
                 }
-                File.WriteAllText(p_file, layout_content);
-                MessageController.Show("OK: " + dest + ext);
+                try
+                {
+                    File.WriteAllText(p_file, layout_content);
+                    MessageController.Show("OK: " + dest + ext);
+                }
+                catch(Exception ex)
+                {
+                    MessageController.Show("Warning: " + ex.Message);
+                }
             }
             else
             {
