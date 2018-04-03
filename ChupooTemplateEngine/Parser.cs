@@ -267,7 +267,7 @@ namespace ChupooTemplateEngine
                     if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
                     {
                         if (match.Groups[1].Value.Length > 3 && match.Groups[1].Value.Substring(0, 3) == "<?=") continue;
-                        url_target = "<?= get_site_url() ?>/" + match.Groups[1].Value;
+                        url_target = "<?= get_home_url() ?>/" + match.Groups[1].Value;
                     }
                     else
                     {
