@@ -59,15 +59,12 @@ namespace ChupooTemplateEngine
 
                 ReadAttributes(matched.Groups[1].Value);
 
-                if (route[0] == '@' && CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS && attributes.Contains("replace"))
                 {
-                    if (attributes.Contains("replace"))
-                    {
-                        string var_name = attributes["var-name"] + "";
-                        string new_content = ReplaceVariableCode(matched.Groups[2].Value, var_name);
-                        new_content = "<?php while($" + var_name + " = $model->fetch()): ?>\n" + new_content + "\n<?php endwhile ?>";
-                        content = Parser.SubsituteString(content, matched.Index, matched.Length, new_content);
-                    }
+                    string var_name = attributes["var-name"] + "";
+                    string new_content = ReplaceVariableCode(matched.Groups[2].Value, var_name);
+                    new_content = "<?php while($" + var_name + " = $model->fetch()): ?>\n" + new_content + "\n<?php endwhile ?>";
+                    content = Parser.SubsituteString(content, matched.Index, matched.Length, new_content);
                 }
                 else
                 {
