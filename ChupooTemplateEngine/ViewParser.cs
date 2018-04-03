@@ -511,15 +511,20 @@ namespace ChupooTemplateEngine
                         {
                             if (!single_launch)
                             {
-                                content = SubsituteString(content, match.Index + newLength, match.Length, "");
-                                newLength += match.Length;
+                                if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                                {
+                                    new_value = "<?= " + var_name + " ?>";
+                                    content = SubsituteString(content, match.Index + newLength, match.Length, new_value);
+                                    newLength += new_value.Length - match.Length;
+                                }
+                                else
+                                {
+                                    //content = SubsituteString(content, match.Index + newLength, match.Length, "");
+                                    //newLength += match.Length;
+                                }
                             }
                             else
                             {
-                                //Hashtable v_data = new Hashtable();
-                                //v_data["route"] = route;
-                                //v_data["string"] = match.Value;
-                                //v_data["replacement"] = "<?= " + var_name + " ?>";
                                 if (route[0] == '@' && !RouteHasVariableAssets.Contains(route))
                                 {
                                     RouteHasVariableAssets.Add(route);

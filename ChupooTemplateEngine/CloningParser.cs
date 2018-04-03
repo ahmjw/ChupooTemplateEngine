@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static ChupooTemplateEngine.Command;
 
 namespace ChupooTemplateEngine
 {
@@ -57,25 +58,58 @@ namespace ChupooTemplateEngine
                 matched = Regex.Match(content, pattern);
 
                 ReadAttributes(matched.Groups[1].Value);
-                string file_name = attributes["json"] + ".json";
-                string file_path = Directories.ViewDataJson + file_name;
 
-                if (File.Exists(file_path))
+                if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
                 {
-                    MessageController.Show("Loading JSON file " + file_name + " ...");
-                    string json_text = File.ReadAllText(file_path);
-                    JArray data = (JArray)JsonConvert.DeserializeObject(json_text);
-                    string new_content = "";
-                    foreach (JObject datum in (JToken)data)
+                    if (attributes.Contains("replace"))
                     {
-                        new_content += ViewParser.ReplaceFormattedDataText(route, matched.Groups[2].Value, datum);
+                        string var_name = attributes["var-name"] + "";
+                        string new_content = ReplaceVariableCode(matched.Groups[2].Value, var_name);
+                        new_content = "<?php while($" + var_name + " = $model->fetch()): ?>\n" + new_content + "\n<?php endwhile ?>";
+                        content = Parser.SubsituteString(content, matched.Index, matched.Length, new_content);
                     }
-
-                    content = Parser.SubsituteString(content, matched.Index, matched.Length, new_content);
                 }
                 else
                 {
-                    MessageController.Show("Error: JSON file is not found > " + file_name);
+                    string file_name = attributes["json"] + ".json";
+                    string file_path = Directories.ViewDataJson + file_name;
+
+                    if (File.Exists(file_path))
+                    {
+                        MessageController.Show("Loading JSON file " + file_name + " ...");
+                        string json_text = File.ReadAllText(file_path);
+                        JArray data = (JArray)JsonConvert.DeserializeObject(json_text);
+
+                        string new_content = "";
+                        foreach (JObject datum in (JToken)data)
+                        {
+                            new_content += ViewParser.ReplaceFormattedDataText(route, matched.Groups[2].Value, datum);
+                        }
+                        content = Parser.SubsituteString(content, matched.Index, matched.Length, new_content);
+                    }
+                    else
+                    {
+                        MessageController.Show("Error: JSON file is not found > " + file_name);
+                    }
+
+                }
+            }
+            return content;
+        }
+
+        private string ReplaceVariableCode(string content, string parent_var_name)
+        {
+            string pattern = @"\{\{(\$[^\}]+)\}\}";
+            MatchCollection matches = Regex.Matches(content, pattern);
+            if (matches.Count > 0)
+            {
+                int newLength = 0;
+                foreach (Match match in matches)
+                {
+                    string var_name = match.Groups[1].Value;
+                    string new_value = "<?= $" + parent_var_name + "->" + var_name.Substring(1) + " ?>";
+                    content = Parser.SubsituteString(content, match.Index + newLength, match.Length, new_value);
+                    newLength += new_value.Length - match.Length;
                 }
             }
             return content;
