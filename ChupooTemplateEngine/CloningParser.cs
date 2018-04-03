@@ -59,7 +59,7 @@ namespace ChupooTemplateEngine
 
                 ReadAttributes(matched.Groups[1].Value);
 
-                if (CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
+                if (route[0] == '@' && CurrentCommand == CommandType.LAUNCH && LaunchEngine.LaunchType == LaunchEngine.LaunchTypeEnum.WORDPRESS)
                 {
                     if (attributes.Contains("replace"))
                     {

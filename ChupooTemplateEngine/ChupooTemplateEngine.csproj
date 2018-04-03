@@ -55,6 +55,7 @@
     <Compile Include="CloningPageParser.cs" />
     <Compile Include="CloningParser.cs" />
     <Compile Include="Command.cs" />
+    <Compile Include="Component.cs" />
     <Compile Include="Composer.cs" />
     <Compile Include="Directories.cs" />
     <Compile Include="FileIo.cs" />
